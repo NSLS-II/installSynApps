@@ -18,14 +18,8 @@ documentation=R6-0
 utils=R6-0
 
 # EPICS modules
-asyn=R4-34
-autosave=R5-9
+
 #allenbradley=2.3
-alive=R1-1-0
-busy=R1-7
-calc=R3-7-1
-cmac=R2-7-1
-caputrecorder=R1-7-1
 dac128V=R2-9
 delaygen=R1-2-0
 devlib2=2.9

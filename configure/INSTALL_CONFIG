@@ -1,0 +1,89 @@
+#
+# This file contains all required information for building EPICS base and synapps.
+#
+# Author: Jakub Wlodek
+#
+
+
+# Top level install location for the build
+INSTALL=/home/jwlodek/Documents/testCloneRun 
+
+
+MODULE_NAME         MODULE_VERSION      MODULE_PATH                 MODULE_REPO                 INCLUDE_MODULE
+-----------------------------------------------------------------------------------------------------------
+GIT_URL=https://github.com/epics-base/
+
+EPICS_BASE          R7.0.2              $(INSTALL)/base             epics-base                      YES
+
+GIT_URL=https://github.com/EPICS-synApps/
+
+SUPPORT             R6-0                $(INSTALL)/support          support                         YES
+CONFIGURE           R6-0                $(SUPPORT)/configure        configure                       YES
+DOCUMENTATION       R6-0                $(SUPPORT)/documentation    documentation                   YES
+UTILS               R6-0                $(SUPPORT)/utils            utils                           YES
+
+GIT_URL=https://github.com/epics-modules/
+
+ASYN                R4-34               $(SUPPORT)/asyn             asyn                            YES
+AUTOSAVE            R5-9                $(SUPPORT)/autosave         autosave                        YES
+ALIVE               R1-1-0              $(SUPPORT)/alive            alive                           YES
+BUSY                R1-7                $(SUPPORT)/busy             busy                            YES
+CALC                R3-7-1              $(SUPPORT)/calc             calc                            YES
+CMAC                R2-7-1              $(SUPPORT)/cmac             cmac                            YES
+CAPUTRECORDER       R1-7-1              $(SUPPORT)/caputRecorder    caputRecorder                   YES
+DAC128V             R2-9                $(SUPPORT)/dac128V          dac128V                         YES
+DELAYGEN            R1-2-0              $(SUPPORT)/delaygen         delaygen                        YES
+DEVLIB2             2.9                 $(SUPPORT)/devlib2          devlib2                         YES
+DXP                 R5-0                $(SUPPORT)/dxp              dxp                             NO
+DXPSITORO           R1-1                $(SUPPORT)/dxpSITORO        dxpSITORO                       NO
+DEVIOCSTATS         3.1.15              $(SUPPORT)/iocStats         iocStats                        YES
+IP                  2-19-1              $(SUPPORT)/ip               ip                              NO
+IPAC                2.15                $(SUPPORT)/ipac             ipac                            YES
+IP330               R2-9                $(SUPPORT)/ip330            ip330                           NO
+IPUNDIG             R2-11               $(SUPPORT)/ipUndig          ipUndig                         YES
+LOVE                R3-2-6              $(SUPPORT)/love             love                            NO
+LUA                 R1-2                $(SUPPORT)/lua              lua                             NO
+MCA                 R7-7                $(SUPPORT)/mca              mca                             YES
+MEASCOMP            R2-1                $(SUPPORT)/measComp         measComp                        NO
+MODBUS              R2-10-1             $(SUPPORT)/modbus           modbus                          NO
+MOTOR               R6-11               $(SUPPORT)/motor            motor                           YES
+OPTICS              R2-13-1             $(SUPPORT)/optics           optics                          YES
+QUADEM              R9-1                $(SUPPORT)/quadEM           quadEM                          YES
+SOFTGLUE            R2-8-1              $(SUPPORT)/softGlue         solftGlue                       YES
+SOFTGLUEZYNQ        master              $(SUPPORT)/softGlueZynq     softGlueZynq                    YES
+SSCAN               R2-11-1             $(SUPPORT)/sscan            sscan                           YES
+STD                 R3-5                $(SUPPORT)/std              std                             YES
+STREAM              R2-7-7b             $(SUPPORT)/stream           stream                          YES
+VAC                 R1-7                $(SUPPORT)/vac              vac                             YES
+VME                 R2-9                $(SUPPORT)/vme              vme                             YES
+YOKOGAWA_DAS        master              $(SUPPORT)/Yokogawa_DAS     Yokogawa_DAS                    YES
+XXX                 master              $(SUPPORT)/xxx              xxx                             YES
+
+WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
+
+SSSEQ               2.2.6               $(SUPPORT)/seq              seq-$(VERSION).tar.gz           YES
+
+WGET_URL=http://www.aps.anl.gov/epics/download/modules/
+
+ALLENBRADLEY        2.3                 $(SUPPORT)/allenBradley     allenBradley-$(VERSION).tar.gz  NO             
+
+WGET_URL=https://github.com/EPICSTools/ether_ip/archive/
+
+ETHERIP             2-26                $(SUPPORT)/ether_ip         ether_ip-$(VERSION).tar.gz      NO
+
+GIT_URL=https://github.com/motorapp/
+
+GALIL               V3-6                $(SUPPORT)/galil            Galil-3-0                       NO
+
+# Area Detector modules. Note that if you wish to build AD Drivers/Plugins, ADCore and ADSupport must be
+# set to build YES
+
+GIT_URL=https://github.com/areaDetector/
+
+AREA_DETECTOR       R3-4                $(SUPPORT)/areaDetector     areaDetector                    YES
+ADCORE              R3-4                $(AREA_DETECTOR)/ADCore     ADCore                          YES
+ADSUPPORT           master              $(AREA_DETECTOR)/ADSupport  ADSupport                       YES
+
+GIT_URL=https://github.com/epicsNSLS2-areaDetector/
+
+ADUVC               R1-1                $(AREA_DETECTOR)/ADUVC      ADUVC                           YES
