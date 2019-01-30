@@ -1,0 +1,12 @@
+#
+# This file contains submodules you don't wish to build with all of the remaining ones
+#
+# Make sure to use the same macro name as in the PATH_CONFIG file
+#
+# Author: Jakub Wlodek
+#
+
+
+AREA_DETECTOR
+DXP
+DXPSITORO

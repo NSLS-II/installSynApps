@@ -4,7 +4,61 @@
 # to determine which releases will work best for you
 #
 # NOTE: All releases are simply github tags. Write 'master' if you would like to simply compile the master branch
+# Each of these should be in the format 'GITHUB_REPO_NAME=TAG' or master alternatively.
+#
+# Author: Jakub Wlodek
 #
 
-base=
-asyn=
+# EPICS base
+epics-base=R7.0.2
+
+# Configuration + documentation
+configure=R6-0
+documentation=R6-0
+utils=R6-0
+
+# EPICS modules
+asyn=R4-34
+autosave=R5-9
+#allenbradley=2.3
+alive=R1-1-0
+busy=R1-7
+calc=R3-7-1
+cmac=R2-7-1
+caputrecorder=R1-7-1
+dac128V=R2-9
+delaygen=R1-2-0
+devlib2=2.9
+#dxp=R5-0
+#dxpSITORO=R1-1
+iocStats=3.1.15
+#GALIL=V3-6
+#ip=R2-19-1
+ipac=2.15
+#ip330=R2-9
+ipUnidig=R2-11
+#love=R3-2-6
+#lua=R1-2
+mca=R7-7
+#measComp=R2-1
+#modbus=R2-10-1
+motor=R6-11
+#optics=R2-13-1
+#quadEM=R9-1
+seq=2.2.6
+#softGlue=R2-8-1
+#softGlueZynq=master
+sscan=R2-11-1
+std=R3-5
+stream=R2-7-7b
+#vac=R1-7
+#vme=R2-9
+#Yokogawa_DAS=master
+#xxx=master
+
+
+# AREA_DETECTOR repositories
+areaDetector=R3-4
+ADSupport=master
+ADCore=R3-4
+ADUVC=R1-1

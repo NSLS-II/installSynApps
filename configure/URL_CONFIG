@@ -1,0 +1,24 @@
+# 
+# This file will contain a list of remote git repository URLs that will be checked for 
+# repositories. If you are adding a custom driver or module, add your github etc. URL here, and 
+# add the module to each of the appropriate CONFIG files.
+#
+# Note: URLS will be tried in the order given, so if you prefer to use a different fork of a certain repo, place that
+# URL above the other ones.
+#
+# Author: Jakub Wlodek
+#
+
+# GIT remote URLS
+https://github.com/epics-base/
+https://github.com/EPICS-synApps/
+https://github.com/epics-modules/
+https://github.com/EPICSTools/
+https://github.com/areaDetector/
+https://github.com/epicsNSLS2-areaDetector/
+https://github.com/epicsNSLS2-deploy/
+
+# WGET remote URLS (if not git repo, try wget)
+http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
+http://www.aps.anl.gov/epics/download/modules/
+https://github.com/EPICSTools/ether_ip/archive/
