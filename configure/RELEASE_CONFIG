@@ -1,0 +1,10 @@
+# This file is where you can define the release versions of each of the packages
+# that you would like to clone and build. Note that not every release version 
+# can be interchanged with another and still work. Please consult documentation
+# to determine which releases will work best for you
+#
+# NOTE: All releases are simply github tags. Write 'master' if you would like to simply compile the master branch
+#
+
+base=
+asyn=
