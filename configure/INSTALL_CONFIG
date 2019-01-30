@@ -9,8 +9,8 @@
 INSTALL=/home/jwlodek/Documents/testCloneRun 
 
 
-MODULE_NAME         MODULE_VERSION      MODULE_PATH                 MODULE_REPO                 INCLUDE_MODULE
------------------------------------------------------------------------------------------------------------
+#MODULE_NAME         MODULE_VERSION      MODULE_PATH                 MODULE_REPO                 INCLUDE_MODULE
+#-----------------------------------------------------------------------------------------------------------
 GIT_URL=https://github.com/epics-base/
 
 EPICS_BASE          R7.0.2              $(INSTALL)/base             epics-base                      YES
@@ -29,7 +29,7 @@ AUTOSAVE            R5-9                $(SUPPORT)/autosave         autosave    
 ALIVE               R1-1-0              $(SUPPORT)/alive            alive                           YES
 BUSY                R1-7                $(SUPPORT)/busy             busy                            YES
 CALC                R3-7-1              $(SUPPORT)/calc             calc                            YES
-CMAC                R2-7-1              $(SUPPORT)/cmac             cmac                            YES
+CAMAC               R2-7-1              $(SUPPORT)/camac            camac                           YES
 CAPUTRECORDER       R1-7-1              $(SUPPORT)/caputRecorder    caputRecorder                   YES
 DAC128V             R2-9                $(SUPPORT)/dac128V          dac128V                         YES
 DELAYGEN            R1-2-0              $(SUPPORT)/delaygen         delaygen                        YES
@@ -40,24 +40,24 @@ DEVIOCSTATS         3.1.15              $(SUPPORT)/iocStats         iocStats    
 IP                  2-19-1              $(SUPPORT)/ip               ip                              NO
 IPAC                2.15                $(SUPPORT)/ipac             ipac                            YES
 IP330               R2-9                $(SUPPORT)/ip330            ip330                           NO
-IPUNDIG             R2-11               $(SUPPORT)/ipUndig          ipUndig                         YES
+IPUNIDIG            R2-11               $(SUPPORT)/ipUnidig         ipUnidig                        YES
 LOVE                R3-2-6              $(SUPPORT)/love             love                            NO
 LUA                 R1-2                $(SUPPORT)/lua              lua                             NO
 MCA                 R7-7                $(SUPPORT)/mca              mca                             YES
 MEASCOMP            R2-1                $(SUPPORT)/measComp         measComp                        NO
 MODBUS              R2-10-1             $(SUPPORT)/modbus           modbus                          NO
 MOTOR               R6-11               $(SUPPORT)/motor            motor                           YES
-OPTICS              R2-13-1             $(SUPPORT)/optics           optics                          YES
-QUADEM              R9-1                $(SUPPORT)/quadEM           quadEM                          YES
-SOFTGLUE            R2-8-1              $(SUPPORT)/softGlue         solftGlue                       YES
-SOFTGLUEZYNQ        master              $(SUPPORT)/softGlueZynq     softGlueZynq                    YES
+OPTICS              R2-13-1             $(SUPPORT)/optics           optics                          NO
+QUADEM              R9-1                $(SUPPORT)/quadEM           quadEM                          NO
+SOFTGLUE            R2-8-1              $(SUPPORT)/softGlue         softGlue                        NO
+SOFTGLUEZYNQ        master              $(SUPPORT)/softGlueZynq     softGlueZynq                    NO
 SSCAN               R2-11-1             $(SUPPORT)/sscan            sscan                           YES
 STD                 R3-5                $(SUPPORT)/std              std                             YES
 STREAM              R2-7-7b             $(SUPPORT)/stream           stream                          YES
-VAC                 R1-7                $(SUPPORT)/vac              vac                             YES
-VME                 R2-9                $(SUPPORT)/vme              vme                             YES
-YOKOGAWA_DAS        master              $(SUPPORT)/Yokogawa_DAS     Yokogawa_DAS                    YES
-XXX                 master              $(SUPPORT)/xxx              xxx                             YES
+VAC                 R1-7                $(SUPPORT)/vac              vac                             NO
+VME                 R2-9                $(SUPPORT)/vme              vme                             NO
+YOKOGAWA_DAS        master              $(SUPPORT)/Yokogawa_DAS     Yokogawa_DAS                    NO
+XXX                 master              $(SUPPORT)/xxx              xxx                             NO
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
