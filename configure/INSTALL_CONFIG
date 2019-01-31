@@ -61,7 +61,7 @@ XXX                 master      $(SUPPORT)/xxx                              xxx 
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-SSSEQ               2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES
+SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 

@@ -28,10 +28,11 @@ def expand_module_path(path, current_modules, install_dir):
 
 
 # Function that gets a module from a certain module line
-def module_from_line(line, current_modules, install_dir, current_url, url_type):
+def module_from_line(line, current_modules, install_dir, current_url, url_type, update_path):
     line = re.sub(' +', ' ', line)
     module = line.split(' ')
-    module[2] = expand_module_path(module[2], current_modules, install_dir)
+    if update_path:
+        module[2] = expand_module_path(module[2], current_modules, install_dir)
     if "$(VERSION)" in module[3]:
         module[3] = module[3].split('$')[0]+ module[1] + module[3].split(')')[1]
     module.append(current_url)
@@ -41,7 +42,7 @@ def module_from_line(line, current_modules, install_dir, current_url, url_type):
 
 
 # Function that reads the information in the config file for cloning
-def read_install_config_file():
+def read_install_config_file(update_path = True):
     install_config = open("../configure/INSTALL_CONFIG", "r")
     current_url = ""
     url_type = ""
@@ -60,7 +61,7 @@ def read_install_config_file():
                 current_url = line.split('=')[1]
                 url_type = "WGET_URL"
             else:
-                module = module_from_line(line, current_modules, install_location, current_url, url_type)
+                module = module_from_line(line, current_modules, install_location, current_url, url_type, update_path)
                 current_modules.append(module)
         line = install_config.readline()
     install_config.close()

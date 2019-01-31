@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script that is auto-generated and filled with install commands to install all
+# Script that installs all
 # dependencies for modules being built
 #
 
