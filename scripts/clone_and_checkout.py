@@ -46,6 +46,13 @@ def clone_and_checkout(module_list, with_tags = True):
                     subprocess.call(["tar", "-xvzf", module[2] + "/" + module[3], "-C", module[2], "--strip-components=1"])
 
 
+def update_submodules(module_list):
+    for module in module_list:
+        if module[0] == "STREAM":
+            subprocess.call(["git", "-C", module[2] + "/StreamDevice", "submodule", "init"])
+            subprocess.call(["git", "-C", module[2] + "/StreamDevice", "submodule", "update"])
+
+
 # Function that removes unwanted area detector modules for easier cleanup
 def area_detector_cleanup(module_list):
     ad_path = ""
@@ -65,5 +72,6 @@ def area_detector_cleanup(module_list):
 module_list, install_location = read_install_config.read_install_config_file()
 check_install_location(install_location)
 clone_and_checkout(module_list)
+update_submodules(module_list)
 area_detector_cleanup(module_list)
 print("Finished clone and checkout process")
