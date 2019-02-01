@@ -9,6 +9,14 @@ import os
 import read_install_config
 
 
+def nuke_dev_stats_release(path_to_dev_stats):
+    os.rename(path_to_dev_stats+"/configure/RELEASE", path_to_dev_stats+"/configure/RELEASE_OLD")
+    new_release = open(path_to_dev_stats+"/configure/RELEASE", "w+")
+    new_release.write("EPICS_BASE=.\n")
+    new_release.write("SUPPORT=.\n")
+    new_release.write("SNCSEQ=.\n")
+    new_release.write("-include $(SUPPORT)/configure/EPICS_BASE.$(EPICS_HOST_ARCH)\n")
+
 def update_release_file():
     module_list, install_location = read_install_config.read_install_config_file(update_path=False)
     config_mod = []
@@ -17,6 +25,9 @@ def update_release_file():
             module[2] = read_install_config.expand_module_path(module[2], module_list, install_location)
         elif module[0] == "CONFIGURE":
             config_mod = module
+        elif module[0] == "DEVIOCSTATS":
+            module[2] = read_install_config.expand_module_path(module[2], module_list, install_location)
+            nuke_dev_stats_release(module[2])
 
 
     config_mod[2] = read_install_config.expand_module_path(config_mod[2], module_list, install_location)

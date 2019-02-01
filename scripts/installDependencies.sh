@@ -13,7 +13,7 @@ SUPPORT=$INSTALL/support
 AREA_DETECTOR=$SUPPORT/areaDetector
 
 # Example custom dependency, we must build libuvc before compiling ADUVC
-#ADUVC=$AREA_DETECTOR/ADUVC
+ADUVC=$AREA_DETECTOR/ADUVC
 
 cd $INSTALL
 
@@ -22,7 +22,9 @@ sudo apt install g++
 sudo apt install make
 sudo apt install libxml2-dev
 sudo apt install libboost-dev
-sudo apt install libre2c-dev
+sudo apt install libusb-dev
+sudo apt install libpcre3-dev
+sudo apt install re2c
 sudo apt install libopencv-dev
 sudo apt install libzbar-dev
 sudo apt install libreadline-dev
