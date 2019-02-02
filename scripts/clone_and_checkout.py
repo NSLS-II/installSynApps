@@ -30,7 +30,11 @@ def clone_and_checkout(module_list, with_tags = True):
         if module[4] == "NO":
             print("Ignoring " + module[0])
         else:
-            if module[6] == "GIT_URL" and with_tags:
+            if module[0] == "EPICS_BASE":
+                out = subprocess.call(["git", "clone", "--recursive", module[5] + module[3] , module[2]])
+                if out == 0:
+                    subprocess.call(["git", "-C", module[2], "checkout", "-q", module[1]])
+            elif module[6] == "GIT_URL" and with_tags:
                 print("Cloning " + module[3] + " and checking out " + module[1])
                 out = subprocess.call(["git", "clone", module[5] + module[3] , module[2]])
                 if out == 0:

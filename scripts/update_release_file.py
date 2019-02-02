@@ -7,6 +7,7 @@
 
 import os
 import read_install_config
+import ad_config_setup
 
 
 def nuke_dev_stats_release(path_to_dev_stats):
@@ -16,6 +17,17 @@ def nuke_dev_stats_release(path_to_dev_stats):
     new_release.write("SUPPORT=.\n")
     new_release.write("SNCSEQ=.\n")
     new_release.write("-include $(SUPPORT)/configure/EPICS_BASE.$(EPICS_HOST_ARCH)\n")
+
+
+def update_ad_releases(module_list, path_to_ad):
+    print("Updating AD Releases\n")
+    macro_val_pairs = []
+    for module in module_list:
+        # print("{}={}".format(module[0], module[2]))
+        macro_val_pairs.append([module[0], module[2]])
+    ad_config_setup.update_ad_releases(path_to_ad, macro_val_pairs)
+    
+
 
 def update_release_file():
     module_list, install_location = read_install_config.read_install_config_file(update_path=False)
@@ -28,6 +40,9 @@ def update_release_file():
         elif module[0] == "DEVIOCSTATS":
             module[2] = read_install_config.expand_module_path(module[2], module_list, install_location)
             nuke_dev_stats_release(module[2])
+        elif module[0] == "AREA_DETECTOR":
+            path_to_ad = read_install_config.expand_module_path(module[2], module_list, install_location)
+            update_ad_releases(module_list, path_to_ad)
 
 
     config_mod[2] = read_install_config.expand_module_path(config_mod[2], module_list, install_location)

@@ -17,18 +17,21 @@ ADUVC=$AREA_DETECTOR/ADUVC
 
 cd $INSTALL
 
-sudo apt install gcc
-sudo apt install g++
-sudo apt install make
-sudo apt install libxml2-dev
-sudo apt install libboost-dev
-sudo apt install libusb-dev
-sudo apt install libpcre3-dev
-sudo apt install re2c
-sudo apt install libopencv-dev
-sudo apt install libzbar-dev
-sudo apt install libreadline-dev
-
+sudo apt -y install gcc
+sudo apt -y install g++
+sudo apt -y install make
+sudo apt -y install libxml2-dev
+sudo apt -y install libboost-dev
+sudo apt -y install libusb-dev
+sudo apt -y install libpcre3-dev
+sudo apt -y install re2c
+sudo apt -y install libx11-dev
+sudo apt -y install libxext-dev
+sudo apt -y install libopencv-dev
+sudo apt -y install libzbar-dev
+sudo apt -y install libreadline-dev
+sudo apt -y install libusb-dev
+sudo apt -y install libusb-1.0-0-dev
 
 if [[ $ADUVC ]]
 then
