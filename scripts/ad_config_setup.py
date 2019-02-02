@@ -108,7 +108,8 @@ def process_examples(path_to_configure, required_pairs):
 
 def update_ad_releases(path_to_ad, required_pairs):
     path_to_configure = path_to_ad +"/configure/"
-    os.mkdir(path_to_configure+"EXAMPLE_FILES")
+    if not os.path.exists(path_to_configure+"EXAMPLE_FILES"):
+        os.mkdir(path_to_configure+"EXAMPLE_FILES")
     #print(path_to_ad+", "+path_to_configure+"\n")
     #print_pair_list(required_pairs)
     remove_examples(path_to_configure)

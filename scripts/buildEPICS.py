@@ -10,6 +10,7 @@ import subprocess
 import os
 
 def compile_base(path_to_base):
+    print("Compiling epics base located at "+path_to_base+"\n")
     out = subprocess.call(["make", "-C",  path_to_base, "-sj"])
     if out == 0:
         print("Built EPICS base")
@@ -20,11 +21,13 @@ def compile_base(path_to_base):
 
 
 def compile_support(path_to_support):
+    print("Calling make release for support modules\n")
     out = subprocess.call(["make", "-C", path_to_support, "release"])
     if out != 0:
         print("ERROR making release")
         return -1
     else:
+        print("Compiling support located at "+path_to_support+"\n")
         out = subprocess.call(["make", "-C", path_to_support, "-sj"])
         if out != 0:
             print("ERROR compiling SUPPORT")
@@ -35,17 +38,26 @@ def compile_support(path_to_support):
 
 
 def compile_ad(path_to_ad, module_list):
-    subprocess.call(["cd", path_to_ad+"/configure/"])
-    subprocess.call(["python3", "adConfigSetup/scripts/nsls2ADConfigSetup.py", "-r"])
+    #subprocess.call(["cd", path_to_ad+"/configure/"])
+    #subprocess.call(["python3", "adConfigSetup/scripts/nsls2ADConfigSetup.py", "-r"])
+    print("Compiling ADSupport\n")
+    out = subprocess.call(["make", "-C", path_to_ad + "/ADSupport", "-sj"])
+    print("Compiling ADCore\n")
+    out_core = subprocess.call(["make", "-C", path_to_ad + "/ADCore", "-sj"])
 
-    subprocess.call(["make", "-C", path_to_ad + "/ADSupport", "-sj"])
-    subprocess.call(["make", "-C", path_to_ad + "/ADCore", "-sj"])
+    if out!=0 or out_core != 0:
+        return -1
 
     for elem in os.listdir(path_to_ad):
         if os.path.isdir(path_to_ad+ "/" + elem) and elem != "configure":
             for module in module_list:
                 if module[2].split('/')[-1] == elem and elem != "ADCore" and elem != "ADSupport":
-                    subprocess.call(["make", "-C", module[2], "-sj"])
+                    print("Compiling AD Module "+module[0]+"\n")
+                    out = subprocess.call(["make", "-C", module[2], "-sj"])
+                    if out != 0:
+                        return -1
+    return 0
+    
 
 
 def build_EPICS():
