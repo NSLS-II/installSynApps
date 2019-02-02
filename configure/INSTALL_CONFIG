@@ -1,5 +1,6 @@
 #
 # This file contains all required information for building EPICS base and synapps.
+# Please place modules in the order that they need to be compiled.
 #
 # Author: Jakub Wlodek
 #
