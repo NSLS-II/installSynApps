@@ -88,4 +88,4 @@ ADProsilica         R2-5        $(AREA_DETECTOR)/ADProsilica                ADPr
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
 ADUVC               R1-1        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES
-adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   YES
+adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   NO
