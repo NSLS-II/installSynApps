@@ -7,7 +7,7 @@
 
 
 # Top level install location for the build
-INSTALL=/home/jwlodek/Documents/testCloneRun 
+INSTALL=/epics 
 
 
 #MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 INCLUDE_MODULE
@@ -77,16 +77,42 @@ GIT_URL=https://github.com/motorapp/
 GALIL               V3-6        $(SUPPORT)/galil                            Galil-3-0                       NO
 
 # Area Detector modules. Note that if you wish to build AD Drivers/Plugins, ADCore and ADSupport must be
-# set to build YES
+# set to build YES, and installed first, then any plugins, then the drivers
+
+######################################
+# First compile core area detector   #
+######################################
 
 GIT_URL=https://github.com/areaDetector/
 
 AREA_DETECTOR       R3-4        $(SUPPORT)/areaDetector                     areaDetector                    YES
-ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCore                          YES
 ADSUPPORT           master      $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES
-ADProsilica         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES
+ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCore                          YES
+
+######################################
+# Next any external plugins          #
+######################################
+
+GIT_URL=https://github.com/epicsNSLS2-areaDetector/
+
+ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    NO
+ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     NO
+
+
+GIT_URL=https://github.com/areaDetector/
+
+ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    NO
+
+######################################
+# Finally any drivers or other repos #
+######################################
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
 ADUVC               R1-1        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES
 adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   NO
+
+
+GIT_URL=https://github.com/areaDetector/
+
+ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES

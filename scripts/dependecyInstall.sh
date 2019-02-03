@@ -22,6 +22,7 @@ sudo apt -y install g++
 sudo apt -y install make
 sudo apt -y install libxml2-dev
 sudo apt -y install libboost-dev
+sudo apt -y install libboost-test-dev
 sudo apt -y install libusb-dev
 sudo apt -y install libpcre3-dev
 sudo apt -y install re2c
