@@ -7,7 +7,7 @@
 
 
 # Top level install location for the build
-INSTALL=/epics 
+INSTALL=/home/jwlodek/Documents/testCloneRun
 
 
 #MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 INCLUDE_MODULE
@@ -95,8 +95,8 @@ ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCo
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    NO
-ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     NO
+ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    YES
+ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES
 
 
 GIT_URL=https://github.com/areaDetector/

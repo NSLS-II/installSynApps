@@ -1,7 +1,6 @@
 # This file will contain code to insert into the commonPlugins.cmd to load any external plugins
 # not included by default with areaDetector/ADCore
 
-
 NDCVConfigure("CV1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
 dbLoadRecords("$(ADCOMPVISION)/db/NDCV.template", "P=$(PREFIX), R=CV1:, PORT=CV1, ADDR=0, TIMEOUT=1, NDARRAY_PORT=$(PORT), NAME=CV1, NCHANS=$(XSIZE)")
 set_requestfile_path("$(ADCOMPVISION)/adcvApp/Db")
