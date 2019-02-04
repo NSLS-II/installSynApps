@@ -86,5 +86,3 @@ def update_release_file():
                     
     old_file.close()
     new_file.close()
-
-update_release_file()

@@ -93,10 +93,8 @@ def remove_examples(path_to_configure):
 # Basic function that iterates over all of the files and directories in the "configure" directory
 # of area detector. If it detects "EXAMPLE" files, it passes them on to the macro replacing function
 #
+# @params: path_to_configure        -> path to the configure directory of area detector
 # @params: required_pairs           -> recquired macro/value pairs
-# @params: optrional_pairs          -> optional macro/value pairs
-# @params: replace_optional_macros  -> flag to see if optional macro/value pairs should be replaced
-# @params: replace_commented        -> flag that decides if commented macros can also be replaced
 # @return: void
 #
 def process_examples(path_to_configure, required_pairs):
@@ -106,11 +104,92 @@ def process_examples(path_to_configure, required_pairs):
                 copy_macro_replace(file, path_to_configure, required_pairs)
 
 
+# Function that inserts into RELEASE_PRODS.local the contents of the
+# conigure/AD_RELEASE_CONFIG file
+#
+# @params: path to configure
+# @return: void
+#
+def update_release_prods(path_to_configure):
+    os.rename(path_to_configure+"/RELEASE_PRODS.local", path_to_configure+"/RELEASE_PRODS_OLD.local")
+    old_file = open(path_to_configure+"/RELEASE_PRODS_OLD.local", "r+")
+    new_file = open(path_to_configure+"/RELEASE_PRODS.local", "w+")
+    insert_file = open("../configure/AD_RELEASE_CONFIG", "r+")
+
+    line = old_file.readline()
+    while line:
+        new_file.write(line)
+        if "Optional modules" in line:
+            new_file.write("\n")
+            new_file.write("# The following was auto-inserted by installSynApps\n")
+            new_file.write("\n")
+            insert_line = insert_file.readline()
+            while insert_line:
+                if not line.startswith('#'):
+                    new_file.write(insert_line)
+                insert_line = insert_file.readline()
+            new_file.write("\n")
+            new_file.write("# Auto-inserted end\n")
+            new_file.write("\n")
+        line = old_file.readline()
+
+    insert_file.close()
+    old_file.close()
+    new_file.close()
+
+
+def update_common_plugins(path_to_ad):
+    os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd", path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd")
+    os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req", path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req")
+    old_file = open(path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd", "a+")
+    insert_file = open("../configure/PLUGIN_CONFIG", "r+")
+
+    old_file.write("\n")
+    old_file.write("# The following was auto-inserted by installSynApps\n")
+    old_file.write("\n")
+
+    line = insert_file.readline()
+    while line:
+        if not line.startswith('#'):
+            old_file.write(line)
+        line = insert_file.readline()
+    
+    old_file.write("\n")
+    old_file.write("# Auto-Inserted end\n")
+    old_file.write("\n")
+
+    insert_file.close()
+    old_file.close()
+
+    
+def update_driver_makefile(path_to_ad):
+    old_file = open(path_to_ad+"/ADCore/ADApp/commonDriverMakefile", "a+")
+    insert_file = open("../configure/MAKEFILE_CONFIG", "r+")
+
+    old_file.write("\n")
+    old_file.write("# The following was auto-inserted by installSynApps\n")
+    old_file.write("\n")
+
+    line = insert_file.readline()
+    while line:
+        if not line.startswith('#'):
+            old_file.write(line)
+        line = insert_file.readline()
+    
+    old_file.write("\n")
+    old_file.write("# Auto-Inserted end\n")
+    old_file.write("\n")
+
+    insert_file.close()
+    old_file.close()
+
+
 def update_ad_releases(path_to_ad, required_pairs):
     path_to_configure = path_to_ad +"/configure/"
     if not os.path.exists(path_to_configure+"EXAMPLE_FILES"):
         os.mkdir(path_to_configure+"EXAMPLE_FILES")
-    #print(path_to_ad+", "+path_to_configure+"\n")
-    #print_pair_list(required_pairs)
     remove_examples(path_to_configure)
     process_examples(path_to_configure, required_pairs)
+    update_release_prods(path_to_configure)
+    update_common_plugins(path_to_ad)
+    update_driver_makefile(path_to_ad)

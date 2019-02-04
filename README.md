@@ -16,11 +16,13 @@ script_generator.py | script that creates bash scripts for installing and uninst
 
 ### Usage
 
-There are only 2 files that need to be edited before running the script. These are the `configure/INSTALL_CONFIG` file, and the `scripts/dependencyInstall.sh` file. In the first, edit the install configuration for your installation. In most cases, you may simply change the `MODULE_INSTALL` tag for the modules you wish to build and those you don't wish to build, and you must also edit the line
+There are only 2 locations with files that need to be edited before running the script. These are the `configure/*` files, and the `scripts/dependencyInstall.sh` file. In the first, edit the install configurations for your installation. In most cases, you may simply change the `MODULE_INSTALL` tag  in the `INSTALL_CONFIG` file for the modules you wish to build and those you don't wish to build, and you must also edit the line
 ```
 INSTALL=/epics
 ```
-to point to the top level directory in which you wish to install EPICS and synApps. In the other file that you must edit, once again set `INSTALL` to the same as in the previous file. In addition, if there are any other dependencies for your build of EPICS and synApps, add them here. For example, to auto-build the ADUVC driver, libuvc must be built, so I added a condition for building and installing libuvc.
+to point to the top level directory in which you wish to install EPICS and synApps. The other files in the `configure/` directory contain other configurations, with each one being inserted into a different Area Detector build file. Details can be found in comments in the files themselves.
+
+In the only other file that you must edit (`scripts/dependencyInstall.sh`), once again set `INSTALL` to the same as in the previous file. In addition, if there are any other dependencies for your build of EPICS and synApps, add them here. For example, to auto-build the ADUVC driver, libuvc must be built, so I added a condition for building and installing libuvc.
 
 From here, you are ready to run the script, and this is done simply by running:
 ```
