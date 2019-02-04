@@ -7,7 +7,7 @@
 #
 
 # Path variables, only used for adding custom dependencies (mostly for detector drivers)
-INSTALL=/home/jwlodek/Documents/testCloneRun
+INSTALL=/epics
 EPICS_BASE=$INSTALL/base
 SUPPORT=$INSTALL/support
 AREA_DETECTOR=$SUPPORT/areaDetector
