@@ -1,0 +1,25 @@
+# This file will contain code to insert into the commonDriverMakefile to link libraries for any external plugins
+# not included by default with areaDetector/ADCore
+
+
+ifdef ADPLUGINBAR
+  $(DBD_NAME)_DBD += NDPluginBar.dbd
+  PROD_LIBS	  += NDPluginBar
+  ifdef OPENCV_LIB
+    opencv_core_DIR +=$(OPENCV_LIB)
+    PROD_LIBS       += opencv_core opencv_imgproc opencv_highgui opencv_imgcodecs zbar
+  else
+    PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui opencv_imgcodecs zbar
+  endif
+endif
+
+ifdef ADCOMPVISION
+  $(DBD_NAME)_DBD  += NDPluginCV.dbd
+  PROD_LIBS     += NDPluginCV
+  ifdef OPENCV_LIB
+    opencv_core_DIR += $(OPENCV_LIB)
+    PROD_LIBS       += opencv_core opencv_imgproc opencv_highgui
+  else
+    PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui
+  endif 
+endif
