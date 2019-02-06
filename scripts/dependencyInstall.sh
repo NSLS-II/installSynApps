@@ -14,6 +14,7 @@ AREA_DETECTOR=$SUPPORT/areaDetector
 
 # Example custom dependency, we must build libuvc before compiling ADUVC
 ADUVC=$AREA_DETECTOR/ADUVC
+ADEIGER=$AREA_DETECTOR/ADEiger
 
 cd $INSTALL
 
@@ -40,4 +41,9 @@ echo "Installing ADUVC dependencies"
 cd $ADUVC/adUVCSupport
 ./installlibuvc.sh
 cd $INSTALL
+fi
+
+if [[ $ADEIGER ]]
+then
+sudo apt -y install libzmq3-dev
 fi

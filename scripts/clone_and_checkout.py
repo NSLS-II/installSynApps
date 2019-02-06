@@ -67,7 +67,7 @@ def area_detector_cleanup(module_list):
         if os.path.isdir(ad_path+"/"+path) and path != "configure" and path != "documentation":
             buildPath = False
             for module in module_list:
-                if module[3] == path:
+                if module[3] == path and module[4] == "YES":
                     buildPath = True
             if buildPath == False:
                 shutil.rmtree(ad_path + "/" + path)
