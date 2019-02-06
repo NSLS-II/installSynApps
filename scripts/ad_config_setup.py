@@ -193,3 +193,6 @@ def update_ad_releases(path_to_ad, required_pairs):
     update_release_prods(path_to_configure)
     update_common_plugins(path_to_ad)
     update_driver_makefile(path_to_ad)
+
+
+#update_release_prods("/epics/support/areaDetector/configure")

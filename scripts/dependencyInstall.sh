@@ -38,6 +38,7 @@ sudo apt -y install libusb-1.0-0-dev
 if [[ $ADUVC ]]
 then
 echo "Installing ADUVC dependencies"
+sudo apt -y install cmake
 cd $ADUVC/adUVCSupport
 ./installlibuvc.sh
 cd $INSTALL
@@ -45,5 +46,6 @@ fi
 
 if [[ $ADEIGER ]]
 then
+echo "Installing ADEiger dependencies"
 sudo apt -y install libzmq3-dev
 fi
