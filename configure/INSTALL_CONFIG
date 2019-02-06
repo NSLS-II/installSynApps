@@ -123,7 +123,7 @@ ADSIMDETECTOR       R2-8        $(AREA_DETECTOR)/ADSimDetector              ADSi
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES
 ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO
-ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES
+ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         NO
 ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO
 ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO
