@@ -7,7 +7,10 @@
 #
 
 # Path variables, only used for adding custom dependencies (mostly for detector drivers)
-INSTALL=/epics
+#INSTALL=/eApps/epics
+INSTALL_DIR=`grep INSTALL= ../configure/INSTALL_CONFIG`
+INSTALL=${INSTALL_DIR/INSTALL=/}
+
 EPICS_BASE=$INSTALL/base
 SUPPORT=$INSTALL/support
 AREA_DETECTOR=$SUPPORT/areaDetector

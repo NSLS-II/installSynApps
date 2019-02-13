@@ -23,3 +23,14 @@ ifdef ADCOMPVISION
     PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui
   endif 
 endif
+
+ifdef ADPLUGINEDGE
+  $(DBD_NAME)_DBD  += NDPluginEdge.dbd
+  PROD_LIBS         += NDPluginEdge
+  ifdef OPENCV_LIB
+    opencv_core_DIR += $(OPENCV_LIB)
+    PROD_LIBS       += opencv_core opencv_imgproc
+  else
+    PROD_SYS_LIBS   += opencv_core opencv_imgproc
+  endif
+endif
