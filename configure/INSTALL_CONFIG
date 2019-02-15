@@ -8,7 +8,9 @@
 #-- INSTALL LOCATION --
 
 # Top level install location for the build
-INSTALL=/home/jwlodek/Documents/testCloneRun
+
+INSTALL=/epics
+
 
 
 #-- MODULES --
