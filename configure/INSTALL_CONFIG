@@ -8,7 +8,9 @@
 -- INSTALL LOCATION --
 
 # Top level install location for the build
-INSTALL=/eApps/epics
+
+INSTALL=/epics
+
 
 
 -- MODULES --
