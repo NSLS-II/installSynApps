@@ -50,7 +50,7 @@ def compile_ad(path_to_ad, module_list):
 
     for module in module_list:
         if os.path.isdir(path_to_ad+"/"+module[2].split('/')[-1]) and module[0] != "CONFIGURE" and module[0] != "DOCUMENTATION":
-            if module[2].split('/')[-1] != "ADCore" and module[2].split('/')[-1] != "ADSupport" and module[4] == "YES":
+            if module[2].split('/')[-1] != "ADCore" and module[2].split('/')[-1] != "ADSupport" and module[5] == "YES":
                 print("Compiling AD Module "+module[0]+"\n")
                 out = subprocess.call(["make", "-C", module[2], "-sj"])
                 if out != 0:

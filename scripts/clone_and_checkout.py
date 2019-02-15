@@ -31,21 +31,21 @@ def clone_and_checkout(module_list, with_tags = True):
             print("Ignoring " + module[0])
         else:
             if module[0] == "EPICS_BASE":
-                out = subprocess.call(["git", "clone", "--recursive", module[5] + module[3] , module[2]])
+                out = subprocess.call(["git", "clone", "--recursive", module[6] + module[3] , module[2]])
                 if out == 0:
                     subprocess.call(["git", "-C", module[2], "checkout", "-q", module[1]])
-            elif module[6] == "GIT_URL" and with_tags:
+            elif module[7] == "GIT_URL" and with_tags:
                 print("Cloning " + module[3] + " and checking out " + module[1])
-                out = subprocess.call(["git", "clone", module[5] + module[3] , module[2]])
+                out = subprocess.call(["git", "clone", module[6] + module[3] , module[2]])
                 if out == 0:
                     subprocess.call(["git", "-C", module[2], "checkout", "-q", module[1]])
-            elif module[6] == "GIT_URL" and not with_tags:
+            elif module[7] == "GIT_URL" and not with_tags:
                 print("Cloning " + module[3] +" and checking out master")
-                out = subprocess.call(["git", "clone", module[5] + module[3] , module[2]])
+                out = subprocess.call(["git", "clone", module[6] + module[3] , module[2]])
                 if out == 0:
                     subprocess.call(["git", "-C", module[2], "checkout", "master"])
             else:
-                out = subprocess.call(["wget", "-P", module[2], module[5] + module[3]])
+                out = subprocess.call(["wget", "-P", module[2], module[6] + module[3]])
                 if out == 0:
                     subprocess.call(["tar", "-xvzf", module[2] + "/" + module[3], "-C", module[2], "--strip-components=1"])
 

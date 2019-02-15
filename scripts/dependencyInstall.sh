@@ -17,7 +17,7 @@ AREA_DETECTOR=$SUPPORT/areaDetector
 
 # Example custom dependency, we must build libuvc before compiling ADUVC
 ADUVC=$AREA_DETECTOR/ADUVC
-ADEIGER=$AREA_DETECTOR/ADEiger
+#ADEIGER=$AREA_DETECTOR/ADEiger
 
 cd $INSTALL
 
@@ -38,6 +38,7 @@ sudo apt -y install libreadline-dev
 sudo apt -y install libusb-dev
 sudo apt -y install libusb-1.0-0-dev
 
+
 if [[ $ADUVC ]]
 then
 echo "Installing ADUVC dependencies"
@@ -46,6 +47,7 @@ cd $ADUVC/adUVCSupport
 ./installlibuvc.sh
 cd $INSTALL
 fi
+
 
 if [[ $ADEIGER ]]
 then

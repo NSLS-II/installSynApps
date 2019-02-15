@@ -10,6 +10,7 @@ import read_install_config
 import ad_config_setup
 
 
+# function that removes existing RELEASE file in devIOCStats that causes call to 'make release' to fail
 def nuke_dev_stats_release(path_to_dev_stats):
     os.rename(path_to_dev_stats+"/configure/RELEASE", path_to_dev_stats+"/configure/RELEASE_OLD")
     new_release = open(path_to_dev_stats+"/configure/RELEASE", "w+")
@@ -18,7 +19,7 @@ def nuke_dev_stats_release(path_to_dev_stats):
     new_release.write("SNCSEQ=.\n")
     new_release.write("-include $(SUPPORT)/configure/EPICS_BASE.$(EPICS_HOST_ARCH)\n")
 
-
+# Top level call to update area detector releases
 def update_ad_releases(module_list, path_to_ad):
     print("Updating AD Releases\n")
     macro_val_pairs = []
@@ -26,17 +27,21 @@ def update_ad_releases(module_list, path_to_ad):
         # print("{}={}".format(module[0], module[2]))
         macro_val_pairs.append([module[0], module[2]])
     ad_config_setup.update_ad_releases(path_to_ad, macro_val_pairs)
+
     
 
-
+# function that updates all release and configure files so that compilation can run smoothly
 def update_release_file():
+    # first, read the INSTALL_CONFIG file. We do not update the paths to absolute paths
     module_list, install_location = read_install_config.read_install_config_file(update_path=False)
     config_mod = []
+    # For area detector, we will need AREA_DETECTOR's path, so we need to expand the paths for base and support
     for module in module_list:
         if module[0] == "SUPPORT" or module[0] == "EPICS_BASE":
             module[2] = read_install_config.expand_module_path(module[2], module_list, install_location)
         elif module[0] == "CONFIGURE":
             config_mod = module
+        # Fix issue where deviocstats would crash make release
         elif module[0] == "DEVIOCSTATS":
             module[2] = read_install_config.expand_module_path(module[2], module_list, install_location)
             nuke_dev_stats_release(module[2])
@@ -47,6 +52,7 @@ def update_release_file():
 
     config_mod[2] = read_install_config.expand_module_path(config_mod[2], module_list, install_location)
 
+    # Updating main release file in support/configure
     path_to_release = config_mod[2] + "/" + "RELEASE"
     path_to_old_release = config_mod[2] + "/" + "RELEASE_OLD"
     os.rename(path_to_release, path_to_old_release)

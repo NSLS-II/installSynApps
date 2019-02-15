@@ -5,13 +5,13 @@
 # Author: Jakub Wlodek
 #
 
--- INSTALL LOCATION --
+#-- INSTALL LOCATION --
 
 # Top level install location for the build
-INSTALL=/eApps/epics
+INSTALL=/home/jwlodek/Documents/testCloneRun
 
 
--- MODULES --
+#-- MODULES --
 
 
 #MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 CLONE_MODULE    BUILD_MODULE
@@ -174,8 +174,8 @@ ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSB
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
 
 
--- ADDITIONAL INSTALL INSTRUCTIONS --
+#-- ADDITIONAL INSTALL INSTRUCTIONS --
 
 # These modules are not added to the RELEASE file in support/configure despite being marked for auto-build
-RELEASE-BLACKLIST=AREA_DETECTOR,ADCORE,QUADEM
+#RELEASE-BLACKLIST=AREA_DETECTOR,ADCORE,QUADEM
 
