@@ -11,6 +11,11 @@
 import os
 import re
 
+
+# File that reads the INSTALL_CONFIG file. Used by all other files. Each module is stored in a list of the following form
+# module = [Macro Name, Module version (git tag), module path, module repository or location, clone module (yes/no), build module (yes/no), module url, url type]
+
+
 # Function that expands given paths via macros
 def expand_module_path(path, current_modules, install_dir):
     if "$(INSTALL)" in path:
@@ -37,7 +42,6 @@ def module_from_line(line, current_modules, install_dir, current_url, url_type, 
         module[3] = module[3].split('$')[0]+ module[1] + module[3].split(')')[1]
     module.append(current_url)
     module.append(url_type)
-    #print(module)
     return module
 
 
@@ -52,12 +56,12 @@ def read_install_config_file(update_path = True):
     while line:
         if not line.startswith("#") and len(line) > 1:
             line = line.strip()
-            if "INSTALL" in line and "$(INSTALL)" not in line:
+            if "INSTALL=" in line and "$(INSTALL)" not in line:
                 install_location = line.split('=')[1]
-            elif "GIT_URL" in line:
+            elif "GIT_URL=" in line:
                 current_url = line.split('=')[1]
                 url_type = "GIT_URL"
-            elif "WGET_URL" in line:
+            elif "WGET_URL=" in line:
                 current_url = line.split('=')[1]
                 url_type = "WGET_URL"
             else:

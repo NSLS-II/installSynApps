@@ -22,40 +22,14 @@ def remove_whitespace(line):
     return no_whitespace
 
 
-
-# Function that prints macro value pairs. Used to test external config file support.
-def print_pair_list(macro_value_pairs):
-    for pair in macro_value_pairs:
-        print("A value of '{}' will be assigned to the '{}' macro.\n".format(pair[1], pair[0]))
-
-
-
-# Function that iterates over the configuration files that pertain to the current arch,
-# identifies lines that contain the macros in the list, and replaces them. If not in the list 
-# the line is copied as-is. upon completion, the old file is moved into a new "EXAMPLE_FILES"
-# directory if it is needed again.
-#
-# @params: old_path                 -> path to the example configuration file
-# @params: required_pairs           -> pairs macros and values that are guaranteed to be replaced
-# @params: optional_pairs           -> pairs macros and values that can optionally be replaced
-# @params: replace_optional_macros  -> flag to see if optional macros will be replaced
-# @params: replace_commented        -> flag that decides if commented macros are to be replaced as well
-# @return: void
-#
-def copy_macro_replace(filename, path_to_configure, required_pairs, replace_commented = False):
-    old_file = open(path_to_configure + filename, "r+")
-    # Every example file starts with EXAMPLE_FILENAME, so we disregard the first 8 characters 'EXAMPLE_' for the new name
-    new_path = path_to_configure + filename[8:]
-    new_file = open(new_path, "w+")
-    # Iterate over the lines in the old file, replacing macros as you go
+# function that takes in two open files and replaces the macros found in them with those in required pairs
+def replace_macros(old_file, new_file, required_pairs):
     line = old_file.readline()
     while line:
         # check if the line contains a macro
         was_macro = False
         for pair in required_pairs:
             # check if we want to replace the commented macro
-            if replace_commented and line[0] == '#':
-                line = line[1:]
             if line.startswith(pair[0]):
                 new_file.write("{}={}\n".format(pair[0],pair[1]))
                 was_macro = True
@@ -63,21 +37,38 @@ def copy_macro_replace(filename, path_to_configure, required_pairs, replace_comm
         if was_macro == False:
             new_file.write(line)
         line = old_file.readline()
+
+
+# Function that iterates over the configuration files that pertain to the current arch,
+# identifies lines that contain the macros in the list, and replaces them. If not in the list 
+# the line is copied as-is. upon completion, the old file is moved into a new "EXAMPLE_FILES"
+# directory if it is needed again.
+def copy_macro_replace(filename, path_to_configure, required_pairs):
+    old_file = open(path_to_configure + filename, "r+")
+    # Every example file starts with EXAMPLE_FILENAME, so we disregard the first 8 characters 'EXAMPLE_' for the new name
+    new_path = path_to_configure + filename[8:]
+    new_file = open(new_path, "w+")
+    # Iterate over the lines in the old file, replacing macros as you go
+    replace_macros(old_file, new_file, required_pairs)
     old_file.close()
     # Place the old file in a directory for future use.
     shutil.move(path_to_configure + filename, path_to_configure + "EXAMPLE_FILES/{}".format(filename))
     new_file.close()
 
 
+# function that calls replace macros on any two paths.
+def replace_macros_non_ad(old_path, new_path, required_pairs):
+    old_file = open(old_path, "r+")
+    new_file = open(new_path, "w+")
+    replace_macros(old_file, new_file, required_pairs)
+    old_file.close()
+    new_file.close()
+    
+
+
 
 # Removes unnecessary example files i.e. vxworks, windows etc.
 # This cleans up the configuration directory, and only leaves necessary files.
-#
-# If building for multilple architectures, do not use the -r flag enabling this.
-# In the future, a toggle between arches will be looked at.
-#
-# @return: void
-#
 def remove_examples(path_to_configure):
     for file in os.listdir(path_to_configure):
         if os.path.isfile(path_to_configure+file):
@@ -92,11 +83,6 @@ def remove_examples(path_to_configure):
 
 # Basic function that iterates over all of the files and directories in the "configure" directory
 # of area detector. If it detects "EXAMPLE" files, it passes them on to the macro replacing function
-#
-# @params: path_to_configure        -> path to the configure directory of area detector
-# @params: required_pairs           -> recquired macro/value pairs
-# @return: void
-#
 def process_examples(path_to_configure, required_pairs):
     for file in os.listdir(path_to_configure):
         if os.path.isfile(path_to_configure+file):
@@ -106,10 +92,6 @@ def process_examples(path_to_configure, required_pairs):
 
 # Function that inserts into RELEASE_PRODS.local the contents of the
 # conigure/AD_RELEASE_CONFIG file
-#
-# @params: path to configure
-# @return: void
-#
 def update_release_prods(path_to_configure):
     os.rename(path_to_configure+"/RELEASE_PRODS.local", path_to_configure+"/RELEASE_PRODS_OLD.local")
     old_file = open(path_to_configure+"/RELEASE_PRODS_OLD.local", "r+")
@@ -138,6 +120,7 @@ def update_release_prods(path_to_configure):
     new_file.close()
 
 
+# Function that inserts into the commonPlugins.cmd file
 def update_common_plugins(path_to_ad):
     if os.path.exists(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req"):
         os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req", path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req")
@@ -164,7 +147,8 @@ def update_common_plugins(path_to_ad):
     insert_file.close()
     old_file.close()
 
-    
+
+# Function that inserts into the commonDriverMakefile file
 def update_driver_makefile(path_to_ad):
     old_file = open(path_to_ad+"/ADCore/ADApp/commonDriverMakefile", "a+")
     insert_file = open("../configure/MAKEFILE_CONFIG", "r+")
@@ -187,6 +171,7 @@ def update_driver_makefile(path_to_ad):
     old_file.close()
 
 
+# Function that calls all helper functions to update ad RELEASE and configure files
 def update_ad_releases(path_to_ad, required_pairs):
     path_to_configure = path_to_ad +"/configure/"
     if not os.path.exists(path_to_configure+"EXAMPLE_FILES"):
@@ -196,6 +181,14 @@ def update_ad_releases(path_to_ad, required_pairs):
     update_release_prods(path_to_configure)
     update_common_plugins(path_to_ad)
     update_driver_makefile(path_to_ad)
+
+
+# function of updating configure release files for modules not in AD but also not set by make release
+def update_non_ad_releases(path_to_support, module_list, required_pairs):
+    for module in module_list:
+        os.rename(path_to_support+"/"+module+"/configure/RELEASE", path_to_support+"/"+module+"/configure/RELEASE_OLD")
+        replace_macros_non_ad(path_to_support+"/"+module+"/configure/RELEASE", path_to_support+"/"+module+"/configure/RELEASE_OLD", required_pairs)
+    
 
 
 #update_release_prods("/epics/support/areaDetector/configure")
