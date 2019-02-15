@@ -5,76 +5,84 @@
 # Author: Jakub Wlodek
 #
 
+-- INSTALL LOCATION --
 
 # Top level install location for the build
-INSTALL=/eApps/epics
+
+INSTALL=/epics
 
 
-#MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 INCLUDE_MODULE
-#-----------------------------------------------------------------------------------------------------------------------
+
+-- MODULES --
+
+
+#MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 CLONE_MODULE    BUILD_MODULE
+#-----------------------------------------------------------------------------------------------------------------------------------
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE          R7.0.2      $(INSTALL)/base                             epics-base                      YES
+EPICS_BASE          R7.0.2      $(INSTALL)/base                             epics-base                      YES             YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
-SUPPORT             R6-0        $(INSTALL)/support                          support                         YES
-CONFIGURE           R6-0        $(SUPPORT)/configure                        configure                       YES
-DOCUMENTATION       R6-0        $(SUPPORT)/documentation                    documentation                   YES
-UTILS               R6-0        $(SUPPORT)/utils                            utils                           YES
+SUPPORT             R6-0        $(INSTALL)/support                          support                         YES             YES
+CONFIGURE           R6-0        $(SUPPORT)/configure                        configure                       YES             YES
+DOCUMENTATION       R6-0        $(SUPPORT)/documentation                    documentation                   YES             YES
+UTILS               R6-0        $(SUPPORT)/utils                            utils                           YES             YES
 
 GIT_URL=https://github.com/epics-modules/
 
-ASYN                R4-34       $(SUPPORT)/asyn                             asyn                            YES
-AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES
-ALIVE               R1-1-0      $(SUPPORT)/alive                            alive                           YES
-BUSY                R1-7        $(SUPPORT)/busy                             busy                            YES
-CALC                R3-7-1      $(SUPPORT)/calc                             calc                            YES
-CAMAC               R2-7-1      $(SUPPORT)/camac                            camac                           YES
-CAPUTRECORDER       R1-7-1      $(SUPPORT)/caputRecorder                    caputRecorder                   YES
-DAC128V             R2-9        $(SUPPORT)/dac128V                          dac128V                         YES
-DELAYGEN            R1-2-0      $(SUPPORT)/delaygen                         delaygen                        YES
-DEVLIB2             2.9         $(SUPPORT)/devlib2                          devlib2                         YES
-DXP                 R5-0        $(SUPPORT)/dxp                              dxp                             NO
-DXPSITORO           R1-1        $(SUPPORT)/dxpSITORO                        dxpSITORO                       NO
-DEVIOCSTATS         3.1.15      $(SUPPORT)/iocStats                         iocStats                        YES
-IP                  2-19-1      $(SUPPORT)/ip                               ip                              NO
-IPAC                2.15        $(SUPPORT)/ipac                             ipac                            YES
-IP330               R2-9        $(SUPPORT)/ip330                            ip330                           NO
-IPUNIDIG            R2-11       $(SUPPORT)/ipUnidig                         ipUnidig                        YES
-LOVE                R3-2-6      $(SUPPORT)/love                             love                            NO
-LUA                 R1-2        $(SUPPORT)/lua                              lua                             NO
-MCA                 R7-7        $(SUPPORT)/mca                              mca                             YES
-MEASCOMP            R2-1        $(SUPPORT)/measComp                         measComp                        NO
-MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          YES
-MOTOR               R6-11       $(SUPPORT)/motor                            motor                           YES
-OPTICS              R2-13-1     $(SUPPORT)/optics                           optics                          NO
-#QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          NO
-SOFTGLUE            R2-8-1      $(SUPPORT)/softGlue                         softGlue                        NO
-SOFTGLUEZYNQ        master      $(SUPPORT)/softGlueZynq                     softGlueZynq                    NO
-SSCAN               R2-11-1     $(SUPPORT)/sscan                            sscan                           YES
-STD                 R3-5        $(SUPPORT)/std                              std                             YES
-STREAM              R2-7-7b     $(SUPPORT)/stream                           stream                          YES
-VAC                 R1-7        $(SUPPORT)/vac                              vac                             NO
-VME                 R2-9        $(SUPPORT)/vme                              vme                             NO
-YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yokogawa_DAS                    NO
-XXX                 master      $(SUPPORT)/xxx                              xxx                             NO
+# Support modules will be built via make release and make -sj in the support/ directory, so BUILD_MODULE is irrelevant.
+# Add modules you do not wish to build to RELEASE-BLACKLIST in the additional instructions, or set clone module to NO
+
+ASYN                R4-34       $(SUPPORT)/asyn                             asyn                            YES             YES
+AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES
+ALIVE               R1-1-0      $(SUPPORT)/alive                            alive                           YES             YES
+BUSY                R1-7        $(SUPPORT)/busy                             busy                            YES             YES
+CALC                R3-7-1      $(SUPPORT)/calc                             calc                            YES             YES
+CAMAC               R2-7-1      $(SUPPORT)/camac                            camac                           YES             YES
+CAPUTRECORDER       R1-7-1      $(SUPPORT)/caputRecorder                    caputRecorder                   YES             YES
+DAC128V             R2-9        $(SUPPORT)/dac128V                          dac128V                         YES             YES
+DELAYGEN            R1-2-0      $(SUPPORT)/delaygen                         delaygen                        YES             YES
+DEVLIB2             2.9         $(SUPPORT)/devlib2                          devlib2                         YES             YES
+DXP                 R5-0        $(SUPPORT)/dxp                              dxp                             NO              NO
+DXPSITORO           R1-1        $(SUPPORT)/dxpSITORO                        dxpSITORO                       NO              NO
+DEVIOCSTATS         3.1.15      $(SUPPORT)/iocStats                         iocStats                        YES             YES             
+IP                  2-19-1      $(SUPPORT)/ip                               ip                              NO              NO
+IPAC                2.15        $(SUPPORT)/ipac                             ipac                            YES             YES
+IP330               R2-9        $(SUPPORT)/ip330                            ip330                           NO              NO
+IPUNIDIG            R2-11       $(SUPPORT)/ipUnidig                         ipUnidig                        YES             YES
+LOVE                R3-2-6      $(SUPPORT)/love                             love                            NO              NO
+LUA                 R1-2        $(SUPPORT)/lua                              lua                             NO              NO
+MCA                 R7-7        $(SUPPORT)/mca                              mca                             YES             YES
+MEASCOMP            R2-1        $(SUPPORT)/measComp                         measComp                        NO              NO
+MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          NO              NO
+MOTOR               R6-11       $(SUPPORT)/motor                            motor                           YES             YES
+OPTICS              R2-13-1     $(SUPPORT)/optics                           optics                          NO              NO
+SOFTGLUE            R2-8-1      $(SUPPORT)/softGlue                         softGlue                        NO              NO
+SOFTGLUEZYNQ        master      $(SUPPORT)/softGlueZynq                     softGlueZynq                    NO              NO
+SSCAN               R2-11-1     $(SUPPORT)/sscan                            sscan                           YES             YES
+STD                 R3-5        $(SUPPORT)/std                              std                             YES             YES
+STREAM              R2-7-7b     $(SUPPORT)/stream                           stream                          YES             YES
+VAC                 R1-7        $(SUPPORT)/vac                              vac                             NO              NO
+VME                 R2-9        $(SUPPORT)/vme                              vme                             NO              NO
+YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yokogawa_DAS                    NO              NO
+XXX                 master      $(SUPPORT)/xxx                              xxx                             NO              NO
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES
+SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES             YES
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
-ALLENBRADLEY        2.3         $(SUPPORT)/allenBradley                     allenBradley-$(VERSION).tar.gz  NO             
+ALLENBRADLEY        2.3         $(SUPPORT)/allenBradley                     allenBradley-$(VERSION).tar.gz  NO              NO             
 
 WGET_URL=https://github.com/EPICSTools/ether_ip/archive/
 
-ETHERIP             2-26        $(SUPPORT)/ether_ip                         ether_ip-$(VERSION).tar.gz      NO
+ETHERIP             2-26        $(SUPPORT)/ether_ip                         ether_ip-$(VERSION).tar.gz      NO              NO
 
 GIT_URL=https://github.com/motorapp/
 
-GALIL               V3-6        $(SUPPORT)/galil                            Galil-3-0                       NO
+GALIL               V3-6        $(SUPPORT)/galil                            Galil-3-0                       NO              NO
 
 # Area Detector modules. Note that if you wish to build AD Drivers/Plugins, ADCore and ADSupport must be
 # set to build YES, and installed first, then any plugins, then the drivers
@@ -85,9 +93,9 @@ GALIL               V3-6        $(SUPPORT)/galil                            Gali
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR       R3-4        $(SUPPORT)/areaDetector                     areaDetector                    YES
-ADSUPPORT           master      $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES
-ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCore                          YES
+AREA_DETECTOR       R3-4        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
+ADSUPPORT           master      $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
+ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
 
 
 ######################################
@@ -96,13 +104,13 @@ ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCo
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    YES
-ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES
+ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    YES             YES
+ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES             YES
 
 
 GIT_URL=https://github.com/areaDetector/
 
-ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    YES
+ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    YES             YES
 
 
 ######################################
@@ -111,7 +119,8 @@ ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPl
 
 GIT_URL=https://github.com/epics-modules/
 
-QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES
+# Currently no support for auto-building quadem
+QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES             NO
 
 
 ######################################
@@ -120,49 +129,55 @@ QUADEM              R9-1        $(SUPPORT)/quadEM                           quad
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADUVC               R1-1        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES
-ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                NO
-ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO
-ADLAMBDA            lambdaFix   $(AREA_DETECTOR)/ADLambda                   ADLambda                        NO
-adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   NO
+ADUVC               R1-1        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES             YES
+ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                YES             NO
+ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     YES             NO
+ADLAMBDA            lambdaFix   $(AREA_DETECTOR)/ADLambda                   ADLambda                        YES             NO
+adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   NO              NO
 
 
 GIT_URL=https://github.com/areaDetector/
 
-ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES
-ADSIMDETECTOR       R2-8        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES
-ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES
-ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES
-ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO
-ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         NO
-ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES
-ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO
-ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO
-ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     NO
-ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPICam                         NO
-ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         NO
-ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO
-ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        NO
-ADMYTHEN            R2-0        $(AREA_DETECTOR)/ADMythen                   ADMythen                        NO
-ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO
-ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO
-ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO
-FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO
-ADURL               R2-2        $(AREA_DETECTOR)/ADURL                      ADURL                           NO
-ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO
-ADPERKINELMER       R2-8        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO
-ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO
-ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO
-ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO
-ADCSIMDETECTOR      R2-5        $(AREA_DETECTOR)/ADCSimDetector             ADCSimDetector                  NO
-ADNED               master      $(AREA_DETECTOR)/ADnED                      ADnED                           NO
-ADMAR345            R2-2        $(AREA_DETECTOR)/ADmar345                   ADmar345                        NO
-ADQIMAGING          master      $(AREA_DETECTOR)/ADQImaging                 ADQImaging                      NO
-ADPHOTONII          master      $(AREA_DETECTOR)/ADPhotonII                 ADPhotonII                      NO
-ADPSL               R2-1        $(AREA_DETECTOR)/ADPSL                      ADPSL                           NO
-ADBRUKER            R2-2        $(AREA_DETECTOR)/ADBruker                   ADBruker                        NO
-ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRoper                         NO
-ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO
-ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO
-FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO
+ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES
+ADSIMDETECTOR       R2-8        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
+ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES
+ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             NO
+ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO
+ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO
+ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
+ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO
+ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO
+ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             NO
+ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPICam                         NO              NO
+ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         NO              NO
+ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO              NO
+ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        NO              NO
+ADMYTHEN            R2-0        $(AREA_DETECTOR)/ADMythen                   ADMythen                        NO              NO
+ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO
+ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO              NO
+ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO              NO
+FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO
+ADURL               R2-2        $(AREA_DETECTOR)/ADURL                      ADURL                           YES             NO
+ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO
+ADPERKINELMER       R2-8        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO
+ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO
+ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO
+ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO              NO
+ADCSIMDETECTOR      R2-5        $(AREA_DETECTOR)/ADCSimDetector             ADCSimDetector                  NO              NO
+ADNED               master      $(AREA_DETECTOR)/ADnED                      ADnED                           NO              NO
+ADMAR345            R2-2        $(AREA_DETECTOR)/ADmar345                   ADmar345                        NO              NO
+ADQIMAGING          master      $(AREA_DETECTOR)/ADQImaging                 ADQImaging                      NO              NO
+ADPHOTONII          master      $(AREA_DETECTOR)/ADPhotonII                 ADPhotonII                      NO              NO
+ADPSL               R2-1        $(AREA_DETECTOR)/ADPSL                      ADPSL                           NO              NO
+ADBRUKER            R2-2        $(AREA_DETECTOR)/ADBruker                   ADBruker                        NO              NO
+ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRoper                         NO              NO
+ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO              NO
+ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
+FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
+
+
+-- ADDITIONAL INSTALL INSTRUCTIONS --
+
+# These modules are not added to the RELEASE file in support/configure despite being marked for auto-build
+RELEASE-BLACKLIST=AREA_DETECTOR,ADCORE,QUADEM
 
