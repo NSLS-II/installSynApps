@@ -139,8 +139,11 @@ def update_release_prods(path_to_configure):
 
 
 def update_common_plugins(path_to_ad):
+    if os.path.exists(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req"):
+        os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req", path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req")
+    if not os.path.exists(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd"):
+        return
     os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd", path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd")
-    os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req", path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req")
     old_file = open(path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd", "a+")
     insert_file = open("../configure/PLUGIN_CONFIG", "r+")
 

@@ -60,7 +60,7 @@ def update_release_file():
             mod_found = False
             for module in module_list:
                 if module[0] == line.split("=")[0]:
-                    if module[0] == "AREA_DETECTOR" or module[0] == "ADCORE" or module[4] == "NO":
+                    if module[0] == "AREA_DETECTOR" or module[0] == "ADCORE" or module[4] == "NO" or module[0] == "QUADEM":
                         new_file.write("#"+ module[0]+"="+module[2]+"\n")
                         written_mod.append(module[0])
                     else:

@@ -7,7 +7,7 @@
 
 
 # Top level install location for the build
-INSTALL=/epics
+INSTALL=/eApps/epics
 
 
 #MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 INCLUDE_MODULE
@@ -46,10 +46,10 @@ LOVE                R3-2-6      $(SUPPORT)/love                             love
 LUA                 R1-2        $(SUPPORT)/lua                              lua                             NO
 MCA                 R7-7        $(SUPPORT)/mca                              mca                             YES
 MEASCOMP            R2-1        $(SUPPORT)/measComp                         measComp                        NO
-MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          NO
+MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          YES
 MOTOR               R6-11       $(SUPPORT)/motor                            motor                           YES
 OPTICS              R2-13-1     $(SUPPORT)/optics                           optics                          NO
-QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          NO
+#QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          NO
 SOFTGLUE            R2-8-1      $(SUPPORT)/softGlue                         softGlue                        NO
 SOFTGLUEZYNQ        master      $(SUPPORT)/softGlueZynq                     softGlueZynq                    NO
 SSCAN               R2-11-1     $(SUPPORT)/sscan                            sscan                           YES
@@ -89,6 +89,7 @@ AREA_DETECTOR       R3-4        $(SUPPORT)/areaDetector                     area
 ADSUPPORT           master      $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES
 ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCore                          YES
 
+
 ######################################
 # Next any external plugins          #
 ######################################
@@ -101,7 +102,17 @@ ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPl
 
 GIT_URL=https://github.com/areaDetector/
 
-ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    NO
+ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    YES
+
+
+######################################
+# Next any modules using AreaDetector#
+######################################
+
+GIT_URL=https://github.com/epics-modules/
+
+QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES
+
 
 ######################################
 # Finally any drivers or other repos #
