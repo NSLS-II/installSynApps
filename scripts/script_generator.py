@@ -61,9 +61,11 @@ def create_scripts():
     modules_to_install = []
     modules_to_uninstall = []
     for module in module_list:
-        if module[4] == "YES" and module[0] != "CONFIGURE" and module[0] != "DOCUMENTATION" and module[0] != "UTILS":
+        if module[5] == "YES" and module[0] != "CONFIGURE" and module[0] != "DOCUMENTATION" and module[0] != "UTILS" and module[0] != "AREA_DETECTOR":
+            # For installing, we only care about base, support, and area detecotor drivers + core code
             if module[0] == "EPICS_BASE" or module[0] == "SUPPORT" or "areaDetector" in module[2]:
                 modules_to_install.append(module)
+            # For uninstalling, enter each module individually
             if module[0] != "SUPPORT":
                 modules_to_uninstall.append(module)
 
