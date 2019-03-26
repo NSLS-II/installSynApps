@@ -34,7 +34,7 @@ GIT_URL=https://github.com/epics-modules/
 # Support modules will be built via make release and make -sj in the support/ directory, so BUILD_MODULE is irrelevant.
 # Add modules you do not wish to build to RELEASE-BLACKLIST in the additional instructions, or set clone module to NO
 
-ASYN                R4-34       $(SUPPORT)/asyn                             asyn                            YES             YES
+ASYN                R4-35       $(SUPPORT)/asyn                             asyn                            YES             YES
 AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES
 ALIVE               R1-1-0      $(SUPPORT)/alive                            alive                           YES             YES
 BUSY                R1-7        $(SUPPORT)/busy                             busy                            YES             YES
@@ -132,7 +132,7 @@ GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 ADUVC               R1-1        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES             YES
 ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                YES             NO
 ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     YES             NO
-ADLAMBDA            lambdaFix   $(AREA_DETECTOR)/ADLambda                   ADLambda                        YES             NO
+ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        YES             NO
 adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   NO              NO
 
 
