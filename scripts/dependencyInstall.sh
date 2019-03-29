@@ -3,7 +3,7 @@
 # Script that installs all
 # dependencies for modules being built.
 # 
-# For any custom dependencies, please add them here prior to running the buildSynApps.sh script
+# For any custom dependencies, please add them here prior to running the installSynApps.sh script
 #
 
 # Path variables, only used for adding custom dependencies (mostly for detector drivers)
