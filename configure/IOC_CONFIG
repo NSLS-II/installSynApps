@@ -1,0 +1,13 @@
+# File that is used to organize IOCs deployed with install synApps
+
+# Top Level IOC directory
+IOC_DIR=/home/jwlodek/Documents/workspace2
+
+# Top Level dir containing compiled binaries.
+TOP_BINARY_DIR=/epics/prod
+
+
+# IOC Operation       IOC Type     IOC Name        BIN Path    
+#----------------------------------------------------------------------------
+ADD_IOC               ADUVC        cam-uvc         /areaDetector/ADUVC/iocs/adUVCIOC/bin/linux-x86_64/adUVCApp
+ADD_IOC   ADProsilica   cam-ps1   /areaDetecor/ADProsilica/iocs/prosilicaIOC/bin/linux-x86_64/prosilicaApp
