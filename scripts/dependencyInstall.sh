@@ -37,6 +37,7 @@ sudo apt -y install libzbar-dev
 sudo apt -y install libreadline-dev
 sudo apt -y install libusb-dev
 sudo apt -y install libusb-1.0-0-dev
+sudo apt -y install libdmtx-dev
 
 
 if [[ $ADUVC ]]

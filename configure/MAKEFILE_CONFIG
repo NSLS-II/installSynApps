@@ -36,6 +36,18 @@ ifdef ADPLUGINEDGE
 endif
 
 
+ifdef ADPLUGINDMTX
+  $(DBD_NAME)_DBD += NDPluginDmtx.dbd
+  PROD_LIBS	  += NDPluginDmtx
+  ifdef DMTX_LIB
+    dmtx_DIR +=$(DMTX_LIB)
+    PROD_LIBS       += dmtx
+  else
+    PROD_SYS_LIBS   += dmxt
+  endif
+endif
+
+
 ifeq ($(WITH_BOOST),YES)
   ifeq ($(BOOST_EXTERNAL),NO)
     PROD_SYS_LIBS += boost_system
