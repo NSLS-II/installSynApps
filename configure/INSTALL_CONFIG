@@ -32,7 +32,6 @@ UTILS               R6-0        $(SUPPORT)/utils                            util
 GIT_URL=https://github.com/epics-modules/
 
 # Support modules will be built via make release and make -sj in the support/ directory, so BUILD_MODULE is irrelevant.
-# Add modules you do not wish to build to RELEASE-BLACKLIST in the additional instructions, or set clone module to NO
 
 ASYN                R4-35       $(SUPPORT)/asyn                             asyn                            YES             YES
 AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES
@@ -176,9 +175,4 @@ ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADAD
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
 
-
-#-- ADDITIONAL INSTALL INSTRUCTIONS --
-
-# These modules are not added to the RELEASE file in support/configure despite being marked for auto-build
-#RELEASE-BLACKLIST=AREA_DETECTOR,ADCORE,QUADEM
 
