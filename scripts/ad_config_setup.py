@@ -90,6 +90,20 @@ def process_examples(path_to_configure, required_pairs):
                 copy_macro_replace(file, path_to_configure, required_pairs)
 
 
+
+def add_build_flags(required_pairs):
+    build_flags_file = open("../configure/BUILD_FLAG_CONFIG", "r+")
+
+    line = build_flags_file.readline()
+    while line:
+        if "=" in line and not line.startswith('#'):
+            pair = line.split('=')
+            required_pairs.append(pair)
+            print(pair)
+        line = build_flags_file.readline()
+    return required_pairs
+
+
 # Function that inserts into RELEASE_PRODS.local the contents of the
 # conigure/AD_RELEASE_CONFIG file
 def update_release_prods(path_to_configure):
@@ -176,6 +190,7 @@ def update_ad_releases(path_to_ad, required_pairs):
     path_to_configure = path_to_ad +"/configure/"
     if not os.path.exists(path_to_configure+"EXAMPLE_FILES"):
         os.mkdir(path_to_configure+"EXAMPLE_FILES")
+    required_pairs = add_build_flags(required_pairs)
     remove_examples(path_to_configure)
     process_examples(path_to_configure, required_pairs)
     update_release_prods(path_to_configure)
