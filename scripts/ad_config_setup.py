@@ -97,6 +97,7 @@ def add_build_flags(required_pairs):
     line = build_flags_file.readline()
     while line:
         if "=" in line and not line.startswith('#'):
+            line = remove_whitespace(line)
             pair = line.split('=')
             required_pairs.append(pair)
             print(pair)
