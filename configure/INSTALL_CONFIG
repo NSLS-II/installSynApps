@@ -9,7 +9,7 @@
 
 # Top level install location for the build
 
-INSTALL=/epics
+INSTALL=/home/jwlodek/Documents/workspace2/epics
 
 
 
@@ -106,7 +106,7 @@ GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
 ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    YES             YES
 ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES             YES
-ADPLUGINDMTX        master      $(AREA_DETECTOR)/ADPluginBar                ADPluginDmtx                    YES             YES
+ADPLUGINDMTX        master      $(AREA_DETECTOR)/ADPluginDmtx               ADPluginDmtx                    YES             YES
 
 
 GIT_URL=https://github.com/areaDetector/
