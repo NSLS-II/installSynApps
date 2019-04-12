@@ -9,7 +9,7 @@
 
 # Top level install location for the build
 
-INSTALL=/home/jwlodek/Documents/workspace2/epics
+INSTALL=/epics
 
 
 
@@ -32,7 +32,6 @@ UTILS               R6-0        $(SUPPORT)/utils                            util
 GIT_URL=https://github.com/epics-modules/
 
 # Support modules will be built via make release and make -sj in the support/ directory, so BUILD_MODULE is irrelevant.
-# Add modules you do not wish to build to RELEASE-BLACKLIST in the additional instructions, or set clone module to NO
 
 ASYN                R4-35       $(SUPPORT)/asyn                             asyn                            YES             YES
 AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES
@@ -93,9 +92,9 @@ GALIL               V3-6        $(SUPPORT)/galil                            Gali
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR       R3-4        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
-ADSUPPORT           master      $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
-ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
+AREA_DETECTOR       R3-5        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
+ADSUPPORT           R1-7        $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
+ADCORE              R3-5        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
 
 
 ######################################
@@ -176,9 +175,4 @@ ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADAD
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
 
-
-#-- ADDITIONAL INSTALL INSTRUCTIONS --
-
-# These modules are not added to the RELEASE file in support/configure despite being marked for auto-build
-#RELEASE-BLACKLIST=AREA_DETECTOR,ADCORE,QUADEM
 
