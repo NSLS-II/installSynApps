@@ -9,7 +9,7 @@
 
 # Top level install location for the build
 
-INSTALL=/home/jwlodek/Documents/workspace2/epics
+INSTALL=/epics
 
 
 
@@ -92,9 +92,9 @@ GALIL               V3-6        $(SUPPORT)/galil                            Gali
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR       R3-4        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
-ADSUPPORT           master      $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
-ADCORE              R3-4        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
+AREA_DETECTOR       R3-5        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
+ADSUPPORT           R1-7        $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
+ADCORE              R3-5        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
 
 
 ######################################
