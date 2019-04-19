@@ -13,4 +13,5 @@ TOP_BINARY_DIR=/epics/prod
 # IOC Type    IOC Name       
 #------------------------
 ADUVC         cam-uvc 
-ADProsilica   cam-ps1 
+ADProsilica   cam-ps1
+ADAndor3      cam-andor3

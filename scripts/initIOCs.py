@@ -85,7 +85,7 @@ def perform_ioc_action(action, ioc_top, bin_top):
 
         while line:
             if "#!" in line:
-                st.write("#!"+bin_top + getIOCBin(bin_top, action[0]) + "\n")
+                st.write("#!" + getIOCBin(bin_top, action[0]) + "\n")
             elif "envPaths" in line:
                 st.write("< envPaths\n")
             else:
