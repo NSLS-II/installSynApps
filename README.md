@@ -15,6 +15,19 @@ dependencyInstall.sh | bash script that installs all required packages for EPICS
 script_generator.py | script that creates bash scripts for installing and uninstalling, so that compilation for other operating systems is simplified.
 initIOCs.py         | script that can be used to quickly initialize prototype IOCs using the [ioc-template](https://github.com/epicsNSLS2-deploy/ioc-template). 
 
+
+### Included Configuration files
+
+Configuration file      | Use 
+-------------------------|--------------------
+INSTALL_CONFIG      | The main configuration file for installSynApps. Use this file to decide which modules to clone and build
+AD_RELEASE_CONFIG   | Adds paths to external plugins developed for area detector into the area detector build process.
+MAKEFILE_CONFIG     | Injects contents into `ADCore/ADApp/commonDriverMakefile`. Used to build against additional libraries
+PLUGIN_CONFIG       | Injects contents into `ADCore/iocBoot/commonPlugins.cmd`. Used to load additional plugins at IOC startup
+BUILD_FLAG_CONFIG   | Allows for manually setting Area Detector build flags ex. `JPEG_EXTERNAL=YES`.
+IOC_CONFIG          | Stores IOC configuration information for `initIOCs.py` ioc generation
+
+
 ### Usage
 
 There are only 2 locations with files that need to be edited before running the script. These are the `configure/*` files, and the `scripts/dependencyInstall.sh` file. In the first, edit the install configurations for your installation. In most cases, you may simply change the `MODULE_INSTALL` tag  in the `INSTALL_CONFIG` file for the modules you wish to build and those you don't wish to build, and you must also edit the line

@@ -1,7 +1,7 @@
 # File that is used to organize IOCs deployed with install synApps
 
 # Top Level IOC directory
-IOC_DIR=/home/jwlodek/Documents/workspace1/configure_test
+IOC_DIR=/epics/iocs
 
 # Top Level dir containing compiled binaries.
 TOP_BINARY_DIR=/epics/prod
