@@ -10,7 +10,7 @@ TOP_BINARY_DIR=/epics/prod
 # Note that IOC type must have 'AD' at the start
 # Currently only IOC Type and IOC Name are used. Other params need to be edited in unique.cmd
 
-# IOC Type    IOC Name     IOC Port    CAM Connect     IOC Prefix                      
-#----------------------------------------------------------------------------------
-ADUVC         cam-uvc      UVC1        25344           XF:10IDC-BI{UVC-Cam:1}
-ADProsilica   cam-ps1      PS1         10.10.1.91      XF:10IDC-BI{GC1380-Cam:1}
+# IOC Type    IOC Name       
+#------------------------
+ADUVC         cam-uvc 
+ADProsilica   cam-ps1 
