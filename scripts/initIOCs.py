@@ -18,7 +18,7 @@ def read_ioc_config():
             ioc_top = line.strip().split('=')[1]
         elif "TOP_BINARY_DIR" in line:
             bin_top = line.strip().split('=')[1]
-        elif "ADD_IOC" in line:
+        elif not line.startswith('#') and len(line) > 1:
             line = line.strip()
             line = re.sub(' +', ' ', line)
             action = line.split(' ')
@@ -40,17 +40,38 @@ def init_ioc_dir(ioc_top):
     
 
 
+def getIOCBin(bin_top, ioc_type):
+    driver_path = bin_top + "/areaDetector/" + ioc_type
+    for name in os.listdir(driver_path):
+        if "ioc" == name or "iocs" == name:
+            driver_path = driver_path + "/" + name
+            break
+    for name in os.listdir(driver_path):
+        if "IOC" in name or "ioc" in name:
+            driver_path = driver_path + "/" + name
+            break 
+    driver_path = driver_path + "/bin"
+    for name in os.listdir(driver_path):
+        driver_path = driver_path + "/" + name
+        break
+    for name in os.listdir(driver_path):
+        driver_path = driver_path + "/" + name
+        break
+    return driver_path
+
+
+
 def perform_ioc_action(action, ioc_top, bin_top):
-    out = subprocess.call(["git", "clone", "https://github.com/epicsNSLS2-deploy/ioc-template", ioc_top + "/" + action[2]])
+    out = subprocess.call(["git", "clone", "https://github.com/epicsNSLS2-deploy/ioc-template", ioc_top + "/" + action[1]])
     if out != 0:
         print("Error failed to clone IOC template for ioc {}".format(action[2]))
     else:
-        print("Initializing IOC template for " + action[2])
-        ioc_path = ioc_top +"/" + action[2]
+        print("Initializing IOC template for " + action[1])
+        ioc_path = ioc_top +"/" + action[1]
         os.remove(ioc_path+"/st.cmd")
 
         startup_path = ioc_path+"/startupScripts"
-        ioc_type = action[1][2:].lower()
+        ioc_type = action[0][2:].lower()
 
         for file in os.listdir(ioc_path +"/startupScripts"):
             if ioc_type in file.lower():
@@ -64,14 +85,13 @@ def perform_ioc_action(action, ioc_top, bin_top):
 
         while line:
             if "#!" in line:
-                st.write("#!"+bin_top + action[3]+"\n")
+                st.write("#!"+bin_top + getIOCBin(bin_top, action[0]) + "\n")
             elif "envPaths" in line:
                 st.write("< envPaths\n")
             else:
                 st.write(line)
 
             line = example_st.readline()    
-        
 
 
 def init_iocs():

@@ -1,13 +1,16 @@
 # File that is used to organize IOCs deployed with install synApps
 
 # Top Level IOC directory
-IOC_DIR=/home/jwlodek/Documents/workspace2
+IOC_DIR=/home/jwlodek/Documents/workspace1/configure_test
 
 # Top Level dir containing compiled binaries.
 TOP_BINARY_DIR=/epics/prod
 
 
-# IOC Operation       IOC Type     IOC Name        BIN Path    
-#----------------------------------------------------------------------------
-ADD_IOC               ADUVC        cam-uvc         /areaDetector/ADUVC/iocs/adUVCIOC/bin/linux-x86_64/adUVCApp
-ADD_IOC   ADProsilica   cam-ps1   /areaDetecor/ADProsilica/iocs/prosilicaIOC/bin/linux-x86_64/prosilicaApp
+# Note that IOC type must have 'AD' at the start
+# Currently only IOC Type and IOC Name are used. Other params need to be edited in unique.cmd
+
+# IOC Type    IOC Name     IOC Port    CAM Connect     IOC Prefix                      
+#----------------------------------------------------------------------------------
+ADUVC         cam-uvc      UVC1        25344           XF:10IDC-BI{UVC-Cam:1}
+ADProsilica   cam-ps1      PS1         10.10.1.91      XF:10IDC-BI{GC1380-Cam:1}
