@@ -43,7 +43,7 @@ ifdef ADPLUGINDMTX
     dmtx_DIR +=$(DMTX_LIB)
     PROD_LIBS       += dmtx
   else
-    PROD_SYS_LIBS   += dmxt
+    PROD_SYS_LIBS   += dmtx
   endif
 endif
 
