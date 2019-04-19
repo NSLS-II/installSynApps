@@ -11,4 +11,8 @@ set_requestfile_path("$(ADPLUGINBAR)/barApp/Db")
 
 NDDmtxConfigure("DMTX1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
 dbLoadRecords("$(ADPLUGINDMTX)/db/NDPluginDmtx.template",  "P=$(PREFIX),R=Dmtx1:, PORT=DMTX1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
-set_requestfile_path("$(ADPLUGINDMTX)/barApp/Db")
+set_requestfile_path("$(ADPLUGINDMTX)/dmtxApp/Db")
+
+NDEdgeConfigure("EDGE1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
+dbLoadRecords("$(ADPLUGINEDGE)/db/NDEdge.template",  "P=$(PREFIX),R=Edge1:, PORT=EDGE1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+set_requestfile_path("$(ADPLUGINEDGE)/edgeApp/Db")
