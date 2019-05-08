@@ -90,7 +90,7 @@ def process_examples(path_to_configure, required_pairs):
                 copy_macro_replace(file, path_to_configure, required_pairs)
 
 
-
+# Function that parses the Build flag config file for updating these values in in AD Configure
 def add_build_flags(required_pairs):
     build_flags_file = open("../configure/BUILD_FLAG_CONFIG", "r+")
 
@@ -135,19 +135,21 @@ def update_release_prods(path_to_configure):
     new_file.close()
 
 
-# Function that inserts into the commonPlugins.cmd file
+# Function that renames the example iocStartup files to the appropriate names
 def update_common_plugins(path_to_ad):
     if os.path.exists(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req"):
         os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req", path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req")
-    if not os.path.exists(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd"):
-        return
-    os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd", path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd")
-    old_file = open(path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd", "a+")
-    insert_file = open("../configure/PLUGIN_CONFIG", "r+")
+    if os.path.exists(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd"):
+        os.rename(path_to_ad+"/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd", path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd")
+
+
+# Function that inserts custom configuration options into the appropriate file
+def inject_into_file(file_path, inject_file_path):
+    old_file = open(file_path, "a+")
+    insert_file = open(inject_file_path, "r+")
 
     old_file.write("\n")
     old_file.write("# The following was auto-inserted by installSynApps\n")
-    old_file.write("\n")
 
     line = insert_file.readline()
     while line:
@@ -157,30 +159,6 @@ def update_common_plugins(path_to_ad):
     
     old_file.write("\n")
     old_file.write("# Auto-Inserted end\n")
-    old_file.write("\n")
-
-    insert_file.close()
-    old_file.close()
-
-
-# Function that inserts into the commonDriverMakefile file
-def update_driver_makefile(path_to_ad):
-    old_file = open(path_to_ad+"/ADCore/ADApp/commonDriverMakefile", "a+")
-    insert_file = open("../configure/MAKEFILE_CONFIG", "r+")
-
-    old_file.write("\n")
-    old_file.write("# The following was auto-inserted by installSynApps\n")
-    old_file.write("\n")
-
-    line = insert_file.readline()
-    while line:
-        if not line.startswith('#'):
-            old_file.write(line)
-        line = insert_file.readline()
-    
-    old_file.write("\n")
-    old_file.write("# Auto-Inserted end\n")
-    old_file.write("\n")
 
     insert_file.close()
     old_file.close()
@@ -196,7 +174,10 @@ def update_ad_releases(path_to_ad, required_pairs):
     process_examples(path_to_configure, required_pairs)
     update_release_prods(path_to_configure)
     update_common_plugins(path_to_ad)
-    update_driver_makefile(path_to_ad)
+    #update_driver_makefile(path_to_ad)
+    inject_into_file(path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd", "../configure/PLUGIN_CONFIG")
+    inject_into_file(path_to_ad+"/ADCore/ADApp/commonDriverMakefile", "../configure/MAKEFILE_CONFIG")
+    inject_into_file(path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req", "../configure/AUTOSAVE_CONFIG")
 
 
 # function of updating configure release files for modules not in AD but also not set by make release
