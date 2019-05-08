@@ -104,7 +104,7 @@ ADCORE              R3-5        $(AREA_DETECTOR)/ADCore                     ADCo
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
 ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    YES             YES
-ADPLUGINBAR         R2-0        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES             YES
+ADPLUGINBAR         R2-1        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES             YES
 ADPLUGINDMTX        master      $(AREA_DETECTOR)/ADPluginDmtx               ADPluginDmtx                    YES             YES
 
 

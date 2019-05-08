@@ -9,6 +9,9 @@ import update_release_file
 import subprocess
 import os
 
+
+failed_builds = []
+
 def compile_base(path_to_base):
     print("Compiling epics base located at "+path_to_base+"\n")
     out = subprocess.call(["make", "-C",  path_to_base, "-sj"])
@@ -42,10 +45,14 @@ def compile_ad(path_to_ad, module_list):
     #subprocess.call(["python3", "adConfigSetup/scripts/nsls2ADConfigSetup.py", "-r"])
     print("Compiling ADSupport\n")
     out = subprocess.call(["make", "-C", path_to_ad + "/ADSupport", "-sj"])
+    if out != 0:
+        print("Failed to compile ADSupport\n")
+        return -1
+
     print("Compiling ADCore\n")
     out_core = subprocess.call(["make", "-C", path_to_ad + "/ADCore", "-sj"])
-
-    if out!=0 or out_core != 0:
+    if out_core != 0:
+        print("Failed to compile ADCore\n")
         return -1
 
     for module in module_list:
@@ -54,7 +61,7 @@ def compile_ad(path_to_ad, module_list):
                 print("Compiling AD Module "+module[0]+"\n")
                 out = subprocess.call(["make", "-C", module[2], "-sj"])
                 if out != 0:
-                    return -1
+                    failed_builds.append(module)
     return 0
     
 
@@ -93,6 +100,9 @@ def build_EPICS():
 
     if compiled < 0:
         return -1
+
+    for module in failed_builds:
+        print("There was an error when building {}\n".format(module[0]))
 
     return 0
     
