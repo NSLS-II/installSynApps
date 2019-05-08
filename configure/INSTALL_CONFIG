@@ -9,7 +9,7 @@
 
 # Top level install location for the build
 
-INSTALL=/epics
+INSTALL=/eApps/epics
 
 
 
@@ -20,7 +20,7 @@ INSTALL=/epics
 #-----------------------------------------------------------------------------------------------------------------------------------
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE          R7.0.2      $(INSTALL)/base                             epics-base                      YES             YES
+EPICS_BASE          R7.0.2.2     $(INSTALL)/base                             epics-base                      YES             YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
@@ -134,17 +134,18 @@ ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEm
 ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     YES             NO
 ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        YES             NO
 adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   NO              NO
+ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
 
 
 GIT_URL=https://github.com/areaDetector/
 
 ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES
-ADSIMDETECTOR       R2-8        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
+ADSIMDETECTOR       master      $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             NO
 ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO
-ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
+#ADANDOR3           master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO
 ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO
 ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             NO
@@ -174,5 +175,7 @@ ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRo
 ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO              NO
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
+#ADSPINNAKER        master      $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
+#ADLAMBDA           master      $(AREA_DETECTOR)/ADLambda       ADLambda                        NO              NO
 
 
