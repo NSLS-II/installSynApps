@@ -24,6 +24,7 @@ INSTALL_CONFIG      | The main configuration file for installSynApps. Use this f
 AD_RELEASE_CONFIG   | Adds paths to external plugins developed for area detector into the area detector build process.
 MAKEFILE_CONFIG     | Injects contents into `ADCore/ADApp/commonDriverMakefile`. Used to build against additional libraries
 PLUGIN_CONFIG       | Injects contents into `ADCore/iocBoot/commonPlugins.cmd`. Used to load additional plugins at IOC startup
+AUTOSAVE_CONFIG     | Injects contents into `ADCore/iocBoot/commonPlugin_settings.req`. Used to configure IOC autosave feature
 BUILD_FLAG_CONFIG   | Allows for manually setting Area Detector build flags ex. `JPEG_EXTERNAL=YES`.
 IOC_CONFIG          | Stores IOC configuration information for `initIOCs.py` ioc generation
 
