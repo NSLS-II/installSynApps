@@ -4,10 +4,9 @@
 
 # First we clone all of the modules
 echo "Cloning and checking out all repos"
-
 python3 clone_and_checkout.py
 echo "Press enter to continue"
-read continue
+read continue1
 
 # first build the dependencies
 echo "Install the dependencies"
