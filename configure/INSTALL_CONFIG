@@ -12,7 +12,6 @@
 INSTALL=/epics
 
 
-
 #-- MODULES --
 
 
@@ -32,6 +31,7 @@ UTILS               R6-0        $(SUPPORT)/utils                            util
 
 # Stream module is maintained by PSI as of 2019
 GIT_URL=https://github.com/paulscherrerinstitute/
+
 STREAM              2.8.8     $(SUPPORT)/stream                             StreamDevice                    YES             YES
 
 

@@ -56,6 +56,18 @@ def generate_uninstall_script(modules_to_uninstall):
     uninstall_file.close()
 
 
+
+def generate_readme(module_list, install_location):
+    readme = open(install_location + "/INSTALL_README", "w")
+    readme.write("This build of EPICS and areaDetector was performed by installSynApps\n")
+    readme.write("https://github.com/epicsNSLS2-deploy/installSynApps\n\n")
+    readme.write("The following versions of each package were installed:\n")
+    readme.write("-------------------------------------------------------\n")
+    for module in module_list:
+        readme.write("{} - {}\n".format(module[0], module[1]))
+    readme.close()
+
+
 def create_scripts():
     module_list, install_location = read_install_config.read_install_config_file()
     modules_to_install = []
@@ -78,6 +90,7 @@ def create_scripts():
     generate_install_script(modules_to_install)
     modules_to_uninstall.reverse()
     generate_uninstall_script(modules_to_uninstall)
+    generate_readme(module_list, install_location)
 
 
 create_scripts()
