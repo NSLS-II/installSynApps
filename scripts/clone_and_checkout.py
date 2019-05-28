@@ -52,9 +52,9 @@ def clone_and_checkout(module_list, with_tags = True):
 
 def update_submodules(module_list):
     for module in module_list:
-        if module[0] == "STREAM":
-            subprocess.call(["git", "-C", module[2] + "/StreamDevice", "submodule", "init"])
-            subprocess.call(["git", "-C", module[2] + "/StreamDevice", "submodule", "update"])
+       # if module[0] == "STREAM":
+       #     subprocess.call(["git", "-C", module[2] + "/StreamDevice", "submodule", "init"])
+       #     subprocess.call(["git", "-C", module[2] + "/StreamDevice", "submodule", "update"])
 
 
 # Function that removes unwanted area detector modules for easier cleanup
