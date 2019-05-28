@@ -71,6 +71,7 @@ STD                 R3-5        $(SUPPORT)/std                              std 
 VAC                 R1-7        $(SUPPORT)/vac                              vac                             NO              NO
 VME                 R2-9        $(SUPPORT)/vme                              vme                             NO              NO
 YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yokogawa_DAS                    NO              NO
+XSPRESS3            master      $(SUPPORT)/xspress3                         xspress3                        YES             NO
 XXX                 master      $(SUPPORT)/xxx                              xxx                             NO              NO
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
