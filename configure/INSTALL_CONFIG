@@ -12,7 +12,6 @@
 INSTALL=/epics
 
 
-
 #-- MODULES --
 
 
@@ -28,6 +27,13 @@ SUPPORT             R6-0        $(INSTALL)/support                          supp
 CONFIGURE           R6-0        $(SUPPORT)/configure                        configure                       YES             YES
 DOCUMENTATION       R6-0        $(SUPPORT)/documentation                    documentation                   YES             YES
 UTILS               R6-0        $(SUPPORT)/utils                            utils                           YES             YES
+
+
+# Stream module is maintained by PSI as of 2019
+GIT_URL=https://github.com/paulscherrerinstitute/
+
+STREAM              2.8.8     $(SUPPORT)/stream                             StreamDevice                    YES             YES
+
 
 GIT_URL=https://github.com/epics-modules/
 
@@ -54,17 +60,18 @@ LOVE                R3-2-6      $(SUPPORT)/love                             love
 LUA                 R1-2        $(SUPPORT)/lua                              lua                             NO              NO
 MCA                 R7-7        $(SUPPORT)/mca                              mca                             YES             YES
 MEASCOMP            R2-1        $(SUPPORT)/measComp                         measComp                        NO              NO
-MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          NO              NO
+MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          YES             NO
 MOTOR               R6-11       $(SUPPORT)/motor                            motor                           YES             YES
 OPTICS              R2-13-1     $(SUPPORT)/optics                           optics                          NO              NO
 SOFTGLUE            R2-8-1      $(SUPPORT)/softGlue                         softGlue                        NO              NO
 SOFTGLUEZYNQ        master      $(SUPPORT)/softGlueZynq                     softGlueZynq                    NO              NO
 SSCAN               R2-11-1     $(SUPPORT)/sscan                            sscan                           YES             YES
 STD                 R3-5        $(SUPPORT)/std                              std                             YES             YES
-STREAM              R2-7-7b     $(SUPPORT)/stream                           stream                          YES             YES
+#STREAM             R2-7-7b     $(SUPPORT)/stream                           stream                          YES             YES
 VAC                 R1-7        $(SUPPORT)/vac                              vac                             NO              NO
 VME                 R2-9        $(SUPPORT)/vme                              vme                             NO              NO
 YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yokogawa_DAS                    NO              NO
+XSPRESS3            master      $(SUPPORT)/xspress3                         xspress3                        YES             NO
 XXX                 master      $(SUPPORT)/xxx                              xxx                             NO              NO
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
@@ -143,7 +150,7 @@ ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADPr
 ADSIMDETECTOR       master      $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             NO
-ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO
+ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      YES             NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO
 #ADANDOR3           master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO
@@ -152,15 +159,15 @@ ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPo
 ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPICam                         NO              NO
 ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         NO              NO
 ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO              NO
-ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        NO              NO
+ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        YES             NO
 ADMYTHEN            R2-0        $(AREA_DETECTOR)/ADMythen                   ADMythen                        NO              NO
 ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO
-ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO              NO
+ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           YES             NO
 ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO              NO
 FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO
 ADURL               R2-2        $(AREA_DETECTOR)/ADURL                      ADURL                           YES             NO
 ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO
-ADPERKINELMER       R2-8        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO
+ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
 ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO
 ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO
 ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO              NO
@@ -176,6 +183,6 @@ ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADAD
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
 #ADSPINNAKER        master      $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
-#ADLAMBDA           master      $(AREA_DETECTOR)/ADLambda       ADLambda                        NO              NO
+#ADLAMBDA           master      $(AREA_DETECTOR)/ADLambda       	    ADLambda                        NO              NO
 
 
