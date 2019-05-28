@@ -67,7 +67,7 @@ SOFTGLUE            R2-8-1      $(SUPPORT)/softGlue                         soft
 SOFTGLUEZYNQ        master      $(SUPPORT)/softGlueZynq                     softGlueZynq                    NO              NO
 SSCAN               R2-11-1     $(SUPPORT)/sscan                            sscan                           YES             YES
 STD                 R3-5        $(SUPPORT)/std                              std                             YES             YES
-STREAM              R2-7-7b     $(SUPPORT)/stream                           stream                          YES             YES
+#STREAM              R2-7-7b     $(SUPPORT)/stream                           stream                          YES             YES
 VAC                 R1-7        $(SUPPORT)/vac                              vac                             NO              NO
 VME                 R2-9        $(SUPPORT)/vme                              vme                             NO              NO
 YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yokogawa_DAS                    NO              NO
