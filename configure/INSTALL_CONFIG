@@ -167,7 +167,7 @@ ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCa
 FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO
 ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           YES             NO
 ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO
-ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
+ADPERKINELMER       R2-9      	$(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
 ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO
 ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO
 ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO              NO
