@@ -147,7 +147,7 @@ ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAn
 GIT_URL=https://github.com/areaDetector/
 
 ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES
-ADSIMDETECTOR       E2-9      	$(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
+ADSIMDETECTOR       R2-9      	$(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             NO
 ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      YES             NO
