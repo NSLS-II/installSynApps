@@ -99,9 +99,9 @@ GALIL               V3-6        $(SUPPORT)/galil                            Gali
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR       R3-5        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
+AREA_DETECTOR       R3-6        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
 ADSUPPORT           R1-8        $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
-ADCORE              R3-5        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
+ADCORE              R3-6        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
 
 
 ######################################
