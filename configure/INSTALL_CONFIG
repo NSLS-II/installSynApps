@@ -182,7 +182,7 @@ ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRo
 ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO              NO
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
-#ADSPINNAKER        master      $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
+#ADSPINNAKER        R1-0      	$(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
 #ADLAMBDA           master      $(AREA_DETECTOR)/ADLambda       	    ADLambda                        NO              NO
 
 
