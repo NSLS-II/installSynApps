@@ -5,7 +5,7 @@
 # Created on: 9-May-2019
 echo
 echo "+-----------------------------------------------------------------"
-echo "+ installSynApps, version R0-1                                   +"
+echo "+ installSynApps, version R1-0                                   +"
 echo "+ Author: Jakub Wlodek                                           +"
 echo "+ Copyright (c): Brookhaven National Laboratory 2018-2019        +"
 echo "+ This software comes with NO warranty!                          +"
