@@ -32,7 +32,7 @@ UTILS               R6-0        $(SUPPORT)/utils                            util
 # Stream module is maintained by PSI as of 2019
 GIT_URL=https://github.com/paulscherrerinstitute/
 
-STREAM              2.8.8     $(SUPPORT)/stream                             StreamDevice                    YES             YES
+STREAM              2.8.9     $(SUPPORT)/stream                             StreamDevice                    YES             YES
 
 
 GIT_URL=https://github.com/epics-modules/
@@ -99,9 +99,9 @@ GALIL               V3-6        $(SUPPORT)/galil                            Gali
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR       R3-5        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
+AREA_DETECTOR       R3-6        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
 ADSUPPORT           R1-8        $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
-ADCORE              R3-5        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
+ADCORE              R3-6        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
 
 
 ######################################
