@@ -8,7 +8,7 @@
 
 
 import os
-import install_module as IM
+import DataModel.install_module as IM
 
 
 class InstallConfiguration:
@@ -38,16 +38,18 @@ class InstallConfiguration:
 
     Methods
     -------
-    is_install_valid()
+    is_install_valid() : int
         Function that checks if given install location is valid
-    os_config_exists()
+    os_config_exists() : Bool
         Function that checks if os configuration is valid
     add_module(module : InstallModule)
         Function that appends a new module to the list of InstallModules
-    get_module_list()
+    get_module_list() : List InstallModule
         Function that gets the current list of InstallModules
-    convert_path_abs(rel_path : str)
+    convert_path_abs(rel_path : str) : str
         Function that converts a relative path to an absolute path based on locations of install, base, support, and ad
+    print_installation_info(fp=None)
+        Method that prints information about the given install module
     """
 
 
@@ -98,7 +100,7 @@ class InstallConfiguration:
         """
 
         valid = 1
-        if not os.path.exists(install_location):
+        if not os.path.exists(self.install_location):
             valid = 0
         elif not os.access(self.install_location, os.W_OK | os.X_OK):
             valid = -1
@@ -144,8 +146,8 @@ class InstallConfiguration:
         """
 
         if isinstance(module, IM.InstallModule):
-            # Sets the modules config to this, and updates the abs path
-            module.set_install_config(self)
+            # Updates the abs path
+            module.abs_path = self.convert_path_abs(module.rel_path)
 
             # Key paths to track
             if module.name == "EPICS_BASE":
@@ -202,4 +204,27 @@ class InstallConfiguration:
             return self.ad_path + "/" + temp
         else:
             return None
-        
+
+
+    def print_installation_info(self, fp = None):
+        """
+        Function that prints installation info, along with the info for all modules being cloned
+
+        Parameters
+        ----------
+        fp = None : file pointer
+            Optional pointer to an external log file
+        """
+
+        if fp == None:
+            print("--------------------------------")
+            print("Install Location = {}".format(self.install_location))
+            for module in self.modules:
+                if module.clone == "YES":
+                    module.print_info()
+        else:
+            fp.write("---------------------------------\n")
+            fp.write("Install Location = {}\n".format(self.install_location))
+            for module in self.modules:
+                if module.clone == "YES":
+                    module.print_info(fp = fp)
