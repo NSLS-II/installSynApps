@@ -1,0 +1,7 @@
+# Add any custom build flags you wish enforced when autobuilding to this file.
+#
+# Ex. OPENCV_EXTERNAL=YES
+#
+
+JPEG_EXTERNAL=YES
+OPENCV_EXTERNAL=YES

@@ -1,0 +1,28 @@
+# This file will contain code to insert into the commonPlugins.cmd to load any external plugins
+# not included by default with areaDetector/ADCore
+
+NDCVConfigure("CV1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
+dbLoadRecords("$(ADCOMPVISION)/db/NDCV.template", "P=$(PREFIX), R=CV1:, PORT=CV1, ADDR=0, TIMEOUT=1, NDARRAY_PORT=$(PORT), NAME=CV1, NCHANS=$(XSIZE)")
+set_requestfile_path("$(ADCOMPVISION)/adcvApp/Db")
+
+NDBarConfigure("BAR1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
+dbLoadRecords("$(ADPLUGINBAR)/db/NDBar.template",  "P=$(PREFIX),R=Bar1:, PORT=BAR1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+set_requestfile_path("$(ADPLUGINBAR)/barApp/Db")
+
+NDDmtxConfigure("DMTX1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
+dbLoadRecords("$(ADPLUGINDMTX)/db/NDPluginDmtx.template",  "P=$(PREFIX),R=Dmtx1:, PORT=DMTX1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+set_requestfile_path("$(ADPLUGINDMTX)/dmtxApp/Db")
+
+NDEdgeConfigure("EDGE1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
+dbLoadRecords("$(ADPLUGINEDGE)/db/NDEdge.template",  "P=$(PREFIX),R=Edge1:, PORT=EDGE1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+set_requestfile_path("$(ADPLUGINEDGE)/edgeApp/Db")
+
+NDFileMagickConfigure("FileMagick1", $(QSIZE), 0, "$(PORT)", 0)
+dbLoadRecords("NDFileMagick.template","P=$(PREFIX),R=Magick1:,PORT=FileMagick1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+
+NDPvaConfigure("PVA1", $(QSIZE), 0, "$(PORT)", 0, $(PREFIX)Pva1:Image, 0, 0, 0)
+dbLoadRecords("NDPva.template",  "P=$(PREFIX),R=Pva1:, PORT=PVA1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+# Must start PVA server if this is enabled
+startPVAServer
+
+dbLoadRecords("$(DEVIOCSTATS)/db/iocAdminSoft.db", "IOC=$(PREFIX)")

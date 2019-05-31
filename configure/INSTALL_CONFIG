@@ -9,7 +9,7 @@
 
 # Top level install location for the build
 
-INSTALL=/epics
+INSTALL=/home/jwlodek/Documents/isa_test
 
 
 #-- MODULES --
