@@ -54,18 +54,7 @@ class InstallConfiguration:
 
 
     def __init__(self, install_location, path_to_configure, os_specific = "DEFAULT"):
-        """
-        Constructor for the InstallConfiguration object
-
-        Parameters
-        ----------
-        self : InstallConfiguration
-            Self object
-        install_location : str
-            Path of the target install location
-        os_specific : str
-            String deciding if install should use any custom OS-Specific install config
-        """
+        """Constructor for the InstallConfiguration object"""
 
         self.os_specific = os_specific
         self.path_to_configure = path_to_configure
