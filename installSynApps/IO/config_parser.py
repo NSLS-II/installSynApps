@@ -4,18 +4,42 @@
 # Author: Jakub Wlodek
 #
 
+
 import os
 import re
 import DataModel.install_config as IC
 import DataModel.install_module as IM
 
+
 class ConfigParser:
+    """
+    Class responsible for parsing the INSTALL_CONFIG file into an InstallConfguration object
+
+    Attributes
+    ----------
+    configure_path : str
+        path to installSynApps configure directory
+
+    Methods
+    -------
+    check_valid_config_path()
+        Checks if confgure path is valid
+    parse_line_to_module(line : str, current_url : str, current_url_type : str)
+        parses module line into an InstllModule object
+    parse_install_config(config_filename=INSTALL_CONFIG)
+        main top level function that parses install config file
+    """
+
 
     def __init__(self, configure_path):
+        """ Constructor for ConfigParser """
+
         self.configure_path = configure_path
 
 
     def check_valid_config_path(self):
+        """ Function that checks if configure path is valid """
+
         if os.path.exists(self.configure_path) and os.path.isdir(self.configure_path):
             return True
         elif os.path.exists(self.configure_path) and os.path.isfile(self.configure_path):
@@ -24,6 +48,24 @@ class ConfigParser:
 
 
     def parse_line_to_module(self, line, current_url, current_url_type):
+        """
+        Function that parses a line in the INSTALL_CONFIG file to and InstallModule object
+
+        Parameters
+        ----------
+        line : str
+            line from table in file
+        current_url : str
+            url at which module is located
+        current_url_type : str
+            either GIT_URL or WGET_URL
+        
+        Returns
+        -------
+        install_module : InstallModule
+            module parsed from the table line
+        """
+
         line = re.sub(' +', ' ', line)
         module_components = line.split(' ')
         name        = module_components[0]
@@ -37,6 +79,20 @@ class ConfigParser:
 
 
     def parse_install_config(self, config_filename = "INSTALL_CONFIG"):
+        """
+        Top level install config parser function
+        Parses the self.path_to_configure/config_filename file
+
+        Parameters
+        ----------
+        config_filename : str
+            defaults to INSTALL_CONFIG
+
+        Returns
+        -------
+        install_config : InstallConfiguration
+            valid install_config object if parse was successful, or None
+        """
         if os.path.exists(self.configure_path + "/" + config_filename):
             install_file = open(self.configure_path + "/" + config_filename, "r")
 

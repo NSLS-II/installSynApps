@@ -4,10 +4,12 @@
 # Author: Jakub Wlodek
 #
 
+
 import os
 import shutil
 import DataModel.install_config as IC
 import IO.config_injector as CI
+
 
 class UpdateConfigDriver:
     """
@@ -42,6 +44,7 @@ class UpdateConfigDriver:
         Top level function that runs all required config update functions
     """
 
+
     def __init__(self, path_to_configure, install_config):
         """ Constructor for UpdateConfigDriver """
 
@@ -49,6 +52,7 @@ class UpdateConfigDriver:
         self.path_to_configure = path_to_configure
         self.config_injector = CI.ConfigInjector(path_to_configure, self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
+
 
     def perform_injection_updates(self):
         """ Function that calls the ConfigInjector functions for appending config files """
