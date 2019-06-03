@@ -63,7 +63,8 @@ class ConfigInjector:
         if os.path.exists(self.path_to_configure) and os.path.isdir(self.path_to_configure):
             for file in os.listdir(self.path_to_configure + "/injectionFiles"):
                 if os.path.isfile(self.path_to_configure + "/injectionFiles/" + file):
-                    injector_files.append(self.path_to_configure + "/" + file)
+                    if self.injector_file_links[file] != None:
+                        injector_files.append(self.path_to_configure + "/" + file)
         
         return injector_files
 
@@ -169,7 +170,7 @@ class ConfigInjector:
         target_dir : str
             path of target dir for which all macros will be edited.
         """
-        
+
         if os.path.exists(target_dir) and os.path.isdir(target_dir):
             os.mkdir(target_dir + "/OLD_FILES")
             for file in os.listdir(target_dir):
