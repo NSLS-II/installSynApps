@@ -25,8 +25,6 @@ class InstallConfiguration:
         path to top level install location
     path_to_configure : str
         path to configure folder of installSynApps
-    os_specific : str
-        flag determining any os-specific behavior
     modules : List of InsallModule
         list of InstallModule objects representing the modules that will be installed
     base_path : str
@@ -40,8 +38,6 @@ class InstallConfiguration:
     -------
     is_install_valid() : int
         Function that checks if given install location is valid
-    os_config_exists() : Bool
-        Function that checks if os configuration is valid
     add_module(module : InstallModule)
         Function that appends a new module to the list of InstallModules
     get_module_list() : List InstallModule
@@ -53,15 +49,10 @@ class InstallConfiguration:
     """
 
 
-    def __init__(self, install_location, path_to_configure, os_specific = "DEFAULT"):
+    def __init__(self, install_location, path_to_configure):
         """Constructor for the InstallConfiguration object"""
 
-        self.os_specific = os_specific
         self.path_to_configure = path_to_configure
-
-        if os_specific != "DEFAULT":
-            if not self.os_config_exists():
-                self.os_specific = "DEFAULT"
 
         self.install_location = install_location
         self.modules = []
@@ -94,31 +85,6 @@ class InstallConfiguration:
         elif not os.access(self.install_location, os.W_OK | os.X_OK):
             valid = -1
         return valid
-
-
-
-    def os_config_exists(self):
-        """
-        Function that checks if given os has a specific install config
-
-        Parameters
-        ----------
-        self : InstallConfiguration
-            Self object
-
-        Returns
-        -------
-        int
-            True if it does exist, otherwise False
-        """
-
-        exists = False
-        for file in os.listdir(self.path_to_configure +"/os-specific"):
-            if os.path.isfile(self.path_to_configure +"/os-specific/"+file):
-                if self.os_specific in file:
-                    exists = True
-
-        return exists
 
 
     def add_module(self, module):
