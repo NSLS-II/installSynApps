@@ -12,8 +12,12 @@
 INSTALL=/home/jwlodek/Documents/isa_test
 
 
-#-- MODULES --
+#-- CURRENT ARCH --
 
+EPICS_ARCH=linux-x86_64
+
+
+#-- MODULES --
 
 #MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 CLONE_MODULE    BUILD_MODULE
 #-----------------------------------------------------------------------------------------------------------------------------------

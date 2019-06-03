@@ -49,12 +49,13 @@ class InstallConfiguration:
     """
 
 
-    def __init__(self, install_location, path_to_configure):
+    def __init__(self, install_location, path_to_configure, epics_arch):
         """Constructor for the InstallConfiguration object"""
 
         self.path_to_configure = path_to_configure
 
         self.install_location = install_location
+        self.epics_arch = epics_arch
         self.modules = []
 
         # Paths to the three install location paths used for relative path correction

@@ -163,20 +163,21 @@ class CloneDriver:
         if isinstance(self.install_config, IC.InstallConfiguration):
             failed_modules = []
             for module in self.install_config.get_module_list():
-                ret = 0
-                if module.name in self.recursive_modules:
-                    ret = self.clone_module(module, recursive=True)
-                else:
-                    ret = self.clone_module(module)
-                if ret < 0:
-                    failed_modules.append(module)
-                else:
-                    ret = self.checkout_module(module)
+                if module.clone == "YES":
+                    ret = 0
+                    if module.name in self.recursive_modules:
+                        ret = self.clone_module(module, recursive=True)
+                    else:
+                        ret = self.clone_module(module)
                     if ret < 0:
                         failed_modules.append(module)
                     else:
-                        if module.name in self.submodule_list:
-                            self.update_submodule(module, self.submodule_names[module.name])
+                        ret = self.checkout_module(module)
+                        if ret < 0:
+                            failed_modules.append(module)
+                        else:
+                            if module.name in self.submodule_list:
+                                self.update_submodule(module, self.submodule_names[module.name])
             self.cleanup_modules()
 
             return failed_modules

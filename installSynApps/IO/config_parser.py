@@ -45,23 +45,26 @@ class ConfigParser:
             install_config = None
             current_url = ""
             current_url_type = ""
+            epics_arch = ""
+            install_loc = ""
 
             line = install_file.readline()
             while line:
+                line = line.strip()
                 if not line.startswith('#') and len(line) > 1:
                     if line.startswith("INSTALL="):
-                        line = line.strip()
-                        install_config = IC.InstallConfiguration(line.split('=')[-1], self.configure_path)
+                        install_loc = line.split('=')[-1]
+                    elif line.startswith("EPICS_ARCH"):
+                        epics_arch = line.split('=')[-1]
+                        install_config = IC.InstallConfiguration(install_loc, self.configure_path, epics_arch)
                         if install_config.is_install_valid() < 0:
                             return None
                         elif install_config.is_install_valid() == 0:
                             os.mkdir(install_config.install_location)
                     elif line.startswith("GIT_URL") or line.startswith("WGET_URL"):
-                        line = line.strip()
                         current_url = line.split('=')[1]
                         current_url_type = line.split('=')[0]
                     else:
-                        line = line.strip()
                         install_module = self.parse_line_to_module(line, current_url, current_url_type)
                         install_config.add_module(install_module)
                 line = install_file.readline()

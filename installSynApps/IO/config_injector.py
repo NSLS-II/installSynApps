@@ -64,7 +64,7 @@ class ConfigInjector:
             for file in os.listdir(self.path_to_configure + "/injectionFiles"):
                 if os.path.isfile(self.path_to_configure + "/injectionFiles/" + file):
                     if self.injector_file_links[file] != None:
-                        injector_files.append(self.path_to_configure + "/" + file)
+                        injector_files.append(self.path_to_configure + "/injectionFiles/" + file)
         
         return injector_files
 
@@ -172,27 +172,43 @@ class ConfigInjector:
         """
 
         if os.path.exists(target_dir) and os.path.isdir(target_dir):
-            os.mkdir(target_dir + "/OLD_FILES")
+            if not os.path.exists(target_dir + "/OLD_FILES"):
+                os.mkdir(target_dir + "/OLD_FILES")
             for file in os.listdir(target_dir):
                 if os.path.isfile(target_dir + "/" + file):
                     os.rename(target_dir + "/" + file, target_dir + "/OLD_FILES/" + file)
                     old_fp = open(target_dir + "/OLD_FILES/" + file, "r")
-                    new_fp = open(target_dir + "/" + file, "w")
 
-                    line = old_fp.readline()
-                    while line:
-                        line = line.strip()
-                        for macro in macro_replace_list:
-                            if (macro[0] + "=") in line and line.startswith('#'):
-                                new_fp.write("#{}={}\n".format(macro[0], macro[1]))
-                            elif (macro[0] + "=") in line:
-                                new_fp.write("{}={}\n".format(macro[0], macro[1]))
-                            else:
-                                new_fp.write(line + "\n")
+                    if file.endswith(self.install_config.epics_arch) or file.endswith(".local") or "." not in file:
+                        if file.startswith("EXAMPLE_"):
+                            new_fp = open(target_dir + "/" + file[8:], "w")
+                        else:
+                            new_fp = open(target_dir + "/" + file, "w")
+
                         line = old_fp.readline()
+                        while line:
+                            line = line.strip()
+                            wrote_line = False
+                            for macro in macro_replace_list:
+                                if (macro[0] + "=") in line and len(macro) < 3:
+                                    new_fp.write("{}={}\n".format(macro[0], macro[1]))
+                                    macro.append("DONE")
+                                    wrote_line = True
+                            
+                            if not wrote_line and not line.startswith('#'):
+                                new_fp.write("#" + line + "\n")
+                            elif not wrote_line:
+                                new_fp.write(line + "\n")
+
+                            line = old_fp.readline()
+
+                        for macro in macro_replace_list:
+                            if len(macro) < 3:
+                                new_fp.write("{}={}\n".format(macro[0], macro[1]))
+
+                        new_fp.close()
 
                     old_fp.close()
-                    new_fp.close()
 
 
 
