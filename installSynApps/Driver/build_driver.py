@@ -7,7 +7,7 @@
 
 import os
 import subprocess
-import DataModel.install_config as IC
+import installSynApps.DataModel.install_config as IC
 
 
 class BuildDriver:
@@ -50,17 +50,17 @@ class BuildDriver:
     def build_base(self):
         """ Function that compiles epics base """
 
-        out = subprocess.call(["make", -C, self.install_config.base_path, "-sj"])
+        out = subprocess.call(["make", "-C", self.install_config.base_path, "-sj"])
         return out
 
 
     def build_support(self):
         """ Function that compiles EPICS Support """
 
-        out = subprocess.call(["make", -C, self.install_config.support_path, "release"])
+        out = subprocess.call(["make", "-C", self.install_config.support_path, "release"])
         if out != 0:
             return out
-        out = subprocess.call(["make", -C, self.install_config.support_path, "-sj"])
+        out = subprocess.call(["make", "-C", self.install_config.support_path, "-sj"])
         return out
 
 
@@ -115,7 +115,7 @@ class BuildDriver:
         ret = self.build_support()
         if ret < 0:
             return -1, "Error building EPICS support", []
-        ret, failed = build_ad()
+        ret, failed = self.build_ad()
         if len(failed) > 0:
             return -1, "Error building AD modules", failed
         elif ret < 0:

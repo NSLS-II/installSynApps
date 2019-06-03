@@ -8,8 +8,8 @@
 import os
 import subprocess
 import shutil
-import DataModel.install_config as IC
-import DataModel.install_module as IM
+import installSynApps.DataModel.install_config as IC
+import installSynApps.DataModel.install_module as IM
 
 
 class CloneDriver:

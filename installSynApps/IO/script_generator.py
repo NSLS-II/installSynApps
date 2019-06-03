@@ -8,7 +8,7 @@
 import os
 import shutil
 import datetime
-import DataModel.install_config as IC
+import installSynApps.DataModel.install_config as IC
 
 
 class ScriptGenerator:
@@ -113,7 +113,7 @@ class ScriptGenerator:
         readme_fp.write("The following modules were cloned with the given versions but not auto-built\n\n")
         
         for module in self.install_config.get_module_list():
-            if module.build = "NO" and module.clone = "YES":
+            if module.build == "NO" and module.clone == "YES":
                 readme_fp.write("{} -> {}\n".format(module.name, module.version))
 
 

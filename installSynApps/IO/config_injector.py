@@ -5,7 +5,7 @@
 #
 
 import os
-import DataModel.install_config as IC
+import installSynApps.DataModel.install_config as IC
 
 class ConfigInjector:
     """
@@ -175,7 +175,7 @@ class ConfigInjector:
             if not os.path.exists(target_dir + "/OLD_FILES"):
                 os.mkdir(target_dir + "/OLD_FILES")
             for file in os.listdir(target_dir):
-                if os.path.isfile(target_dir + "/" + file):
+                if os.path.isfile(target_dir + "/" + file) and not file.endswith(".pl"):
                     os.rename(target_dir + "/" + file, target_dir + "/OLD_FILES/" + file)
                     old_fp = open(target_dir + "/OLD_FILES/" + file, "r")
 

@@ -8,7 +8,7 @@
 
 
 import os
-import DataModel.install_module as IM
+import installSynApps.DataModel.install_module as IM
 
 
 class InstallConfiguration:

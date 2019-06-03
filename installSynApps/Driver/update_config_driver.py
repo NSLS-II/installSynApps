@@ -7,8 +7,8 @@
 
 import os
 import shutil
-import DataModel.install_config as IC
-import IO.config_injector as CI
+import installSynApps.DataModel.install_config as IC
+import installSynApps.IO.config_injector as CI
 
 
 class UpdateConfigDriver:

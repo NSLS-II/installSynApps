@@ -6,6 +6,8 @@
 # For any custom dependencies, please add them here prior to running the installSynApps.sh script
 #
 
+cd $(dirname $0)
+
 # Path variables, only used for adding custom dependencies (mostly for detector drivers)
 #INSTALL=/eApps/epics
 INSTALL_DIR=`grep INSTALL= ../configure/INSTALL_CONFIG`
