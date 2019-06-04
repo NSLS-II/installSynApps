@@ -216,7 +216,7 @@ class ConfigInjector:
             line = old_fp.readline()
             while line:
                 line = line.strip()
-                if not line.startswith('#'):
+                if not line.startswith('#') and '=' in line:
                     line = line = re.sub(' +', '', line)
                 if line.startswith('#'):
                     new_fp.write(line + "\n")
