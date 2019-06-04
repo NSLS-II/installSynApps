@@ -66,6 +66,7 @@ class ConfigParser:
             module parsed from the table line
         """
 
+        line = re.sub('\t', ' ', line)
         line = re.sub(' +', ' ', line)
         module_components = line.split(' ')
         name        = module_components[0]

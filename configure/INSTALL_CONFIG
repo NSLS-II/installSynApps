@@ -151,7 +151,7 @@ ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAn
 GIT_URL=https://github.com/areaDetector/
 
 ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES
-ADSIMDETECTOR       R2-9      	$(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
+ADSIMDETECTOR       R2-9        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             NO
 ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      YES             NO
@@ -171,7 +171,7 @@ ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCa
 FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO
 ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           YES             NO
 ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO
-ADPERKINELMER       R2-9      	$(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
+ADPERKINELMER       R2-9        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
 ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO
 ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO
 ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO              NO
@@ -186,7 +186,7 @@ ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRo
 ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO              NO
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
-#ADSPINNAKER        R1-0      	$(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
-#ADLAMBDA           master      $(AREA_DETECTOR)/ADLambda       	    ADLambda                        NO              NO
+#ADSPINNAKER        R1-0        $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
+#ADLAMBDA           master      $(AREA_DETECTOR)/ADLambda                   ADLambda                        NO              NO
 
 

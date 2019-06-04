@@ -110,7 +110,8 @@ class UpdateConfigDriver:
         install_macro_list = self.get_macros_from_install_config()
         macro_replace_files = self.config_injector.get_macro_replace_files()
         for file_path in macro_replace_files:
-            self.config_injector.get_macro_replace_from_file(install_macro_list, file_path)
+            file_macros = self.config_injector.get_macro_replace_from_file(file_path)
+            install_macro_list = install_macro_list + file_macros
         
         if not single_file:
             self.config_injector.update_macros_dir(install_macro_list, target_path)
@@ -133,6 +134,8 @@ class UpdateConfigDriver:
                 replace_release_path = self.path_to_configure + "/fixedRELEASEFiles/" + module.name + "_RELEASE"
                 if os.path.exists(replace_release_path) and os.path.isfile(replace_release_path):
                     release_path = module.abs_path + "/configure/RELEASE"
+                    if not os.path.exists(release_path):
+                        return
                     release_path_old = release_path + "_OLD"
                     os.rename(release_path, release_path_old)
                     shutil.copyfile(replace_release_path, release_path)
@@ -167,9 +170,9 @@ class UpdateConfigDriver:
     def run_update_config(self):
         """ Top level driver function that updates all config files as necessary """
 
-        self.perform_injection_updates()
         for target in self.fix_release_list:
             self.fix_target_release(target)
         self.update_ad_macros()
         self.update_support_macros()
         self.add_missing_support_macros()
+        self.perform_injection_updates()
