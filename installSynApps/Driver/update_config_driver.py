@@ -167,6 +167,33 @@ class UpdateConfigDriver:
         app_file.close()
 
 
+    def comment_non_build_macros(self):
+        """
+
+        """
+
+        rel_file_path = self.install_config.support_path + "/configure/RELEASE"
+        rel_file_path_temp = self.install_config.support_path + "/configure/RELEASE_TEMP"
+        os.rename(rel_file_path, rel_file_path_temp)
+        rel_file_old = open(rel_file_path_temp, "r")
+        rel_file_new = open(rel_file_path, "w")
+
+        line = rel_file_old.readline()
+        while line:
+            if line.startswith('#'):
+                rel_file_new.write(line)
+            else:
+                for module in self.install_config.get_module_list():
+                    if line.startswith(module.name + "=") and module.build == "NO":
+                        rel_file_new.write('#')
+                rel_file_new.write(line)
+            line = rel_file_old.readline()
+        rel_file_new.close()
+        rel_file_old.close()
+        os.remove(rel_file_path_temp)
+            
+
+
     def run_update_config(self):
         """ Top level driver function that updates all config files as necessary """
 
@@ -175,4 +202,5 @@ class UpdateConfigDriver:
         self.update_ad_macros()
         self.update_support_macros()
         self.add_missing_support_macros()
+        self.comment_non_build_macros()
         self.perform_injection_updates()
