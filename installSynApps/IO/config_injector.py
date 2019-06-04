@@ -36,6 +36,7 @@ class ConfigInjector:
         updates the macros in a target directory files given a list of macro-value pairs
     """
 
+
     def __init__(self, path_to_configure, install_config):
         """Constructor for ConfigInjector"""
 
@@ -159,7 +160,7 @@ class ConfigInjector:
             macro_fp.close()
 
 
-    def update_macros(self, macro_replace_list, target_dir):
+    def update_macros_dir(self, macro_replace_list, target_dir):
         """
         Function that updates the macros for all files in a target location, given a list of macro-value pairs
 
@@ -172,43 +173,43 @@ class ConfigInjector:
         """
 
         if os.path.exists(target_dir) and os.path.isdir(target_dir):
-            if not os.path.exists(target_dir + "/OLD_FILES"):
-                os.mkdir(target_dir + "/OLD_FILES")
             for file in os.listdir(target_dir):
-                if os.path.isfile(target_dir + "/" + file) and not file.endswith(".pl"):
-                    os.rename(target_dir + "/" + file, target_dir + "/OLD_FILES/" + file)
-                    old_fp = open(target_dir + "/OLD_FILES/" + file, "r")
+                if os.path.isfile(target_dir + "/" + file) and not file.endswith(".pl") and file != "Makefile":
+                    self.update_macros_file(macro_replace_list, target_dir, file)
 
-                    if file.endswith(self.install_config.epics_arch) or file.endswith(".local") or "." not in file:
-                        if file.startswith("EXAMPLE_"):
-                            new_fp = open(target_dir + "/" + file[8:], "w")
+
+    def update_macros_file(self, macro_replace_list, target_dir, target_filename, comment_unsupported = False, with_ad = True):
+        if not os.path.exists(target_dir + "/OLD_FILES"):
+            os.mkdir(target_dir + "/OLD_FILES")
+        os.rename(target_dir + "/" + target_filename, target_dir + "/OLD_FILES/" + target_filename)
+        old_fp = open(target_dir + "/OLD_FILES/" + target_filename, "r")
+
+        if target_filename.endswith(self.install_config.epics_arch) or target_filename.endswith(".local") or "." not in target_filename:
+            if target_filename.startswith("EXAMPLE_"):
+                new_fp = open(target_dir + "/" + target_filename[8:], "w")
+            else:
+                new_fp = open(target_dir + "/" + target_filename, "w")
+            line = old_fp.readline()
+            while line:
+                line = line.strip()
+                if line.startswith('#'):
+                    new_fp.write(line + "\n")
+                else:
+                    wrote_line = False
+                    for macro in macro_replace_list:
+                        if line.startswith(macro[0] + "=") and (with_ad or (macro[0] != "ADCORE" and macro[0] != "ADSUPPORT" and macro[0] != "AREA_DETECTOR")):
+                            new_fp.write("{}={}\n".format(macro[0], macro[1]))
+                            wrote_line = True
+                        elif line.startswith("#" + macro[0] + "="):
+                            new_fp.write("#{}={}\n".format(macro[0], macro[1]))
+                            wrote_line = True
+                    if not wrote_line:
+                        if comment_unsupported and not line.startswith('#'):
+                            new_fp.write("#" + line + "\n")
                         else:
-                            new_fp = open(target_dir + "/" + file, "w")
-
-                        line = old_fp.readline()
-                        while line:
-                            line = line.strip()
-                            wrote_line = False
-                            for macro in macro_replace_list:
-                                if (macro[0] + "=") in line and len(macro) < 3:
-                                    new_fp.write("{}={}\n".format(macro[0], macro[1]))
-                                    macro.append("DONE")
-                                    wrote_line = True
-                            
-                            if not wrote_line and not line.startswith('#'):
-                                new_fp.write("#" + line + "\n")
-                            elif not wrote_line:
-                                new_fp.write(line + "\n")
-
-                            line = old_fp.readline()
-
-                        for macro in macro_replace_list:
-                            if len(macro) < 3:
-                                new_fp.write("{}={}\n".format(macro[0], macro[1]))
-
-                        new_fp.close()
-
-                    old_fp.close()
-
+                            new_fp.write(line + "\n")
+                line = old_fp.readline()
+            new_fp.close()
+        old_fp.close()
 
 

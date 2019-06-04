@@ -52,6 +52,7 @@ class UpdateConfigDriver:
         self.path_to_configure = path_to_configure
         self.config_injector = CI.ConfigInjector(path_to_configure, self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
+        self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS"]
 
 
     def perform_injection_updates(self):
@@ -93,10 +94,10 @@ class UpdateConfigDriver:
     def update_support_macros(self):
         """ Updates the macros in the Support configuration files """
 
-        self.update_macros(self.install_config.support_path + "/configure")
+        self.update_macros(self.install_config.support_path + "/configure/RELEASE", single_file=True)
 
 
-    def update_macros(self, target_path):
+    def update_macros(self, target_path, single_file = False):
         """
         Function that calls Config injector to update all macros in target dir
         
@@ -111,7 +112,10 @@ class UpdateConfigDriver:
         for file_path in macro_replace_files:
             self.config_injector.get_macro_replace_from_file(install_macro_list, file_path)
         
-        self.config_injector.update_macros(install_macro_list, target_path)
+        if not single_file:
+            self.config_injector.update_macros_dir(install_macro_list, target_path)
+        else:
+            self.config_injector.update_macros_file(install_macro_list, target_path.rsplit('/', 1)[0], target_path.rsplit('/', 1)[-1], comment_unsupported=True, with_ad=False)
 
 
     def fix_target_release(self, target_module_name):
@@ -134,6 +138,32 @@ class UpdateConfigDriver:
                     shutil.copyfile(replace_release_path, release_path)
 
 
+    def add_missing_support_macros(self):
+        to_append_commented = []
+        to_append = []
+        for module in self.install_config.get_module_list():
+            if module.clone == "YES":
+                was_found = False
+                rel_file = open(self.install_config.support_path + "/configure/RELEASE", "r")
+                line = rel_file.readline()
+                while line:
+                    if line.startswith(module.name + "="):
+                        was_found = True
+                    line = rel_file.readline()
+                if not was_found and not module.name in self.add_to_release_blacklist and not module.name.startswith("AD"):
+                    if module.build == "YES":
+                        to_append.append([module.name, module.rel_path])
+                    else:
+                        to_append_commented.append([module.name, module.rel_path])
+                rel_file.close()
+        app_file = open(self.install_config.support_path + "/configure/RELEASE", "a")
+        for mod in to_append:
+            app_file.write("{}={}\n".format(mod[0], mod[1]))
+        for mod in to_append_commented:
+            app_file.write("#{}={}\n".format(mod[0], mod[1]))
+        app_file.close()
+
+
     def run_update_config(self):
         """ Top level driver function that updates all config files as necessary """
 
@@ -142,3 +172,4 @@ class UpdateConfigDriver:
             self.fix_target_release(target)
         self.update_ad_macros()
         self.update_support_macros()
+        self.add_missing_support_macros()
