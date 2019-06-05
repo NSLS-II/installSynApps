@@ -92,7 +92,7 @@ def process_examples(path_to_configure, required_pairs):
 
 # Function that parses the Build flag config file for updating these values in in AD Configure
 def add_build_flags(required_pairs):
-    build_flags_file = open("../configure/BUILD_FLAG_CONFIG", "r+")
+    build_flags_file = open("../configure/macroFiles/BUILD_FLAG_CONFIG", "r+")
 
     line = build_flags_file.readline()
     while line:
@@ -111,7 +111,7 @@ def update_release_prods(path_to_configure):
     os.rename(path_to_configure+"/RELEASE_PRODS.local", path_to_configure+"/RELEASE_PRODS_OLD.local")
     old_file = open(path_to_configure+"/RELEASE_PRODS_OLD.local", "r+")
     new_file = open(path_to_configure+"/RELEASE_PRODS.local", "w+")
-    insert_file = open("../configure/AD_RELEASE_CONFIG", "r+")
+    insert_file = open("../configure/injectionFiles/AD_RELEASE_CONFIG", "r+")
 
     line = old_file.readline()
     while line:
@@ -175,9 +175,9 @@ def update_ad_releases(path_to_ad, required_pairs):
     update_release_prods(path_to_configure)
     update_common_plugins(path_to_ad)
     #update_driver_makefile(path_to_ad)
-    inject_into_file(path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd", "../configure/PLUGIN_CONFIG")
-    inject_into_file(path_to_ad+"/ADCore/ADApp/commonDriverMakefile", "../configure/MAKEFILE_CONFIG")
-    inject_into_file(path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req", "../configure/AUTOSAVE_CONFIG")
+    inject_into_file(path_to_ad+"/ADCore/iocBoot/commonPlugins.cmd", "../configure/injectionFiles/PLUGIN_CONFIG")
+    inject_into_file(path_to_ad+"/ADCore/ADApp/commonDriverMakefile", "../configure/injectionFiles/MAKEFILE_CONFIG")
+    inject_into_file(path_to_ad+"/ADCore/iocBoot/commonPlugin_settings.req", "../configure/injectionFiles/AUTOSAVE_CONFIG")
 
 
 # function of updating configure release files for modules not in AD but also not set by make release
