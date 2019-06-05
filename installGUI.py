@@ -6,18 +6,23 @@
 # Author: Jakub Wlodek
 #
 
+
+# Tkinter imports
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
+from tkinter import simpledialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
+# Some python utility libs
 import os
 import time
 import datetime
 import threading
 
+# installSynApps module imports
 import installSynApps.DataModel.install_config as Config
 import installSynApps.IO.config_parser as Parser
 import installSynApps.Driver.clone_driver as Cloner
@@ -27,8 +32,58 @@ import installSynApps.IO.script_generator as Autogenerator
 
 
 class InstallSynAppsGUI:
+    """
+    Class representing GUI for using installSynApps
+
+    Attributes
+    ----------
+    master : Tk
+        the root frame of the GUI
+    smallFont, largeFont
+        tkfonts used by the application
+    control buttons
+        8 tk buttons linked to control operations
+    log and configPanel
+        scrollable panels that display current information
+    thread and loadingIconThread
+        threads used for asynchronous usage of the module
+    installSynApps modules
+        loaded instances of installSynApps objects that drive the process
+    
+    Methods
+    -------
+    loadingloop
+        Method that creates a loading animation
+    writeToLog
+        Method that appends to the log
+    showMessage, showWarningMessage, showErrorMessage
+        Methods for displaying output messages
+    initLogText
+        returns initial log text
+    updateConfigPanel
+        Syncs the config panel with the currently loaded config
+    loadConfig
+        event function that gives directory selection prompt and loads configure if dir is valid
+    injectFiles, injectFilesProcess
+        event and thread process functions for injecting into files
+    updateConfig, updateConfigProcess
+        event and thread process functions for updating RELEASE and configuration files
+    cloneConfig, cloneConfigProcess
+        event and thread process functions for cloning all selected modules
+    buildConfig, buildConfigProcss
+        event anf thread process functions for building all selected modules
+    autorun, autorunProcss
+        event and thread process functions for building all selected modules
+    loadHelp
+        prints help information
+    saveLog
+        prompts for save location of log file
+    """
 
     def __init__(self, master):
+        """ Constructor for InstallSynAppGUI """
+
+        # Initialize the frame and window
         self.master = master
         self.smallFont = tkFont.Font(family = "Helvetica", size = 14)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 18)
@@ -36,9 +91,11 @@ class InstallSynAppsGUI:
         frame.pack()
         self.msg = "Welcome to installSynApps!"
 
+        # title label
         self.topLabel       = Label(frame, text = self.msg, width = '50', height = '2', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.smallFont)
         self.topLabel.grid(row = 0, column = 0, padx = 10, pady = 10, columnspan = 2)
 
+        # Control buttons
         self.loadButton     = Button(frame, font = self.smallFont, text = 'Load Config', command = self.loadConfig, height = '4', width = '30').grid(row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.cloneButton    = Button(frame, font = self.smallFont, text = 'Clone Modules', command = self.cloneConfig, height = '4', width = '30').grid(row = 1, column = 1, padx = 15, pady = 15, columnspan = 1)
         self.injectButton   = Button(frame, font = self.smallFont, text = 'Inject Files', command = self.injectFiles, height = '4', width = '30').grid(row = 2, column = 0, padx = 15, pady = 15, columnspan = 1)
@@ -48,31 +105,38 @@ class InstallSynAppsGUI:
         self.helpButton     = Button(frame, font = self.smallFont, text = 'Help', command = self.loadHelp, height = '4', width = '30').grid(row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.saveLog        = Button(frame, font = self.smallFont, text = 'Save Log', command = self.saveLog, height = '4', width = '30').grid(row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
         
+        # Log and loading label
         self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '2').grid(row = 0, column = 2, pady = 0, columnspan = 1)
         self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '2')
         self.loadingLabel.grid(row = 0, column = 3, pady = 0, columnspan = 2)
 
+        # version and popups toggle
         self.version = 'R2-0'
-
         self.showPopups = False
 
+        # config panel
         self.configPanel = ScrolledText.ScrolledText(frame)
         self.configPanel.grid(row = 5, column = 0, padx = 15, pady = 15, columnspan = 2, rowspan = 2)
 
+        # log panel + initialize text
         self.log = ScrolledText.ScrolledText(frame, height = '55', width = '100')
         self.log.grid(row = 1, column = 2, padx = 15, pady = 15, columnspan = 3, rowspan = 6)
         self.writeToLog(self.initLogText())
 
+        # default configure path
         self.configure_path = 'configure'
 
+        # installSynApps options, initialzie + read default configure files
         self.parser = Parser.ConfigParser(self.configure_path)
 
         self.install_config = self.parser.parse_install_config()
         self.updateConfigPanel()
 
+        # Threads for async operation
         self.thread = threading.Thread()
         self.loadingIconThread = threading.Thread(target=self.loadingLoop)
 
+        # installSynApps drivers
         self.cloner         = Cloner.CloneDriver(self.install_config)
         self.updater        = Updater.UpdateConfigDriver(self.configure_path, self.install_config)
         self.builder        = Builder.BuildDriver(self.install_config)
@@ -84,6 +148,10 @@ class InstallSynAppsGUI:
 
 
     def loadingLoop(self):
+        """
+        Simple function for playing animation when main process thread is executing
+        """
+
         icons = ['\\', '|', '/', '-']
         icon_counter = 0
         while self.thread.is_alive():
@@ -94,31 +162,47 @@ class InstallSynAppsGUI:
                 icon_counter = 0
         self.loadingLabel.config(text = 'Process Thread Status: Done.')
 
+
     def writeToLog(self, text):
+        """ Function that writes to log """
+
         self.log.insert(INSERT, text)
         self.log.see(END)
 
+
     def writeToConfigPanel(self, text):
+        """ Function that writes to the config panel """
+
         self.configPanel.insert(INSERT, text)
 
+
     def showErrorMessage(self, title, text):
+        """ Function that displays error popup and log message """
+
         if self.showPopups:
             messagebox.showerror(title, text)
         self.writeToLog(text + "\n")
 
 
     def showWarningMessage(self, title, text):
+        """ Function that displays warning popup and log message """
+
         if self.showPopups:
             messagebox.showwarning(title, text)
         self.writeToLog(text + "\n")
 
+
     def showMessage(self, title, text):
+        """ Function that displays info popup and log message """
+
         if self.showPopups:
             messagebox.showinfo(title, text)
         self.writeToLog(text + '\n')
 
 
     def initLogText(self):
+        """ Function that initializes log text """
+
         text = "+-----------------------------------------------------------------\n"
         text = text + "+ installSynApps, version: {}                                  +\n".format(self.version)
         text = text +"+ Author: Jakub Wlodek                                           +\n"
@@ -129,6 +213,10 @@ class InstallSynAppsGUI:
 
 
     def updateConfigPanel(self):
+        """
+        Function that refreshes the config panel contents if a new InstallConfiguration is loaded
+        """
+
         self.configPanel.delete('1.0', END)
         self.writeToLog("Writing Install Configuration to info panel...\n")
         if self.install_config is not None:
@@ -150,6 +238,12 @@ class InstallSynAppsGUI:
 # ----------------------- Button action functions -----------------------------
 
     def loadConfig(self):
+        """
+        Function that opens file dialog asking for configure directory,
+        then if it is valid, loads it into an InstallConfiguration object,
+        and updates the config panel.
+        """
+
         self.writeToLog("Opening load install config file dialog...\n")
         temp = self.configure_path
         self.configure_path = filedialog.askdirectory(initialdir = '.')
@@ -178,6 +272,10 @@ class InstallSynAppsGUI:
 
 
     def injectFiles(self):
+        """
+        Event function that starts a thread on the injectFilesProcess function
+        """
+
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.injectFilesProcess)
             self.thread.start()
@@ -187,12 +285,18 @@ class InstallSynAppsGUI:
 
 
     def injectFilesProcess(self):
+        """ Function that injects settings into configuration files """
+
         self.writeToLog('Starting file injection process.\n')
         self.updater.perform_injection_updates()
         self.writeToLog('Done.\n')
 
 
     def updateConfig(self):
+        """
+        Event function that starts a thread on the updateConfigProcess function
+        """
+
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.updateConfigProcess)
             self.thread.start()
@@ -202,6 +306,8 @@ class InstallSynAppsGUI:
 
 
     def updateConfigProcess(self):
+        """ Function that updates RELEASE and configuration files """
+        
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Fixing any modules that require specific RELEASE files...\n')
         for target in self.updater.fix_release_list:
@@ -215,12 +321,16 @@ class InstallSynAppsGUI:
         self.updater.add_missing_support_macros()
         self.writeToLog('Commenting non-auto-build paths...\n')
         self.updater.comment_non_build_macros()
-        self.injectFiles()
+        self.injectFilesProcess()
         self.showMessage('Update RELEASE', 'Finished update RELEASE + configure process.')
         return 0
 
 
     def buildConfig(self):
+        """
+        Event function that starts a thread on the buildConfigProcess function
+        """
+
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.buildConfigProcess)
             self.thread.start()
@@ -230,11 +340,15 @@ class InstallSynAppsGUI:
 
 
     def buildConfigProcess(self):
+        """ Function that builds all specified modules """
+
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning build process...\n')
-        #self.writeToLog('Running dependency script...\n')
-
+        self.writeToLog('Running dependency script...\n')
+        self.writeToLog('Please enter your sudo password into the terminal...\n')
+        builder.acquire_dependecies('scripts/dependencyInstall.sh')
+        self.writeToLog('Dependencies have been installed.\n')
         self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
         status = self.builder.build_base()
         if status < 0:
@@ -267,6 +381,10 @@ class InstallSynAppsGUI:
 
 
     def cloneConfig(self):
+        """
+        Event function that starts a thread on the cloneConfigProcess function
+        """
+
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.cloneConfigProcess)
             self.thread.start()
@@ -276,6 +394,8 @@ class InstallSynAppsGUI:
 
 
     def cloneConfigProcess(self):
+        """ Function that clones all specified modules """
+
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning module cloning process...\n')
@@ -306,6 +426,8 @@ class InstallSynAppsGUI:
 
 
     def loadHelp(self):
+        """ Simple function that displays a help message """
+
         helpMessage = "---------------------------------------------\n"
         helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nTo use this program, an install configuration is required.\n"
         helpMessage = helpMessage + "An example configuration directory has already been loaded, and can be seen in the ./configure dir.\n"
@@ -318,6 +440,10 @@ class InstallSynAppsGUI:
 
 
     def autorun(self):
+        """
+        Event function that starts a thread on the autorunProcess function
+        """
+
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.autorunProcess)
             self.thread.start()
@@ -328,6 +454,8 @@ class InstallSynAppsGUI:
 
 
     def autorunProcess(self):
+        """ Function that performs all other processes sequentially """
+
         self.showMessage('Start Autorun', 'Start Autorun - Clone -> Checkout -> Update -> Build -> Generate')
         current_status = self.cloneConfigProcess()
         if current_status < 0:
@@ -337,6 +465,9 @@ class InstallSynAppsGUI:
             if current_status < 0:
                 self.showErrorMessage('Update Error', 'ERROR - Update error occurred, aborting...')
             else:
+                passwd = simpledialog.askstring('Password', 'Enter admin password to install dependencies:', show='*')
+                current_status = self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
+                print(passwd)
                 current_status = self.buildConfigProcess()
                 if current_status < 0:
                     self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
@@ -346,11 +477,23 @@ class InstallSynAppsGUI:
 
 
     def saveLog(self, saveDir = None):
+        """
+        Function that saves the contents of the log to a file.
+
+        Parameters
+        ----------
+        saveDir = None
+            if None, opens file dialog to select save location, otherwise, saves in saveDir passed in
+        """
+
         location = saveDir
         if location == None:
             location = filedialog.askdirectory(initialdir = '.')
             if len(location) == 0:
                 return
+        if saveDir is not None and not os.path.exists(saveDir):
+            self.showErrorMessage('Save Error', 'ERROR - Save directory does not exist')
+            return
         time = datetime.datetime.now()
         log_file = open(location + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
         log_file.write(self.log.get('1.0', END))

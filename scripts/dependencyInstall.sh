@@ -8,6 +8,13 @@
 
 cd $(dirname $0)
 
+USING_GUI="NO"
+
+if [[ $# > 0 ]]
+then
+USING_GUI="YES"
+fi
+
 # Path variables, only used for adding custom dependencies (mostly for detector drivers)
 #INSTALL=/eApps/epics
 INSTALL_DIR=`grep INSTALL= ../configure/INSTALL_CONFIG`
@@ -23,30 +30,30 @@ ADUVC=$AREA_DETECTOR/ADUVC
 
 cd $INSTALL
 
-sudo apt-get -y install gcc
-sudo apt-get -y install g++
-sudo apt-get -y install make
-sudo apt-get -y install libxml2-dev
-sudo apt-get -y install libboost-dev
-sudo apt-get -y install libboost-test-dev
-sudo apt-get -y install libboost-system-dev
-sudo apt-get -y install libusb-dev
-sudo apt-get -y install libpcre3-dev
-sudo apt-get -y install re2c
-sudo apt-get -y install libx11-dev
-sudo apt-get -y install libxext-dev
-sudo apt-get -y install libopencv-dev
-sudo apt-get -y install libzbar-dev
-sudo apt-get -y install libreadline-dev
-sudo apt-get -y install libusb-dev
-sudo apt-get -y install libusb-1.0-0-dev
-sudo apt-get -y install libdmtx-dev
+apt-get -y install gcc
+apt-get -y install g++
+apt-get -y install make
+apt-get -y install libxml2-dev
+apt-get -y install libboost-dev
+apt-get -y install libboost-test-dev
+apt-get -y install libboost-system-dev
+apt-get -y install libusb-dev
+apt-get -y install libpcre3-dev
+apt-get -y install re2c
+apt-get -y install libx11-dev
+apt-get -y install libxext-dev
+apt-get -y install libopencv-dev
+apt-get -y install libzbar-dev
+apt-get -y install libreadline-dev
+apt-get -y install libusb-dev
+apt-get -y install libusb-1.0-0-dev
+apt-get -y install libdmtx-dev
 
 
 if [[ $ADUVC ]]
 then
 echo "Installing ADUVC dependencies"
-sudo apt-get -y install cmake
+apt-get -y install cmake
 cd $ADUVC/adUVCSupport
 ./installlibuvc.sh
 cd $INSTALL
@@ -56,5 +63,5 @@ fi
 if [[ $ADEIGER ]]
 then
 echo "Installing ADEiger dependencies"
-sudo apt-get -y install libzmq3-dev
+apt-get -y install libzmq3-dev
 fi

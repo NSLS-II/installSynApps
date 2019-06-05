@@ -40,11 +40,11 @@ class BuildDriver:
         self.install_config = install_config
 
 
-    def acquire_dependecies(self, dependency_script_path):
+    def acquire_dependecies(self, dependency_script_path, with_gui = False):
         """ Method that runs dependency install shell script """
 
         if os.path.exists(dependency_script_path) and os.path.isfile(dependency_script_path):
-            subprocess.call(dependency_script_path, shell=True)
+            subprocess.call(['sudo', dependency_script_path], shell=True)
 
 
     def build_base(self):
