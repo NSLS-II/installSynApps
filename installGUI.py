@@ -12,7 +12,6 @@ import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
-from tkinter import simpledialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
@@ -465,9 +464,6 @@ class InstallSynAppsGUI:
             if current_status < 0:
                 self.showErrorMessage('Update Error', 'ERROR - Update error occurred, aborting...')
             else:
-                passwd = simpledialog.askstring('Password', 'Enter admin password to install dependencies:', show='*')
-                current_status = self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
-                print(passwd)
                 current_status = self.buildConfigProcess()
                 if current_status < 0:
                     self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
