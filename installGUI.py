@@ -14,6 +14,7 @@ from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
 import os
+import datetime
 
 import installSynApps.DataModel.install_config as Config
 import installSynApps.IO.config_parser as Parser
@@ -48,6 +49,8 @@ class InstallSynAppsGUI:
         self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '2').grid(row = 0, column = 2, pady = 0, columnspan = 3)
         self.version = 'R2-0'
 
+        self.showPopups = False
+
         self.configPanel = ScrolledText.ScrolledText(frame)
         self.configPanel.grid(row = 5, column = 0, padx = 15, pady = 15, columnspan = 2, rowspan = 2)
 
@@ -75,21 +78,25 @@ class InstallSynAppsGUI:
 
     def writeToLog(self, text):
         self.log.insert(INSERT, text)
+        self.log.see(END)
 
     def writeToConfigPanel(self, text):
         self.configPanel.insert(INSERT, text)
 
-    def showErrorMessage(self, intitle, intext):
-        messagebox.showerror(title=intitle, text=intext)
+    def showErrorMessage(self, title, text):
+        if self.showPopups:
+            messagebox.showerror(title, text)
         self.writeToLog(text + "\n")
 
 
     def showWarningMessage(self, title, text):
-        messagebox.showwarning(title=title, text=text)
+        if self.showPopups:
+            messagebox.showwarning(title, text)
         self.writeToLog(text + "\n")
 
     def showMessage(self, title, text):
-        messagebox.showinfo(title = title, text = text)
+        if self.showPopups:
+            messagebox.showinfo(title, text)
         self.writeToLog(text + '\n')
 
 
@@ -128,12 +135,12 @@ class InstallSynAppsGUI:
     def loadConfig(self):
         self.writeToLog("Opening load install config file dialog...\n")
         temp = self.configure_path
-        try:
-            self.configure_path = filedialog.askdirectory(initialdir = '.')
-        except:
+        self.configure_path = filedialog.askdirectory(initialdir = '.')
+        if len(self.configure_path) == 0:
             self.writeToLog('Operation cancelled.\n')
+            self.configure_path = temp
+            return
         valid = True
-        print(self.configure_path)
         if not os.path.exists(self.configure_path + "/INSTALL_CONFIG"):
             valid = False
             self.showErrorMessage("Config Error", "ERROR - No INSTALL_CONFIG file found in selected directory.")
@@ -169,13 +176,13 @@ class InstallSynAppsGUI:
 
 
     
-    def cloneConfig(self, popup = True):
+    def cloneConfig(self):
         self.writeToLog('Beginning module cloning process...\n')
         if self.install_config is not None:
             for module in self.install_config.get_module_list():
                 if module.clone == 'YES':
                     self.writeToLog('Cloning module: {}, to location: {}.\n'.format(module.name, module.abs_path))
-                    if module.name == 'EPICS_BASE':
+                    if module.name in self.cloner.recursive_modules:
                         ret = self.cloner.clone_module(module, recursive=True)
                     else:
                         ret = self.cloner.clone_module(module)
@@ -187,16 +194,20 @@ class InstallSynAppsGUI:
 
                     self.writeToLog('Checking out version {}\n'.format(module.version))
                     self.cloner.checkout_module(module)
-            if popup:
-                self.showMessage('Finished Cloning process')
-            else:
-                self.writeToLog('Finished Cloning process\n')
+            self.showMessage('Finished Cloning process')
         else:
             self.showErrorMessage('ERROR - Install Config is not loaded correctly')
 
     
     def loadHelp(self):
-        print("Unimplemented")
+        helpMessage = "---------------------------------------------\n"
+        helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nTo use this program, an install configuration is required.\n"
+        helpMessage = helpMessage + "An example configuration directory has already been loaded, and can be seen in the ./configure dir.\n"
+        helpMessage = helpMessage + "Using this program, you may inject options into EPICS\nand synApps config files, automatically set"
+        helpMessage = helpMessage + " build flags,\nclone and checkout all modules and their versions, update RELEASE\nand configuration files,"
+        helpMessage = helpMessage + " and auto-build all of EPICS and synApps.\nPlease look over the current config below, and if changes are\n"
+        helpMessage = helpMessage + "required, edit the configure/INSTALL_CONFIG file, or load a new configure\ndirectory."
+        self.showMessage("Help", helpMessage)
 
 
     
@@ -205,7 +216,13 @@ class InstallSynAppsGUI:
 
 
     def saveLog(self):
-        print("Unimplemented")
+        saveDir = filedialog.askdirectory(initialdir = '.')
+        if len(saveDir) == 0:
+            return
+        time = datetime.datetime.now()
+        log_file = open(saveDir + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
+        log_file.write(self.log.get('1.0', END))
+        log_file.close()
 
 
 
