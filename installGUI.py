@@ -14,6 +14,7 @@ from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
 import os
+import time
 import datetime
 import threading
 
@@ -34,6 +35,7 @@ class InstallSynAppsGUI:
         frame = Frame(self.master)
         frame.pack()
         self.msg = "Welcome to installSynApps!"
+        self.loadingIcon = 'Done.'
 
         self.topLabel       = Label(frame, text = self.msg, width = '50', height = '2', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.smallFont)
         self.topLabel.grid(row = 0, column = 0, padx = 10, pady = 10, columnspan = 2)
@@ -47,7 +49,8 @@ class InstallSynAppsGUI:
         self.helpButton     = Button(frame, font = self.smallFont, text = 'Help', command = self.loadHelp, height = '4', width = '30').grid(row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.saveLog        = Button(frame, font = self.smallFont, text = 'Save Log', command = self.saveLog, height = '4', width = '30').grid(row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
         
-        self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '2').grid(row = 0, column = 2, pady = 0, columnspan = 3)
+        self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '2').grid(row = 0, column = 2, pady = 0, columnspan = 1)
+        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '2').grid(row = 0, column = 3, pady = 0, columnspan = 2)
         self.version = 'R2-0'
 
         self.showPopups = False
@@ -55,7 +58,7 @@ class InstallSynAppsGUI:
         self.configPanel = ScrolledText.ScrolledText(frame)
         self.configPanel.grid(row = 5, column = 0, padx = 15, pady = 15, columnspan = 2, rowspan = 2)
 
-        self.log = ScrolledText.ScrolledText(frame, height = '55')
+        self.log = ScrolledText.ScrolledText(frame, height = '55', width = '100')
         self.log.grid(row = 1, column = 2, padx = 15, pady = 15, columnspan = 3, rowspan = 6)
         self.writeToLog(self.initLogText())
 
@@ -67,7 +70,7 @@ class InstallSynAppsGUI:
         self.updateConfigPanel()
 
         self.thread = threading.Thread()
-
+        self.loadingIconThread = threading.Thread(target=self.loadingLoop)
 
         self.cloner         = Cloner.CloneDriver(self.install_config)
         self.updater        = Updater.UpdateConfigDriver(self.configure_path, self.install_config)
@@ -78,6 +81,14 @@ class InstallSynAppsGUI:
 
 # -------------------------- Helper functions ----------------------------------
 
+
+    def loadingLoop(self):
+        icons = ['\\', '|', '/', '-']
+        icon_counter = 0
+        while self.thread.is_alive():
+            self.loadingLabel.config(text = 'Process Thread Status: {}'.format(icons[icon_counter]))
+            time.sleep(0.25)
+        self.loadingLabel.config(text = 'Process Thread Status: Done.')
 
     def writeToLog(self, text):
         self.log.insert(INSERT, text)
@@ -163,9 +174,10 @@ class InstallSynAppsGUI:
 
 
     def injectFiles(self):
-        if not self.thread.is_alive()
+        if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.injectFilesProcess)
             self.thread.start()
+            self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
 
@@ -178,9 +190,10 @@ class InstallSynAppsGUI:
 
 
     def updateConfig(self):
-        if not self.thread.is_alive()
+        if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.updateConfigProcess)
             self.thread.start()
+            self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
 
@@ -205,9 +218,10 @@ class InstallSynAppsGUI:
 
 
     def buildConfig(self):
-        if not self.thread.is_alive()
+        if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.buildConfigProcess)
             self.thread.start()
+            self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
 
@@ -249,9 +263,10 @@ class InstallSynAppsGUI:
 
 
     def cloneConfig(self):
-        if not self.thread.is_alive()
+        if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.cloneConfigProcess)
             self.thread.start()
+            self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
 
@@ -299,9 +314,10 @@ class InstallSynAppsGUI:
 
 
     def autorun(self):
-        if not self.thread.is_alive()
+        if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.autorunProcess)
             self.thread.start()
+            self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
 
@@ -342,6 +358,7 @@ class InstallSynAppsGUI:
 
 root = Tk()
 root.title("installSynApps")
+root.resizable(False, False)
 gui = InstallSynAppsGUI(root)
 
 root.mainloop()
