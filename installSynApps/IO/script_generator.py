@@ -123,5 +123,5 @@ class ScriptGenerator:
 
         self.initialize_dir()
         self.generate_install()
-        self.generate_uninstall
+        self.generate_uninstall()
         self.generate_readme()
