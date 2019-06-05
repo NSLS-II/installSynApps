@@ -35,7 +35,6 @@ class InstallSynAppsGUI:
         frame = Frame(self.master)
         frame.pack()
         self.msg = "Welcome to installSynApps!"
-        self.loadingIcon = 'Done.'
 
         self.topLabel       = Label(frame, text = self.msg, width = '50', height = '2', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.smallFont)
         self.topLabel.grid(row = 0, column = 0, padx = 10, pady = 10, columnspan = 2)
@@ -50,7 +49,9 @@ class InstallSynAppsGUI:
         self.saveLog        = Button(frame, font = self.smallFont, text = 'Save Log', command = self.saveLog, height = '4', width = '30').grid(row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
         
         self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '2').grid(row = 0, column = 2, pady = 0, columnspan = 1)
-        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '2').grid(row = 0, column = 3, pady = 0, columnspan = 2)
+        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '2')
+        self.loadingLabel.grid(row = 0, column = 3, pady = 0, columnspan = 2)
+
         self.version = 'R2-0'
 
         self.showPopups = False
@@ -88,6 +89,9 @@ class InstallSynAppsGUI:
         while self.thread.is_alive():
             self.loadingLabel.config(text = 'Process Thread Status: {}'.format(icons[icon_counter]))
             time.sleep(0.25)
+            icon_counter = icon_counter + 1
+            if icon_counter == len(icons):
+                icon_counter = 0
         self.loadingLabel.config(text = 'Process Thread Status: Done.')
 
     def writeToLog(self, text):
@@ -180,7 +184,6 @@ class InstallSynAppsGUI:
             self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
-
 
 
     def injectFilesProcess(self):
