@@ -13,7 +13,6 @@ from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
-
 import os
 
 import installSynApps.DataModel.install_config as Config
@@ -80,8 +79,8 @@ class InstallSynAppsGUI:
     def writeToConfigPanel(self, text):
         self.configPanel.insert(INSERT, text)
 
-    def showErrorMessage(self, title, text):
-        messagebox.showerror(title=title, text=text)
+    def showErrorMessage(self, intitle, intext):
+        messagebox.showerror(title=intitle, text=intext)
         self.writeToLog(text + "\n")
 
 
@@ -105,7 +104,7 @@ class InstallSynAppsGUI:
 
 
     def updateConfigPanel(self):
-        self.configPanel.clipboard_clear()
+        self.configPanel.delete('1.0', END)
         self.writeToLog("Writing Install Configuration to info panel...\n")
         if self.install_config is not None:
             self.writeToConfigPanel("# Currently Loaded Install Configuration:\n\n")
@@ -129,8 +128,12 @@ class InstallSynAppsGUI:
     def loadConfig(self):
         self.writeToLog("Opening load install config file dialog...\n")
         temp = self.configure_path
-        self.configure_path = filedialog.askdirectory(initialdir = '.')
+        try:
+            self.configure_path = filedialog.askdirectory(initialdir = '.')
+        except:
+            self.writeToLog('Operation cancelled.\n')
         valid = True
+        print(self.configure_path)
         if not os.path.exists(self.configure_path + "/INSTALL_CONFIG"):
             valid = False
             self.showErrorMessage("Config Error", "ERROR - No INSTALL_CONFIG file found in selected directory.")
@@ -143,10 +146,16 @@ class InstallSynAppsGUI:
         self.parser.configure_path = self.configure_path
         self.install_config = self.parser.parse_install_config()
         self.updateConfigPanel()
+        self.cloner.install_config = self.install_config
+        self.updater.install_config = self.install_config
+        self.builder.install_config = self.install_config
+        self.autogenerator.install_config = self.install_config
 
 
     def injectFiles(self):
-        print("Unimplemented")
+        self.writeToLog('Starting file injection process.\n')
+        self.updater.perform_injection_updates()
+
 
 
 
@@ -166,7 +175,7 @@ class InstallSynAppsGUI:
             for module in self.install_config.get_module_list():
                 if module.clone == 'YES':
                     self.writeToLog('Cloning module: {}, to location: {}.\n'.format(module.name, module.abs_path))
-                    if module.name = 'EPICS_BASE':
+                    if module.name == 'EPICS_BASE':
                         ret = self.cloner.clone_module(module, recursive=True)
                     else:
                         ret = self.cloner.clone_module(module)
