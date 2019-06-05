@@ -15,6 +15,7 @@ import tkinter.scrolledtext as ScrolledText
 
 import os
 import datetime
+import threading
 
 import installSynApps.DataModel.install_config as Config
 import installSynApps.IO.config_parser as Parser
@@ -64,6 +65,8 @@ class InstallSynAppsGUI:
 
         self.install_config = self.parser.parse_install_config()
         self.updateConfigPanel()
+
+        self.thread = threading.Thread()
 
 
         self.cloner         = Cloner.CloneDriver(self.install_config)
@@ -131,7 +134,6 @@ class InstallSynAppsGUI:
 
 # ----------------------- Button action functions -----------------------------
 
-
     def loadConfig(self):
         self.writeToLog("Opening load install config file dialog...\n")
         temp = self.configure_path
@@ -161,12 +163,29 @@ class InstallSynAppsGUI:
 
 
     def injectFiles(self):
+        if not self.thread.is_alive()
+            self.thread = threading.Thread(target=self.injectFilesProcess)
+            self.thread.start()
+        else:
+            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+
+    def injectFilesProcess(self):
         self.writeToLog('Starting file injection process.\n')
         self.updater.perform_injection_updates()
         self.writeToLog('Done.\n')
 
 
     def updateConfig(self):
+        if not self.thread.is_alive()
+            self.thread = threading.Thread(target=self.updateConfigProcess)
+            self.thread.start()
+        else:
+            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+    def updateConfigProcess(self):
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Fixing any modules that require specific RELEASE files...\n')
         for target in self.updater.fix_release_list:
@@ -186,6 +205,14 @@ class InstallSynAppsGUI:
 
 
     def buildConfig(self):
+        if not self.thread.is_alive()
+            self.thread = threading.Thread(target=self.buildConfigProcess)
+            self.thread.start()
+        else:
+            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+    def buildConfigProcess(self):
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning build process...\n')
@@ -222,30 +249,38 @@ class InstallSynAppsGUI:
 
 
     def cloneConfig(self):
+        if not self.thread.is_alive()
+            self.thread = threading.Thread(target=self.cloneConfigProcess)
+            self.thread.start()
+        else:
+            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+    def cloneConfigProcess(self):
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning module cloning process...\n')
         if self.install_config is not None:
             for module in self.install_config.get_module_list():
                 if module.clone == 'YES':
-                    self.writeToLog('Cloning module: {}, to location: {}.\n'.format(module.name, module.abs_path))
+                    self.writeToLog('Cloning module: {}, to location: {}.\n'.format(module.name, module.rel_path))
                     if module.name in self.cloner.recursive_modules:
                         ret = self.cloner.clone_module(module, recursive=True)
                     else:
                         ret = self.cloner.clone_module(module)
                     
                     if ret == -2:
-                        self.showErrorMessage('ERROR - Module {} has an invaild absolute path.'.format(module.name))
+                        self.showErrorMessage('Clone Error' 'ERROR - Module {} has an invaild absolute path.'.format(module.name))
                         status = -1
                     elif ret == -1:
-                        self.showErrorMessage('ERROR - Module {} was not cloned successfully.'.format(module.name))
+                        self.showErrorMessage('Clone Error', 'ERROR - Module {} was not cloned successfully.'.format(module.name))
                         status = -1
 
                     self.writeToLog('Checking out version {}\n'.format(module.version))
                     self.cloner.checkout_module(module)
-            self.showMessage('Finished Cloning process')
+            self.showMessage('Success', 'Finished Cloning process')
         else:
-            self.showErrorMessage('ERROR - Install Config is not loaded correctly')
+            self.showErrorMessage('Load Error', 'ERROR - Install Config is not loaded correctly')
             status = -1
 
         return status
@@ -262,21 +297,32 @@ class InstallSynAppsGUI:
         self.showMessage("Help", helpMessage)
 
 
+
     def autorun(self):
+        if not self.thread.is_alive()
+            self.thread = threading.Thread(target=self.autorunProcess)
+            self.thread.start()
+        else:
+            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+
+    def autorunProcess(self):
         self.showMessage('Start Autorun', 'Start Autorun - Clone -> Checkout -> Update -> Build -> Generate')
-        current_status = self.cloneConfig()
+        current_status = self.cloneConfigProcess()
         if current_status < 0:
             self.showErrorMessage('Clone Error', 'ERROR - Cloning error occurred, aborting...')
         else:
-            current_status = self.updateConfig()
+            current_status = self.updateConfigProcess()
             if current_status < 0:
                 self.showErrorMessage('Update Error', 'ERROR - Update error occurred, aborting...')
             else:
-                current_status = self.buildConfig()
+                current_status = self.buildConfigProcess()
                 if current_status < 0:
                     self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
 
         self.saveLog(saveDir = '.')
+
 
 
     def saveLog(self, saveDir = None):
