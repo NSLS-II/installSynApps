@@ -155,6 +155,7 @@ class InstallSynAppsGUI:
         self.updateConfigPanel()
         self.cloner.install_config = self.install_config
         self.updater.install_config = self.install_config
+        self.updater.path_to_configure = self.configure_path
         self.builder.install_config = self.install_config
         self.autogenerator.install_config = self.install_config
 
@@ -162,21 +163,67 @@ class InstallSynAppsGUI:
     def injectFiles(self):
         self.writeToLog('Starting file injection process.\n')
         self.updater.perform_injection_updates()
-
-
+        self.writeToLog('Done.\n')
 
 
     def updateConfig(self):
-        print("Unimplemented")
+        self.writeToLog('-----------------------------------\n')
+        self.writeToLog('Fixing any modules that require specific RELEASE files...\n')
+        for target in self.updater.fix_release_list:
+            self.writeToLog('Fixing {} RELEASE file\n'.format(target))
+            self.updater.fix_target_release(target)
+        self.writeToLog('Updating all macros and paths for areaDetector...\n')
+        self.updater.update_ad_macros()
+        self.writeToLog('Updating all paths in support...\n')
+        self.updater.update_support_macros()
+        self.writeToLog('Adding any additional support paths...\n')
+        self.updater.add_missing_support_macros()
+        self.writeToLog('Commenting non-auto-build paths...\n')
+        self.updater.comment_non_build_macros()
+        self.injectFiles()
+        self.showMessage('Update RELEASE', 'Finished update RELEASE + configure process.')
+        return 0
 
 
-    
     def buildConfig(self):
-        print("Unimplemented")
+        status = 0
+        self.writeToLog('-----------------------------------\n')
+        self.writeToLog('Beginning build process...\n')
+        #self.writeToLog('Running dependency script...\n')
+
+        self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
+        status = self.builder.build_base()
+        if status < 0:
+            self.showErrorMessage('Build Error', 'ERROR - Failed to build base, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
+            return status
+        self.writeToLog('Done.\n')
+        self.writeToLog('Compiling EPICS support modules at location {}...\n'.format(self.install_config.support_path))
+        status = self.builder.build_support()
+        if status < 0:
+            self.showErrorMessage('Build Error', 'ERROR - Failed to build support modules, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
+            return status
+        self.writeToLog('Done.\n')
+        self.writeToLog('Compiling selected areaDetector modules at location {}...\n'.format(self.install_config.ad_path))
+        status, failedModules = self.builder.build_ad()
+        if status < 0:
+            self.showErrorMessage('Build Error', 'ERROR - Failed to ADCore or ADSupport, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
+            return status
+        elif len(failedModules) > 0:
+            for module in failedModules:
+                self.writeToLog('areaDetector module {} failed to auto-build\n'.format(module.name))
+        self.writeToLog('Done.\n')
+        self.writeToLog('Autogenerating install/uninstall scripts...\n')
+        self.autogenerator.generate_install()
+        self.autogenerator.generate_uninstall()
+        self.writeToLog('Autogenerating README file in {}...\n'.format(self.install_config.install_location))
+        self.autogenerator.generate_readme()
+        self.writeToLog('Done.\n')
+        return status
 
 
-    
     def cloneConfig(self):
+        status = 0
+        self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning module cloning process...\n')
         if self.install_config is not None:
             for module in self.install_config.get_module_list():
@@ -189,16 +236,21 @@ class InstallSynAppsGUI:
                     
                     if ret == -2:
                         self.showErrorMessage('ERROR - Module {} has an invaild absolute path.'.format(module.name))
+                        status = -1
                     elif ret == -1:
                         self.showErrorMessage('ERROR - Module {} was not cloned successfully.'.format(module.name))
+                        status = -1
 
                     self.writeToLog('Checking out version {}\n'.format(module.version))
                     self.cloner.checkout_module(module)
             self.showMessage('Finished Cloning process')
         else:
             self.showErrorMessage('ERROR - Install Config is not loaded correctly')
+            status = -1
 
-    
+        return status
+
+
     def loadHelp(self):
         helpMessage = "---------------------------------------------\n"
         helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nTo use this program, an install configuration is required.\n"
@@ -210,21 +262,37 @@ class InstallSynAppsGUI:
         self.showMessage("Help", helpMessage)
 
 
-    
     def autorun(self):
-        print("Unimplemented")
+        self.showMessage('Start Autorun', 'Start Autorun - Clone -> Checkout -> Update -> Build -> Generate')
+        current_status = self.cloneConfig()
+        if current_status < 0:
+            self.showErrorMessage('Clone Error', 'ERROR - Cloning error occurred, aborting...')
+        else:
+            current_status = self.updateConfig()
+            if current_status < 0:
+                self.showErrorMessage('Update Error', 'ERROR - Update error occurred, aborting...')
+            else:
+                current_status = self.buildConfig()
+                if current_status < 0:
+                    self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
+
+        self.saveLog(saveDir = '.')
 
 
-    def saveLog(self):
-        saveDir = filedialog.askdirectory(initialdir = '.')
-        if len(saveDir) == 0:
-            return
+    def saveLog(self, saveDir = None):
+        location = saveDir
+        if location == None:
+            location = filedialog.askdirectory(initialdir = '.')
+            if len(location) == 0:
+                return
         time = datetime.datetime.now()
-        log_file = open(saveDir + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
+        log_file = open(location + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
         log_file.write(self.log.get('1.0', END))
         log_file.close()
 
 
+
+# ---------------- Start the GUI ---------------
 
 root = Tk()
 root.title("installSynApps")
