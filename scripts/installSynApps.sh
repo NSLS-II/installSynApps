@@ -10,7 +10,7 @@ read continue1
 
 # first build the dependencies
 echo "Install the dependencies"
-./dependencyInstall.sh
+sudo ./dependencyInstall.sh
 echo "Press enter to continue"
 read continue2
 

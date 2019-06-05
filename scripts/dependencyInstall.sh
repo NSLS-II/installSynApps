@@ -8,12 +8,6 @@
 
 cd $(dirname $0)
 
-USING_GUI="NO"
-
-if [[ $# > 0 ]]
-then
-USING_GUI="YES"
-fi
 
 # Path variables, only used for adding custom dependencies (mostly for detector drivers)
 #INSTALL=/eApps/epics
