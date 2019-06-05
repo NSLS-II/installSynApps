@@ -254,6 +254,7 @@ class InstallSynAppsGUI:
                 self.writeToLog('areaDetector module {} failed to auto-build\n'.format(module.name))
         self.writeToLog('Done.\n')
         self.writeToLog('Autogenerating install/uninstall scripts...\n')
+        self.autogenerator.initialize_dir()
         self.autogenerator.generate_install()
         self.autogenerator.generate_uninstall()
         self.writeToLog('Autogenerating README file in {}...\n'.format(self.install_config.install_location))
