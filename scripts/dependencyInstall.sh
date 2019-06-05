@@ -46,7 +46,7 @@ sudo apt-get -y install libdmtx-dev
 if [[ $ADUVC ]]
 then
 echo "Installing ADUVC dependencies"
-sudo apt -y install cmake
+sudo apt-get -y install cmake
 cd $ADUVC/adUVCSupport
 ./installlibuvc.sh
 cd $INSTALL
@@ -56,5 +56,5 @@ fi
 if [[ $ADEIGER ]]
 then
 echo "Installing ADEiger dependencies"
-sudo apt -y install libzmq3-dev
+sudo apt-get -y install libzmq3-dev
 fi

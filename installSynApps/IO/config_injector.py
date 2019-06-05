@@ -20,6 +20,8 @@ class ConfigInjector:
         path to installSynApps configuration directory
     install_config : InstallConfiguration
         the currently loaded install configuration
+    ad_modules : List of str
+        Used to decide which modules to include when with_ad = False in update_macros_file()
 
     Methods
     -------
@@ -35,6 +37,10 @@ class ConfigInjector:
         appends list of macro-value pairs to main list from file
     update_macros(macro_val_list : List, target : str)
         updates the macros in a target directory files given a list of macro-value pairs
+    update_macros_file(macro_replace_list : List, target_dir : 
+        str, target_filename : str, comment_unsupported : bool, with_ad : bool)
+            Function that updates the macros for a single file, with settings for commenting unupported macros
+            and for including the ad blacklist
     """
 
 

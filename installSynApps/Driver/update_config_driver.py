@@ -25,6 +25,8 @@ class UpdateConfigDriver:
         helper object used to inject into config files and update macro values
     fix_release_list : List of str
         list of modules that need to have their RELEASE file replaced
+    add_to_release_blacklist : List of str
+        list of modules that should be commented in support/configure/RELEASE
     
     Methods
     -------
@@ -40,6 +42,10 @@ class UpdateConfigDriver:
         Function that calls Config injector to update all macros in target dir
     fix_target_release(target_module_name : str)
         Function that replaces the RELEASE file of a target module with a corrected one
+    add_support_macros()
+        Function that appends any paths to the support/configure/RELEASE file that were not in it originally
+    comment_non_build_macros()
+        Function that comments out any paths in the support/configure/RELEASE that are clone only and not build
     run_update_config()
         Top level function that runs all required config update functions
     """
@@ -142,6 +148,10 @@ class UpdateConfigDriver:
 
 
     def add_missing_support_macros(self):
+        """
+        Function that appends any paths to the support/configure/RELEASE file that were not in it originally
+        """
+
         to_append_commented = []
         to_append = []
         for module in self.install_config.get_module_list():
@@ -169,7 +179,7 @@ class UpdateConfigDriver:
 
     def comment_non_build_macros(self):
         """
-
+        Function that comments out any paths in the support/configure/RELEASE that are clone only and not build
         """
 
         rel_file_path = self.install_config.support_path + "/configure/RELEASE"
