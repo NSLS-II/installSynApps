@@ -80,7 +80,7 @@ class ScriptGenerator:
         uninstall_fp.write(self.message)
 
         modules = self.install_config.get_module_list()
-        modules = modules.reverse()
+        modules.reverse()
 
         for module in modules:
             if module.build == "YES":

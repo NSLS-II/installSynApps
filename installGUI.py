@@ -129,7 +129,6 @@ class InstallSynAppsGUI:
         self.parser = Parser.ConfigParser(self.configure_path)
 
         self.install_config = self.parser.parse_install_config()
-        self.updateConfigPanel()
 
         # Threads for async operation
         self.thread = threading.Thread()
@@ -140,6 +139,8 @@ class InstallSynAppsGUI:
         self.updater        = Updater.UpdateConfigDriver(self.configure_path, self.install_config)
         self.builder        = Builder.BuildDriver(self.install_config)
         self.autogenerator  = Autogenerator.ScriptGenerator(self.install_config)
+
+        self.updateConfigPanel()
 
 
 
@@ -230,6 +231,14 @@ class InstallSynAppsGUI:
                 if module.build == "NO" and module.clone == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
             self.writeToLog("Done.\n")
+
+            self.writeToConfigPanel("\nAdditional build flags will be taken from:\n")
+            for mfile in os.listdir(self.configure_path + "/macroFiles"):
+                self.writeToConfigPanel(mfile + "\n")
+            self.writeToConfigPanel("\nFile injections will be performed on the following:\n")
+            for ifile in os.listdir(self.configure_path + "/injectionFiles"):
+                link = self.updater.config_injector.get_injector_file_link(self.configure_path + "/injectionFiles/" + ifile)
+                self.writeToConfigPanel("{} -> {}\n".format(ifile, link))
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
@@ -468,7 +477,8 @@ class InstallSynAppsGUI:
                 if current_status < 0:
                     self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
 
-        self.saveLog(saveDir = '.')
+        self.showMessage('Alert', 'You may wish to save a copy of this log file for later use.')
+        self.writeToLog('Autorun completed.')
 
 
 

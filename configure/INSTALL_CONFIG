@@ -9,7 +9,7 @@
 
 # Top level install location for the build
 
-INSTALL=/home/jwlodek/Documents/epics
+INSTALL=/epics
 
 
 #-- CURRENT ARCH --
@@ -196,10 +196,10 @@ FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmp
 
 GIT_URL=https://github.com/epicsNSLS2-deploy/
 
-UPDATEIOC           master      $(INSTALL)/utils/updateIOC                  updateIOC                       YES             NO
-IOCDEPLOY           master      $(INSTALL)/utils/ioc_deploy                 ioc_deploy                      YES             NO
-INITIOC             master      $(INSTALL)/utils/initIOC                    initIOC                         YES             NO
-OPIORGANIZER        master      $(INSTALL)/utils/opi_organizer              opi_organizer                   YES             NO
+UPDATEIOC           master      $(INSTALL)/utils/updateIOC                  updateIOC                       NO             NO
+IOCDEPLOY           master      $(INSTALL)/utils/ioc_deploy                 ioc_deploy                      NO             NO
+INITIOC             master      $(INSTALL)/utils/initIOC                    initIOC                         NO             NO
+OPIORGANIZER        master      $(INSTALL)/utils/opi_organizer              opi_organizer                   NO             NO
 
 
 ####################################################
@@ -208,7 +208,7 @@ OPIORGANIZER        master      $(INSTALL)/utils/opi_organizer              opi_
 
 WGET_URL=https://sourceforge.net/projects/cs-studio/files/nsls2-release/
 
-CSSTUDIO            4.5.1       $(INSTALL)/cs-studio                        cs-studio-nsls2-$(VERSION)-linux.gtx.x86_64.tar.gz      NO     NO
+CSSTUDIO            4.5.1       $(INSTALL)/cs-studio      cs-studio-nsls2-$(VERSION)-linux.gtx.x86_64.tar.gz      NO       NO
 
 
 
