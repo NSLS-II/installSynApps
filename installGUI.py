@@ -232,13 +232,14 @@ class InstallSynAppsGUI:
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
             self.writeToLog("Done.\n")
 
-            self.writeToConfigPanel("\nAdditional build flags will be taken from:\n")
-            for mfile in os.listdir(self.configure_path + "/macroFiles"):
-                self.writeToConfigPanel(mfile + "\n")
-            self.writeToConfigPanel("\nFile injections will be performed on the following:\n")
-            for ifile in os.listdir(self.configure_path + "/injectionFiles"):
-                link = self.updater.config_injector.get_injector_file_link(self.configure_path + "/injectionFiles/" + ifile)
-                self.writeToConfigPanel("{} -> {}\n".format(ifile, link))
+            if os.path.exists(self.configure_path + "/macroFiles") and os.path.exists(self.configure_path + "/injectionFiles"):
+                self.writeToConfigPanel("\nAdditional build flags will be taken from:\n")
+                for mfile in os.listdir(self.configure_path + "/macroFiles"):
+                    self.writeToConfigPanel(mfile + "\n")
+                self.writeToConfigPanel("\nFile injections will be performed on the following:\n")
+                for ifile in os.listdir(self.configure_path + "/injectionFiles"):
+                    link = self.updater.config_injector.get_injector_file_link(self.configure_path + "/injectionFiles/" + ifile)
+                    self.writeToConfigPanel("{} -> {}\n".format(ifile, link))
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
