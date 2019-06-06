@@ -84,42 +84,42 @@ class InstallSynAppsGUI:
 
         # Initialize the frame and window
         self.master = master
-        self.smallFont = tkFont.Font(family = "Helvetica", size = 14)
-        self.largeFont = tkFont.Font(family = "Helvetica", size = 18)
+        self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
+        self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
         frame = Frame(self.master)
         frame.pack()
         self.msg = "Welcome to installSynApps!"
 
         # title label
-        self.topLabel       = Label(frame, text = self.msg, width = '50', height = '2', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.smallFont)
+        self.topLabel       = Label(frame, text = self.msg, width = '25', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
         self.topLabel.grid(row = 0, column = 0, padx = 10, pady = 10, columnspan = 2)
 
         # Control buttons
-        self.loadButton     = Button(frame, font = self.smallFont, text = 'Load Config', command = self.loadConfig, height = '4', width = '30').grid(row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.cloneButton    = Button(frame, font = self.smallFont, text = 'Clone Modules', command = self.cloneConfig, height = '4', width = '30').grid(row = 1, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.injectButton   = Button(frame, font = self.smallFont, text = 'Inject Files', command = self.injectFiles, height = '4', width = '30').grid(row = 2, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.updateButton   = Button(frame, font = self.smallFont, text = 'Update RELEASE', command = self.updateConfig, height = '4', width = '30').grid(row = 2, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.buildButton    = Button(frame, font = self.smallFont, text = 'Build Modules', command = self.buildConfig, height = '4', width = '30').grid(row = 3, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.autorunButton  = Button(frame, font = self.smallFont, text = 'Autorun', command = self.autorun, height = '4', width = '30').grid(row = 3, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.helpButton     = Button(frame, font = self.smallFont, text = 'Help', command = self.loadHelp, height = '4', width = '30').grid(row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.saveLog        = Button(frame, font = self.smallFont, text = 'Save Log', command = self.saveLog, height = '4', width = '30').grid(row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
+        self.loadButton     = Button(frame, font = self.smallFont, text = 'Load Config', command = self.loadConfig, height = '3', width = '20').grid(row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.cloneButton    = Button(frame, font = self.smallFont, text = 'Clone Modules', command = self.cloneConfig, height = '3', width = '20').grid(row = 1, column = 1, padx = 15, pady = 15, columnspan = 1)
+        self.injectButton   = Button(frame, font = self.smallFont, text = 'Inject Files', command = self.injectFiles, height = '3', width = '20').grid(row = 2, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.updateButton   = Button(frame, font = self.smallFont, text = 'Update RELEASE', command = self.updateConfig, height = '3', width = '20').grid(row = 2, column = 1, padx = 15, pady = 15, columnspan = 1)
+        self.buildButton    = Button(frame, font = self.smallFont, text = 'Build Modules', command = self.buildConfig, height = '3', width = '20').grid(row = 3, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.autorunButton  = Button(frame, font = self.smallFont, text = 'Autorun', command = self.autorun, height = '3', width = '20').grid(row = 3, column = 1, padx = 15, pady = 15, columnspan = 1)
+        self.helpButton     = Button(frame, font = self.smallFont, text = 'Help', command = self.loadHelp, height = '3', width = '20').grid(row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.saveLog        = Button(frame, font = self.smallFont, text = 'Save Log', command = self.saveLog, height = '3', width = '20').grid(row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
         
         # Log and loading label
-        self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '2').grid(row = 0, column = 2, pady = 0, columnspan = 1)
-        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '2')
-        self.loadingLabel.grid(row = 0, column = 3, pady = 0, columnspan = 2)
+        self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
+        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '1')
+        self.loadingLabel.grid(row = 0, column = 2, pady = 0, columnspan = 2)
 
         # version and popups toggle
         self.version = 'R2-0'
         self.showPopups = False
 
         # config panel
-        self.configPanel = ScrolledText.ScrolledText(frame)
+        self.configPanel = ScrolledText.ScrolledText(frame, width = '50', height = '20')
         self.configPanel.grid(row = 5, column = 0, padx = 15, pady = 15, columnspan = 2, rowspan = 2)
 
         # log panel + initialize text
-        self.log = ScrolledText.ScrolledText(frame, height = '55', width = '100')
-        self.log.grid(row = 1, column = 2, padx = 15, pady = 15, columnspan = 3, rowspan = 6)
+        self.log = ScrolledText.ScrolledText(frame, height = '40', width = '70')
+        self.log.grid(row = 1, column = 2, padx = 15, pady = 15, columnspan = 6, rowspan = 6)
         self.writeToLog(self.initLogText())
 
         # default configure path
@@ -132,7 +132,7 @@ class InstallSynAppsGUI:
 
         # Threads for async operation
         self.thread = threading.Thread()
-        self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+        self.loadingIconThread = threading.Thread()
 
         # installSynApps drivers
         self.cloner         = Cloner.CloneDriver(self.install_config)
@@ -287,6 +287,7 @@ class InstallSynAppsGUI:
 
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.injectFilesProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
             self.thread.start()
             self.loadingIconThread.start()
         else:
@@ -308,6 +309,7 @@ class InstallSynAppsGUI:
 
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.updateConfigProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
             self.thread.start()
             self.loadingIconThread.start()
         else:
@@ -342,6 +344,7 @@ class InstallSynAppsGUI:
 
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.buildConfigProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
             self.thread.start()
             self.loadingIconThread.start()
         else:
@@ -396,6 +399,7 @@ class InstallSynAppsGUI:
 
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.cloneConfigProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
             self.thread.start()
             self.loadingIconThread.start()
         else:
@@ -455,6 +459,7 @@ class InstallSynAppsGUI:
 
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=self.autorunProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
             self.thread.start()
             self.loadingIconThread.start()
         else:
