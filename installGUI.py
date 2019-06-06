@@ -347,7 +347,7 @@ class InstallSynAppsGUI:
         self.writeToLog('Beginning build process...\n')
         self.writeToLog('Running dependency script...\n')
         self.writeToLog('Please enter your sudo password into the terminal...\n')
-        builder.acquire_dependecies('scripts/dependencyInstall.sh')
+        self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
         self.writeToLog('Dependencies have been installed.\n')
         self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
         status = self.builder.build_base()
