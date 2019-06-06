@@ -112,21 +112,31 @@ if dep == "y":
     print("Installing all dependencies...")
     builder.acquire_dependecies("scripts/dependencyInstall.sh")
 
-print("Done installing dependencies, starting build...")
-ret, message, failed_list = builder.build_all()
+if not yes:
+    build = input("Ready to build selected modules... Continue (y/n) > ")
+else:
+    build = "y"
 
-if ret < 0:
-    print("Build failed - {}".format(message))
-    print("Check the INSTALL_CONFIG file to make sure settings and paths are valid")
-elif len(failed_list) > 0:
-    for admodule in failed_list:
-        print("AD Module {} failed to build".format(admodule.name))
-    print("Check for missing dependecies, and if INSTALL_CONFIG is valid.")
+if build = "y":
+    print("Done installing dependencies, starting build...")
+    ret, message, failed_list = builder.build_all()
 
-print("----------------------------------------------")
-print("Autogenerating scripts and README file...")
-autogenerator.autogenerate_all()
-print("Done.")
+    if ret < 0:
+        print("Build failed - {}".format(message))
+        print("Check the INSTALL_CONFIG file to make sure settings and paths are valid")
+    elif len(failed_list) > 0:
+        for admodule in failed_list:
+            print("AD Module {} failed to build".format(admodule.name))
+        print("Check for missing dependecies, and if INSTALL_CONFIG is valid.")
+
+
+    print("----------------------------------------------")
+    print("Autogenerating scripts and README file...")
+    autogenerator.autogenerate_all()
+    print("Done.")
+
+else:
+    print("Build aborted... Exiting.")
 
 
 
