@@ -5,7 +5,7 @@
 # Created on: 9-May-2019
 echo
 echo "+-----------------------------------------------------------------"
-echo "+ installSynApps, version R0-1                                   +"
+echo "+ installSynApps, version R1-0                                   +"
 echo "+ Author: Jakub Wlodek                                           +"
 echo "+ Copyright (c): Brookhaven National Laboratory 2018-2019        +"
 echo "+ This software comes with NO warranty!                          +"
@@ -15,6 +15,9 @@ echo "Welcome to the installSynApps module."
 echo "It is designed to automate the build process for EPICS and areaDetector."
 echo "The scripts included will automatically edit all configuration files"
 echo "required, and then build with make."
+echo
+echo "THIS BUILD SCRIPT USES THE LEGACY VERSION OF installSynApps. IT IS RECOMMENDED"
+echo "TO USE installCLI.py OR installGUI.py INSTEAD FOR BETTER ERROR CHECKING"
 
 
 INSTALL_DIR=`grep INSTALL= configure/INSTALL_CONFIG`

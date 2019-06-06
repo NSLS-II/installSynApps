@@ -6,6 +6,9 @@
 # For any custom dependencies, please add them here prior to running the installSynApps.sh script
 #
 
+cd $(dirname $0)
+
+
 # Path variables, only used for adding custom dependencies (mostly for detector drivers)
 #INSTALL=/eApps/epics
 INSTALL_DIR=`grep INSTALL= ../configure/INSTALL_CONFIG`
@@ -44,7 +47,7 @@ sudo apt-get -y install libdmtx-dev
 if [[ $ADUVC ]]
 then
 echo "Installing ADUVC dependencies"
-sudo apt -y install cmake
+sudo apt-get -y install cmake
 cd $ADUVC/adUVCSupport
 ./installlibuvc.sh
 cd $INSTALL
@@ -54,5 +57,5 @@ fi
 if [[ $ADEIGER ]]
 then
 echo "Installing ADEiger dependencies"
-sudo apt -y install libzmq3-dev
+sudo apt-get -y install libzmq3-dev
 fi
