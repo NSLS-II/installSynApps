@@ -27,13 +27,13 @@ path_to_configure = "configure"
 
 def parse_user_input():
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
-    parser.add_argument('-y', '--force-yes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
-    parser.add_argument('-c', '--custom-configure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
+    parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
+    parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
     arguments = vars(parser.parse_args())
-    if arguments["force-yes"] == True:
+    if arguments['forceyes'] == True:
         yes = True
-    if arguments["custom-configure"] is not None:
-        path_to_configure = arguments["custom-configure"]
+    if arguments['customconfigure'] is not None:
+        path_to_configure = arguments['customconfigure']
 
 
 
@@ -117,7 +117,7 @@ if not yes:
 else:
     build = "y"
 
-if build = "y":
+if build == "y":
     print("Done installing dependencies, starting build...")
     ret, message, failed_list = builder.build_all()
 
