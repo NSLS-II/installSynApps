@@ -119,6 +119,8 @@ if dep == "y":
         path = input("Please enter a path to your windows dependency script > ")
         if os.path.exists(path):
             builder.acquire_dependecies(path)
+        else:
+            print("Path does not exist. Continuing with build.")
     else:
         print("Installing all linux dependencies...")
         builder.acquire_dependecies("scripts/dependencyInstall.sh")
