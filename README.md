@@ -2,7 +2,7 @@
 
 A python3 module meant for cloning and building EPICS, synApps, and areaDetector with one command.
 
-Author: Jakub Wlodek
+Author: Jakub Wlodek  
 Corresponding author: Kazimierz Gofron
 
 ###
