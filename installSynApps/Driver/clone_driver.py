@@ -8,6 +8,7 @@
 import os
 import subprocess
 import shutil
+from sys import platform
 import installSynApps.DataModel.install_config as IC
 import installSynApps.DataModel.install_module as IM
 
@@ -79,9 +80,15 @@ class CloneDriver:
                 elif recursive and module.url_type == "GIT_URL":
                     ret = subprocess.call(["git", "clone", "--recursive", module.url + module.repository , module.abs_path])
                 elif module.url_type == "WGET_URL":
-                    ret = subprocess.call(["wget", "-P", module.abs_path, module.url + module.repository])
-                    if ret == 0:
+                    if platform == "win32":
+                        ret = subprocess.call(["wget", "--no-check-certificate", "-P", module.abs_path, module.url + module.repository])
+                    else:
+                        ret = subprocess.call(["wget", "-P", module.abs_path, module.url + module.repository])
+
+                    if module.repository.endswith(".tgz") and ret == 0:
                         ret = subprocess.call(["tar", "-xvzf", module.abs_path + "/" + module.repository, "-C", module.abs_path, "--strip-components=1"])
+                    elif module.repository.endswith(".zip") and ret == 0:
+                        ret = subprocess.call(["unzip", module.abs_path + "/" + module.repository, "-C", module.abs_path])
                 
                 if ret == 0:
                     return ret
