@@ -3,7 +3,13 @@
 A python3 module meant for cloning and building EPICS, synApps, and areaDetector with one command.
 
 Author: Jakub Wlodek
+Corresponding author: Kazimierz Gofron
 
+###
+This development is based on bash EPICS distribution scripts developed primarly for UNIX/Linux environment
+     https://github.com/epicsNSLS2-deploy/synAppsRelease
+and prior work related to synApps packaging currently hosted
+    https://github.com/EPICS-synApps
 ### Usage
 
 There are two recommended usage procedures for the module, through the use of `installCLI.py` and `installGUI.py`. The first will perform all operations through the terminal, while the other will display a GUI written in Tkinter. 
