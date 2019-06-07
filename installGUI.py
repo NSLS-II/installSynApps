@@ -20,6 +20,7 @@ import os
 import time
 import datetime
 import threading
+from sys import process
 
 # installSynApps module imports
 import installSynApps.DataModel.install_config as Config
@@ -357,10 +358,13 @@ class InstallSynAppsGUI:
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning build process...\n')
-        self.writeToLog('Running dependency script...\n')
-        self.writeToLog('Please enter your sudo password into the terminal...\n')
-        self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
-        self.writeToLog('Dependencies have been installed.\n')
+        if not process == "win32":
+            self.writeToLog('Running dependency script...\n')
+            self.writeToLog('Please enter your sudo password into the terminal...\n')
+            self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
+            self.writeToLog('Dependencies have been installed.\n')
+        else:
+            self.writeToLog("Windows ARCH detected - currently no support for auto-install dependencies.\n")
         self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
         status = self.builder.build_base()
         if status < 0:

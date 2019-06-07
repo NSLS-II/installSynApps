@@ -109,8 +109,19 @@ else:
     dep = "y"
 
 if dep == "y":
-    print("Installing all dependencies...")
-    builder.acquire_dependecies("scripts/dependencyInstall.sh")
+    win = ""
+    while win != "win32" and win != "linux":
+        if win != "":
+            print("Please enter either win32 or linux")
+        win = input("Is this a windows or a linux installation? (win32/linux) > ")
+    
+    if win == "win32":
+        path = input("Please enter a path to your windows dependency script > ")
+        if os.path.exists(path):
+            builder.acquire_dependecies(path)
+    else:
+        print("Installing all linux dependencies...")
+        builder.acquire_dependecies("scripts/dependencyInstall.sh")
 
 if not yes:
     build = input("Ready to build selected modules... Continue (y/n) > ")
