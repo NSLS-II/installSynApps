@@ -20,7 +20,7 @@ import os
 import time
 import datetime
 import threading
-from sys import process
+from sys import platform
 
 # installSynApps module imports
 import installSynApps.DataModel.install_config as Config
@@ -358,7 +358,7 @@ class InstallSynAppsGUI:
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning build process...\n')
-        if not process == "win32":
+        if not platform == "win32":
             self.writeToLog('Running dependency script...\n')
             self.writeToLog('Please enter your sudo password into the terminal...\n')
             self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
