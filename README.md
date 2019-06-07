@@ -7,8 +7,8 @@ Corresponding author: Kazimierz Gofron
 
 ###
 This development is based on bash EPICS distribution scripts developed primarly for UNIX/Linux environment
-     https://github.com/epicsNSLS2-deploy/synAppsRelease
-and prior work related to synApps packaging currently hosted
+     https://github.com/epicsNSLS2-deploy/synAppsRelease  
+and prior work related to synApps packaging currently hosted  
     https://github.com/EPICS-synApps
 ### Usage
 
