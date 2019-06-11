@@ -5,11 +5,8 @@ A python3 module meant for cloning and building EPICS, synApps, and areaDetector
 Author: Jakub Wlodek  
 Corresponding author: Kazimierz Gofron
 
-###
-This development is based on bash EPICS distribution scripts developed primarly for UNIX/Linux environment
-     https://github.com/epicsNSLS2-deploy/synAppsRelease  
-and prior work related to synApps packaging currently hosted  
-    https://github.com/EPICS-synApps
+This development is based on bash EPICS distribution scripts developed primarly for building on the UNIX/Linux environment, and prior work related to synApps packaging which is utilized by installSynApps is currently hosted at https://github.com/EPICS-synApps
+
 ### Usage
 
 There are two recommended usage procedures for the module, through the use of `installCLI.py` and `installGUI.py`. The first will perform all operations through the terminal, while the other will display a GUI written in Tkinter. 
@@ -28,6 +25,8 @@ For information on the available options, run with the `-h` flag. After running 
 
 ### installGUI
 
+The GUI requires Tkinter to be installed for operation. Tkinter is a standard module included with python3, though if it is not it can be installed via `pip` or the package manager as `python3-tk`.
+
 Similar to `installCLI.py`, to use the GUI, simply run it with python3. You will then see the option for each individual operation, along with an autorun that will perform them all sequentially. You may also load another configuration directory, provided that it follows the same file format as the given default configure directory.
 
 In addition, the GUI keeps a log of the operations completed, which can be saved to an arbitrary location. Note that if a process is running (as indicated by the animated process status message), you will be unable to run another process.
@@ -38,8 +37,9 @@ The installSynApps module requires the following to be in the environment PATH i
 * git
 * make
 * wget
+* tar
 
-If those three packages are available, then the script should be able to run through the entirety of the build process. The only caveat is that when building on windows, the dependency install script (which uses `apt` and `bash`) will not be able to run. This means that modules requiring external packages as dependencies will need these to be compiled and placed in the system path prior to compilation.
+If these packages are available, then the script should be able to run through the entirety of the build process. The only caveat is that when building on windows, the dependency install script (which uses `apt` and `bash`) will not be able to run. This means that modules requiring external packages as dependencies will need these to be compiled and placed in the system path prior to compilation.
 
 In addition, it is possible that on windows the downloaded python 3 .exe file will actually simply be called python. Thus, the scripts must be executed with
 
@@ -65,7 +65,7 @@ It is possible to use different `configure` directories when using `installSynAp
 
 **BELOW ARE INSTRUCTIONS FOR RUNNING THE LEGACY VERSION OF INSTALLSYNAPPS**
 
-### Auto Build
+### Auto Build - Legacy
 
 For most purposes, it is simplest to run the auto-build script, which will give you a guided process through building the modules.
 To do this, run:
@@ -75,7 +75,7 @@ To do this, run:
 The script will first ask if you wish to keep the default build config, which in most cases is yes. Next, it will ask if
 the curret install location is OK. If no, simply enter the new install location.
 
-### Included scripts
+### Included scripts - Legacy
 
 Script name                    | Script Function
 ------------------- | ------------------------------------------------------
@@ -88,7 +88,7 @@ ad_config_setup.py | Script based on adConfigSetup, that replaces area detector 
 dependencyInstall.sh | bash script that installs all required packages for EPICS and synApps
 script_generator.py | script that creates bash scripts for installing and uninstalling, so that compilation for other operating systems is simplified.
 
-### Usage
+### Usage - Legacy
 
 For more granular control over the build process, do the following:  
 
