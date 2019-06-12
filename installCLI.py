@@ -1,16 +1,21 @@
 #!/usr/bin/python3
 
-#
-# Python script for running the installSynApps module through the CLI
-#
-# Author: Jakub Wlodek
-#
+""" Python script for running the installSynApps module through the CLI """
 
+__author__      = "Jakub Wlodek"
+__copyright__   = "Copyright June 2019, Brookhaven Science Associates"
+__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
+__license__     = "GPL"
+__version__     = "R2-0"
+__maintainer__  = "Jakub Wlodek"
+__status__      = "Production"
 
+# Support python modules
 import os
 import subprocess
 import argparse
 
+# InstallSynAppsModules
 import installSynApps.DataModel.install_config as Configuration
 import installSynApps.Driver.build_driver as Builder
 import installSynApps.Driver.clone_driver as Cloner
@@ -19,7 +24,6 @@ import installSynApps.IO.config_parser as Parser
 import installSynApps.IO.script_generator as Autogenerator
 
 
-version = "R2-0"
 yes = False
 path_to_configure = "configure"
 
@@ -44,7 +48,7 @@ parse_user_input()
 
 # Welcome message
 print("+-----------------------------------------------------------------")
-print("+ installSynApps, version: {}                                  +".format(version))
+print("+ installSynApps, version: {}                                  +".format(__version__))
 print("+ Author: Jakub Wlodek                                           +")
 print("+ Copyright (c): Brookhaven National Laboratory 2018-2019        +")
 print("+ This software comes with NO warranty!                          +")

@@ -1,8 +1,14 @@
-#
-# Class for a window that allows editing of a loaded install config.
-#
-# Author: Jakub Wlodek
-#
+""" 
+Class for a window that allows editing of a loaded install config.
+"""
+
+__author__      = "Jakub Wlodek"
+__copyright__   = "Copyright June 2019, Brookhaven Science Associates"
+__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
+__license__     = "GPL"
+__version__     = "R2-0"
+__maintainer__  = "Jakub Wlodek"
+__status__      = "Production"
 
 
 # Tkinter imports
@@ -13,8 +19,8 @@ from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
+# Helper python modules
 import os
-
 
 # installSynApps module imports
 import installSynApps.DataModel.install_config as Config
@@ -22,11 +28,43 @@ import installSynApps.IO.config_parser as Parser
 
 
 class EditConfigGUI:
+    """
+    Class representing a window for editing a currently loaded install config in the GUI.
+
+    Attributes
+    ----------
+    root : InstallSynAppsGUI
+        The top TK instance that opened this window
+    master : Toplevel
+        The main container Tk object
+    installModuleLines : dict of str to dict
+        Dictionary containing links to each module's edit line. Used to apply changes
+    install_config : InstallConfiguration
+        The loaded install configuration instance
+    canvas : Canvas
+        object for drawing scrollable pane
+    viewFrame : Frame
+        Tk frame that contains all widgets
+    installTextBox : Text
+        Tk text box for editing install location
+    applyButton : Button
+        button that runs the apply method
+    
+    Methods
+    -------
+    readInstallModules()
+        Function that parses an InstallConfiguration Object into a series of Tk widgets
+    scrollFunction(event)
+        Function used to achieve scrolling in the canvas
+    applyChanges()
+        converts the widget information back into install configuration information, and then applies it to the loaded info
+    """
 
     def __init__(self, root, install_config):
+        """ Constructor for the EditConfigGUI class """
 
         self.root = root
-        self.master=Tk()
+        self.master=Toplevel()
         self.master.title('Edit Install Config')
         self.master.resizable(False, False)
         sizex = 750
@@ -69,6 +107,8 @@ class EditConfigGUI:
 
 
     def readInstallModules(self):
+        """ Function that parses the install configuration into Tk widgets """
+
         counter = 3
         for module in self.install_config.get_module_list():
             self.installModuleLines[module.name] = {}
@@ -93,10 +133,14 @@ class EditConfigGUI:
 
 
     def scrollFunction(self, event):
+        """ Function used for achieving scrolling """
+        
         self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=700,height=575)
 
 
     def applyChanges(self):
+        """ Function that applies changes made to the install configuration to the currently loaded one. """
+
         new_install_loc = self.installTextBox.get('1.0', END)
         new_install_loc = new_install_loc.strip()
         if len(new_install_loc) > 0:
@@ -116,8 +160,3 @@ class EditConfigGUI:
                 module.version = self.installModuleLines[module.name]['versionTextBox'].get('1.0', END).strip()
 
         self.root.updateConfigPanel()
-
-def runTest():
-    parser = Parser.ConfigParser('configure')
-    install_config = parser.parse_install_config()
-    window = EditConfigGUI(None, install_config)
