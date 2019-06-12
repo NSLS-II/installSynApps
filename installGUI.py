@@ -20,6 +20,7 @@ import os
 import time
 import datetime
 import threading
+import webbrowser
 from sys import platform
 
 # installSynApps module imports
@@ -29,6 +30,7 @@ import installSynApps.Driver.clone_driver as Cloner
 import installSynApps.Driver.update_config_driver as Updater
 import installSynApps.Driver.build_driver as Builder
 import installSynApps.IO.script_generator as Autogenerator
+import installSynApps.ViewModel.edit_install_screen as EditScreen
 
 
 class InstallSynAppsGUI:
@@ -89,6 +91,32 @@ class InstallSynAppsGUI:
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
         frame = Frame(self.master)
         frame.pack()
+
+        # version and popups toggle
+        self.version = 'R2-0'
+        self.showPopups = tk.BooleanVar()
+        self.showPopups.set(False)
+
+        menubar = Menu(self.master)
+
+        filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label='Open', command=self.loadConfig)
+        filemenu.add_command(label='Save As', command=self.saveConfig)
+        filemenu.add_command(label='Exit', command = self.master.quit)
+        menubar.add_cascade(label='File', menu=filemenu)
+
+        editmenu = Menu(menubar, tearoff=0)
+        editmenu.add_command(label='Edit Config', command=self.editConfig)
+        editmenu.add_checkbutton(label='Toggle Popups', onvalue=True, offvalue=False, variable=self.showPopups)
+        menubar.add_cascade(label='Edit', menu=editmenu)
+
+        helpmenu = Menu(menubar, tearoff=0)
+        helpmenu.add_command(label='Quick Help', command=self.loadHelp)
+        helpmenu.add_command(label='Online Documentation', command=self.openOnlineDocs)
+        menubar.add_cascade(label='Help', menu=helpmenu)
+
+        self.master.config(menu=menubar)
+
         self.msg = "Welcome to installSynApps!"
 
         # title label
@@ -109,10 +137,6 @@ class InstallSynAppsGUI:
         self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
         self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '1')
         self.loadingLabel.grid(row = 0, column = 2, pady = 0, columnspan = 2)
-
-        # version and popups toggle
-        self.version = 'R2-0'
-        self.showPopups = False
 
         # config panel
         self.configPanel = ScrolledText.ScrolledText(frame, width = '50', height = '20')
@@ -180,7 +204,7 @@ class InstallSynAppsGUI:
     def showErrorMessage(self, title, text):
         """ Function that displays error popup and log message """
 
-        if self.showPopups:
+        if self.showPopups.get():
             messagebox.showerror(title, text)
         self.writeToLog(text + "\n")
 
@@ -188,7 +212,7 @@ class InstallSynAppsGUI:
     def showWarningMessage(self, title, text):
         """ Function that displays warning popup and log message """
 
-        if self.showPopups:
+        if self.showPopups.get():
             messagebox.showwarning(title, text)
         self.writeToLog(text + "\n")
 
@@ -196,7 +220,7 @@ class InstallSynAppsGUI:
     def showMessage(self, title, text):
         """ Function that displays info popup and log message """
 
-        if self.showPopups:
+        if self.showPopups.get():
             messagebox.showinfo(title, text)
         self.writeToLog(text + '\n')
 
@@ -279,6 +303,20 @@ class InstallSynAppsGUI:
         self.updater.path_to_configure = self.configure_path
         self.builder.install_config = self.install_config
         self.autogenerator.install_config = self.install_config
+
+
+    def saveConfig(self):
+        pass
+
+
+    def editConfig(self):
+        pass
+
+
+    def openOnlineDocs(self):
+        """ Function that uses the webbrowser python module to open up the installSynApps online docs """
+
+        webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps", new=2)
 
 
     def injectFiles(self):
@@ -434,6 +472,8 @@ class InstallSynAppsGUI:
 
                     self.writeToLog('Checking out version {}\n'.format(module.version))
                     self.cloner.checkout_module(module)
+            self.writeToLog("Cleaning up clone directories")
+            self.cloner.cleanup_modules()
             self.showMessage('Success', 'Finished Cloning process')
         else:
             self.showErrorMessage('Load Error', 'ERROR - Install Config is not loaded correctly')
