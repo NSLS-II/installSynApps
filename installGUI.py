@@ -1,10 +1,18 @@
 #!/usr/bin/python3
 
-#
-# A Graphical User Interface for installSynApps
-#
-# Author: Jakub Wlodek
-#
+""" GUI class for the installSynApps module
+
+This GUI solution allows for much easier use of the installSynApps module 
+to clone, update, and build the EPICS and synApps software stack.
+"""
+
+__author__      = "Jakub Wlodek"
+__copyright__   = "Copyright June 2019, Brookhaven Science Associates"
+__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
+__license__     = "GPL"
+__version__     = "R2-0"
+__maintainer__  = "Jakub Wlodek"
+__status__      = "Production"
 
 
 # Tkinter imports
@@ -310,7 +318,7 @@ class InstallSynAppsGUI:
 
 
     def editConfig(self):
-        EditScreen.EditConfigGUI(self, self.install_config)
+        window = EditScreen.EditConfigGUI(self, self.install_config)
 
 
     def openOnlineDocs(self):
