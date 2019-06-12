@@ -371,7 +371,7 @@ class InstallSynAppsGUI:
         self.updater.add_missing_support_macros()
         self.writeToLog('Commenting non-auto-build paths...\n')
         self.updater.comment_non_build_macros()
-        self.injectFilesProcess()
+        #self.injectFilesProcess()
         self.showMessage('Update RELEASE', 'Finished update RELEASE + configure process.')
         return 0
 
@@ -523,9 +523,13 @@ class InstallSynAppsGUI:
             if current_status < 0:
                 self.showErrorMessage('Update Error', 'ERROR - Update error occurred, aborting...')
             else:
-                current_status = self.buildConfigProcess()
+                current_status = self.injectFilesProcess()
                 if current_status < 0:
-                    self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
+                    self.showErrorMessage('File Inject Error', 'ERROR - Unable to inject files, check Permissions...')
+                else:
+                    current_status = self.buildConfigProcess()
+                    if current_status < 0:
+                        self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
 
         self.showMessage('Alert', 'You may wish to save a copy of this log file for later use.')
         self.writeToLog('Autorun completed.')
