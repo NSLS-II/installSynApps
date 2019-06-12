@@ -310,7 +310,7 @@ class InstallSynAppsGUI:
 
 
     def editConfig(self):
-        pass
+        EditScreen.EditConfigGUI(self, self.install_config)
 
 
     def openOnlineDocs(self):
