@@ -166,7 +166,6 @@ class ConfigInjector:
             target_fp.write(self.injector_file_contents[injector_file_path.split('/')[-1]])
         target_fp.write("\n# --------------------------Auto-generated end----------------------\n")
         target_fp.close()
-        injector_fp.close()
 
 
     def get_macro_replace_from_file(self, macro_file_path):
