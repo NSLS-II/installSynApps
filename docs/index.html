@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/main.css" /> 
+    <title>installSynApps Documentation</title>
+</head>
+<body>
+    <h1>installSynApps Documentation</h1>
+    <h4>A python3 module for cloning and building EPICS and synApps</h4>
+    <hr/>
+    <h4>Author: Jakub Wlodek</h4>
+    <h4>Corresponding author: Kazimierz Gofron</h4>
+    <hr/>
+    <h4>Introduction:</h4>
+    <p class = "text-section-local">
+        installSynApps is a python3 module that allows users to clone and build EPICS and synApps with a modular
+        configuration system. Configuration options for building are automatically handled by the module, greatly
+        simplifying the process for users unfamiliar with the EPICS build environment. The module is capable of
+        injecting configuration options into target files as well, which is useful when external modules are being
+        compiled that do not have the appropriate Makefile options within EPICS. installSynApps also allows for 
+        auto setting of build flags, which further simplifies the process of compiling EPICS base, synApps, and areaDetector.
+    </p>
+    <hr />
+    <h4>Installation:</h4>
+    <p class = "text-section-local">
+        To install the installSynApps module, you may either <a href=https://github.com/epicsNSLS2-deploy/installSynApps>clone</a> the git repository, or download a
+        <a href ="https://github.com/epicsNSLS2-deploy/installSynApps/releases" >release</a>. From there, make sure that it is unpacked if it was downloaded as 
+        a tarfile or zip archive. 
+    </p>
+    <p class="text-section-local" >
+        installSynApps requires that several external programs be installed and in the system path in order to run. Firstly, it requires python3, and if using the GUI
+        version, Tkinter. On windows, python3 (which should include Tkinter) can be downloaded from the python <a href = "https://www.python.org/downloads/windows/">website</a>.
+        On linux, you may also use the website, or simply use the package manager, running the <code>sudo apt install python3 python3-tk</code> command. Next, installSynApps
+        requires git, wget, and tar in order to download and unpack the entirety of EPICS and synApps. On linux, simply install these packages through the package manager:
+        <code>sudo apt install git wget tar</code>. On windows, you may find wget <a href = "http://gnuwin32.sourceforge.net/packages/wget.htm">here</a>, and git and tar can be
+        downloaded from the git <a href="https://git-scm.com/downloads">website</a>. When installing git, you will have the option to place git in your system path, which you
+        should enable, and an option to install "UNIX tools", which will include tar. Finally, installSynApps requires make, perl, and a C/C++ compiler in order to actually build
+        EPICS. On linux, install these by simply running <code>sudo apt install make gcc g++</code>. On windows, it is recommended to use the MinGW version of make, which can be found
+        <a href = "http://www.mingw.org/">here</a>, Strawberry perl can be found <a href = "http://strawberryperl.com/">here</a>, and the recommended C/C++ compiler is a recent version 
+        of the MSVC/MSVC++ compiler included with Visual Studio. Install all of these packages, and installSynApps is now ready for use.
+    </p>
+    <hr />
+    <h4>Windows Setup:</h4>
+    <p class="text-section-local">
+        On Windows, prior to running installSynApps, it is required to set up your build environment. First, all of the above described required packages must be in your system path. You
+        may test this by opening a command prompt and typing <code>make</code>, <code>perl</code>, <code>git</code>, <code>tar</code>, and <code>wget</code>. If the output describes the usage
+        of each module, it is correctly placed in the system path. If the message states that it is not a recognized program or batch file, check to make sure it was added to the path. Then, to
+        initialize a Visual Studio build environment, in the command prompt, navigate to the Visual Studio intall directory (usually C:\Program Files (x86)), and follow this path: 
+        "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\" replacing 2017 for your version of Visual Studio. Once in this directory, run the following command:
+        <code>vcvarsall.bat x86_amd64</code>. This will set up your command prompt for buildng C/C++ applications with MSVC++ for 64bit windows. Next, run <code>set EPICS_HOST_ARCH=windows-x64-static</code>,
+        and <code>set MAKEFLAGS=-w</code>. This will set some environment variables needed for the build. Once this is done, navigate to the installSynApps directory, and proceed as described below.
+    </p>
+    <hr/>
+    <h4>Install Configuration Setup</h4>
+    <p class="text-section-local">
+        The most important file for configuring your installation of EPICS, synApps, and areaDetector is the configure/INSTALL_CONFIG file:
+        <img class='img-local' src="assets/INSTALL_CONFIG.png" alt="INSTALL_CONFIG example" />
+        <br />
+        In this file, you will find defined your INSTALL and EPICS_ARCH variables. INSTALL represents where installSynApps will clone all of its modules, and EPICS_ARCH represents your architecture. Current 
+        support includes linux-x86_64, and win32-x86. Below these are the modules themselves, along with GIT_URL and WGET_URL definitions. Each module has a name, version, relative path, repository name,
+        and options to clone and/or build it. installSynApps will locate the module at the most recently listed URL appended with the repository, and will use git clone if it is  a GIT_URL, or wget if it is
+        a WGET_URL. Simply edit the version numbers and the CLONE/BUILD options as demonstrated in the image above to edit your install configuration. In addition, you may edit the INSTALL variable above to
+        customize the install location. Note that all of these options may be customized through the GUI if using installGUI rather than installCLI.
+    </p>
+    <hr />
+    <h4>Usage - installCLI</h4>
+    <p class="text-section-local">
+        One way to run installSynApps is to use the installCLI.py script. On linux this is done by running <code>./installCLI.py</code>, and on windows: <code>python installCLI.py</code>.
+    </p>
+</body>
+</html>

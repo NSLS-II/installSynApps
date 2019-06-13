@@ -24,7 +24,11 @@ For information on the available options, run with the `-h` flag. After running 
 
 Similar to `installCLI.py`, to use the GUI, simply run it with python3. You will then see the option for each individual operation, along with an autorun that will perform them all sequentially. You may also load another configuration directory, provided that it follows the same file format as the given default configure directory.
 
+The GUI version also allowes finer control of install configurations. In the open window, select the `Edit` menu, then choose one of the three options. From there, a window will open allowing you to edit any portion of the install process. You may also save the install configuration with it's edits by selecting the File -> Save As option.
+
 In addition, the GUI keeps a log of the operations completed, which can be saved to an arbitrary location. Note that if a process is running (as indicated by the animated process status message), you will be unable to run another process.
+
+For further details on using `installGUI`, please check the [documentation](https://epicsNSLS2-deploy.github.io/installSynApps).
 
 ### Running on Linux vs. Windows
 

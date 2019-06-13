@@ -1,0 +1,12 @@
+/* Stylesheet to make documentation webpage easier to read */
+
+.text-section-local {
+    /*padding-left: 30px;*/
+    width: 70%;
+}
+
+.img-local {
+    width: 75%;
+    margin: 10px;
+    margin-left: 25px;
+}
