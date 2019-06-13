@@ -26,6 +26,7 @@ import tkinter.scrolledtext as ScrolledText
 # Some python utility libs
 import os
 import time
+import shutil
 import datetime
 import threading
 import webbrowser
@@ -38,7 +39,9 @@ import installSynApps.Driver.clone_driver as Cloner
 import installSynApps.Driver.update_config_driver as Updater
 import installSynApps.Driver.build_driver as Builder
 import installSynApps.IO.script_generator as Autogenerator
-import installSynApps.ViewModel.edit_install_screen as EditScreen
+import installSynApps.ViewModel.edit_install_screen as EditInstall
+import installSynApps.ViewModel.edit_injector_screen as EditInjectors
+import installSynApps.ViewModel.edit_macro_screen as EditMacros
 
 
 class InstallSynAppsGUI:
@@ -115,6 +118,8 @@ class InstallSynAppsGUI:
 
         editmenu = Menu(menubar, tearoff=0)
         editmenu.add_command(label='Edit Config', command=self.editConfig)
+        editmenu.add_command(label='Edit Injection Files', command=self.editInjectors)
+        editmenu.add_command(label='Edit Build Flags', command=self.editBuildFlags)
         editmenu.add_checkbutton(label='Toggle Popups', onvalue=True, offvalue=False, variable=self.showPopups)
         menubar.add_cascade(label='Edit', menu=editmenu)
 
@@ -196,43 +201,6 @@ class InstallSynAppsGUI:
         self.loadingLabel.config(text = 'Process Thread Status: Done.')
 
 
-    def writeToLog(self, text):
-        """ Function that writes to log """
-
-        self.log.insert(INSERT, text)
-        self.log.see(END)
-
-
-    def writeToConfigPanel(self, text):
-        """ Function that writes to the config panel """
-
-        self.configPanel.insert(INSERT, text)
-
-
-    def showErrorMessage(self, title, text):
-        """ Function that displays error popup and log message """
-
-        if self.showPopups.get():
-            messagebox.showerror(title, text)
-        self.writeToLog(text + "\n")
-
-
-    def showWarningMessage(self, title, text):
-        """ Function that displays warning popup and log message """
-
-        if self.showPopups.get():
-            messagebox.showwarning(title, text)
-        self.writeToLog(text + "\n")
-
-
-    def showMessage(self, title, text):
-        """ Function that displays info popup and log message """
-
-        if self.showPopups.get():
-            messagebox.showinfo(title, text)
-        self.writeToLog(text + '\n')
-
-
     def initLogText(self):
         """ Function that initializes log text """
 
@@ -277,7 +245,48 @@ class InstallSynAppsGUI:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
 
-# ----------------------- Button action functions -----------------------------
+# -------------------------- Functions for writing/displaying information ----------------------------------
+
+
+    def writeToLog(self, text):
+        """ Function that writes to log """
+
+        self.log.insert(INSERT, text)
+        self.log.see(END)
+
+
+    def writeToConfigPanel(self, text):
+        """ Function that writes to the config panel """
+
+        self.configPanel.insert(INSERT, text)
+
+
+    def showErrorMessage(self, title, text):
+        """ Function that displays error popup and log message """
+
+        if self.showPopups.get():
+            messagebox.showerror(title, text)
+        self.writeToLog(text + "\n")
+
+
+    def showWarningMessage(self, title, text):
+        """ Function that displays warning popup and log message """
+
+        if self.showPopups.get():
+            messagebox.showwarning(title, text)
+        self.writeToLog(text + "\n")
+
+
+    def showMessage(self, title, text):
+        """ Function that displays info popup and log message """
+
+        if self.showPopups.get():
+            messagebox.showinfo(title, text)
+        self.writeToLog(text + '\n')
+
+
+# ----------------------- Loading/saving Functions -----------------------------
+
 
     def loadConfig(self):
         """
@@ -298,7 +307,7 @@ class InstallSynAppsGUI:
             valid = False
             self.showErrorMessage("Config Error", "ERROR - No INSTALL_CONFIG file found in selected directory.")
         elif not os.path.exists(self.configure_path + "/injectionFiles") or not os.path.exists(self.configure_path + "/macroFiles"):
-            self.showWarningMessage("WARNING - Could not find injection files or macro files.")
+            self.showWarningMessage('Load Warning', "WARNING - Could not find injection files or macro files.")
         if not valid:
             self.configure_path = temp
             return
@@ -314,17 +323,173 @@ class InstallSynAppsGUI:
 
 
     def saveConfig(self):
-        pass
+        """ Function that opens a save as Dialog for saving currently loaded confguration """
+
+        dirpath = filedialog.asksaveasfilename(initialdir = '.')
+        self.writeToLog('Creating save directory...\n')
+        os.mkdir(dirpath)
+        if os.path.exists(self.configure_path + "/fixedRELEASEFiles"):
+            shutil.copytree(self.configure_path + "/fixedRELEASEFiles" , dirpath + "/fixedRELEASEFiles")
+        os.mkdir(dirpath + "/injectionFiles")
+        os.mkdir(dirpath + "/macroFiles")
+        for file in self.updater.config_injector.injector_file_contents:
+            new_fp = open(dirpath + "/injectionFiles/" + file, 'w')
+            new_fp.write('# Saved by InstallSynAppsGUI on {}\n\n'.format(datetime.datetime.now()))
+            new_fp.write(self.updater.config_injector.injector_file_contents[file])
+            new_fp.close()
+
+        new_build_flag = open(dirpath + "/macroFiles/BUILD_FLAG_CONFIG", 'w')
+        new_build_flag.write('# Saved by InstallSynAppsGUI on {}\n\n'.format(datetime.datetime.now()))
+        for macro_pair in self.updater.config_injector.macro_replace_list:
+            new_build_flag.write('{}={}\n'.format(macro_pair[0], macro_pair[1]))
+        new_build_flag.close()
+
+        self.writeToLog('Saved optional config files, moving to INSTALL_CONFIG...\n')
+
+        new_install_config = open(dirpath + "/INSTALL_CONFIG", "w+")
+        new_install_config.write('#\n# INSTALL_CONFIG file saved by InstallSynAppsGUI on {}, for {}\n#\n\n'.format(datetime.datetime.now(), platform)) 
+        new_install_config.write("INSTALL={}\n\n".format(self.install_config.install_location))
+        if platform == 'linux':
+            new_install_config.write("EPICS_ARCH=linux-x86_64\n\n")
+        elif platform == 'win32':
+            new_install_config.write("EPICS_ARCH=win32-x86\n\n")
+
+        new_install_config.write('#MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE\n')
+        new_install_config.write('#-----------------------------------------------------------------------------------------------------------------------------------\n')
+
+        current_url = ""
+        for module in self.install_config.get_module_list():
+            if module.url != current_url:
+                new_install_config.write("\n{}={}\n\n".format(module.url_type, module.url))
+                current_url = module.url
+            new_install_config.write("{:<16} {:<20} {:<40} {:<24} {:<16} {}\n".format(module.name, module.version, module.rel_path, module.repository, module.clone, module.build))
+
+        new_install_config.close()
+        self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
+
+
+    def saveLog(self, saveDir = None):
+        """
+        Function that saves the contents of the log to a file.
+
+        Parameters
+        ----------
+        saveDir = None
+            if None, opens file dialog to select save location, otherwise, saves in saveDir passed in
+        """
+
+        location = saveDir
+        if location == None:
+            location = filedialog.askdirectory(initialdir = '.')
+            if len(location) == 0:
+                return
+        if saveDir is not None and not os.path.exists(saveDir):
+            self.showErrorMessage('Save Error', 'ERROR - Save directory does not exist')
+            return
+        time = datetime.datetime.now()
+        log_file = open(location + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
+        log_file.write(self.log.get('1.0', END))
+        log_file.close()
+
+
+#---------------------------- Editing Functions --------------------------------
 
 
     def editConfig(self):
-        window = EditScreen.EditConfigGUI(self, self.install_config)
+        """ Function that opens up an Edit Config window """
+
+        window = EditInstall.EditConfigGUI(self, self.install_config)
+        if window is None:
+            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+
+    def editInjectors(self):
+        window = EditInjectors.EditInjectorGUI(self, self.updater.config_injector)
+        if window is None:
+            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+
+
+    def editBuildFlags(self):
+        window = EditMacros.EditMacroGUI(self, self.updater.config_injector)
+        if window is None:
+            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+
+
+#--------------------------------- Help/Documentation Functions -----------------------------
 
 
     def openOnlineDocs(self):
         """ Function that uses the webbrowser python module to open up the installSynApps online docs """
 
         webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps", new=2)
+
+
+
+    def loadHelp(self):
+        """ Simple function that displays a help message """
+
+        helpMessage = "---------------------------------------------\n"
+        helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nTo use this program, an install configuration is required.\n"
+        helpMessage = helpMessage + "An example configuration directory has already been loaded, and can be seen in the ./configure dir.\n"
+        helpMessage = helpMessage + "Using this program, you may inject options into EPICS\nand synApps config files, automatically set"
+        helpMessage = helpMessage + " build flags,\nclone and checkout all modules and their versions, update RELEASE\nand configuration files,"
+        helpMessage = helpMessage + " and auto-build all of EPICS and synApps.\nPlease look over the current config below, and if changes are\n"
+        helpMessage = helpMessage + "required, edit the configure/INSTALL_CONFIG file, or load a new configure\ndirectory."
+        self.showMessage("Help", helpMessage)
+
+
+#--------------------------------- Build Process Functions ------------------------------------------#
+#                                                                                                    #
+# Note that each of the build process functions has a wrapper that quickly returns, after starting   #
+# thread for running the process itself in the background.                                           #
+#----------------------------------------------------------------------------------------------------#
+
+
+    def cloneConfig(self):
+        """
+        Event function that starts a thread on the cloneConfigProcess function
+        """
+
+        if not self.thread.is_alive():
+            self.thread = threading.Thread(target=self.cloneConfigProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+            self.thread.start()
+            self.loadingIconThread.start()
+        else:
+            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+    def cloneConfigProcess(self):
+        """ Function that clones all specified modules """
+
+        status = 0
+        self.writeToLog('-----------------------------------\n')
+        self.writeToLog('Beginning module cloning process...\n')
+        if self.install_config is not None:
+            for module in self.install_config.get_module_list():
+                if module.clone == 'YES':
+                    self.writeToLog('Cloning module: {}, to location: {}.\n'.format(module.name, module.rel_path))
+                    if module.name in self.cloner.recursive_modules:
+                        ret = self.cloner.clone_module(module, recursive=True)
+                    else:
+                        ret = self.cloner.clone_module(module)
+                    
+                    if ret == -2:
+                        self.showErrorMessage('Clone Error' 'ERROR - Module {} has an invaild absolute path.'.format(module.name))
+                        status = -1
+                    elif ret == -1:
+                        self.showErrorMessage('Clone Error', 'ERROR - Module {} was not cloned successfully.'.format(module.name))
+                        status = -1
+
+                    self.writeToLog('Checking out version {}\n'.format(module.version))
+                    self.cloner.checkout_module(module)
+            self.writeToLog("Cleaning up clone directories")
+            self.cloner.cleanup_modules()
+            self.showMessage('Success', 'Finished Cloning process')
+        else:
+            self.showErrorMessage('Load Error', 'ERROR - Install Config is not loaded correctly')
+            status = -1
+
+        return status
 
 
     def injectFiles(self):
@@ -442,68 +607,6 @@ class InstallSynAppsGUI:
         return status
 
 
-    def cloneConfig(self):
-        """
-        Event function that starts a thread on the cloneConfigProcess function
-        """
-
-        if not self.thread.is_alive():
-            self.thread = threading.Thread(target=self.cloneConfigProcess)
-            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-            self.thread.start()
-            self.loadingIconThread.start()
-        else:
-            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
-
-
-    def cloneConfigProcess(self):
-        """ Function that clones all specified modules """
-
-        status = 0
-        self.writeToLog('-----------------------------------\n')
-        self.writeToLog('Beginning module cloning process...\n')
-        if self.install_config is not None:
-            for module in self.install_config.get_module_list():
-                if module.clone == 'YES':
-                    self.writeToLog('Cloning module: {}, to location: {}.\n'.format(module.name, module.rel_path))
-                    if module.name in self.cloner.recursive_modules:
-                        ret = self.cloner.clone_module(module, recursive=True)
-                    else:
-                        ret = self.cloner.clone_module(module)
-                    
-                    if ret == -2:
-                        self.showErrorMessage('Clone Error' 'ERROR - Module {} has an invaild absolute path.'.format(module.name))
-                        status = -1
-                    elif ret == -1:
-                        self.showErrorMessage('Clone Error', 'ERROR - Module {} was not cloned successfully.'.format(module.name))
-                        status = -1
-
-                    self.writeToLog('Checking out version {}\n'.format(module.version))
-                    self.cloner.checkout_module(module)
-            self.writeToLog("Cleaning up clone directories")
-            self.cloner.cleanup_modules()
-            self.showMessage('Success', 'Finished Cloning process')
-        else:
-            self.showErrorMessage('Load Error', 'ERROR - Install Config is not loaded correctly')
-            status = -1
-
-        return status
-
-
-    def loadHelp(self):
-        """ Simple function that displays a help message """
-
-        helpMessage = "---------------------------------------------\n"
-        helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nTo use this program, an install configuration is required.\n"
-        helpMessage = helpMessage + "An example configuration directory has already been loaded, and can be seen in the ./configure dir.\n"
-        helpMessage = helpMessage + "Using this program, you may inject options into EPICS\nand synApps config files, automatically set"
-        helpMessage = helpMessage + " build flags,\nclone and checkout all modules and their versions, update RELEASE\nand configuration files,"
-        helpMessage = helpMessage + " and auto-build all of EPICS and synApps.\nPlease look over the current config below, and if changes are\n"
-        helpMessage = helpMessage + "required, edit the configure/INSTALL_CONFIG file, or load a new configure\ndirectory."
-        self.showMessage("Help", helpMessage)
-
-
-
     def autorun(self):
         """
         Event function that starts a thread on the autorunProcess function
@@ -541,32 +644,6 @@ class InstallSynAppsGUI:
 
         self.showMessage('Alert', 'You may wish to save a copy of this log file for later use.')
         self.writeToLog('Autorun completed.')
-
-
-
-    def saveLog(self, saveDir = None):
-        """
-        Function that saves the contents of the log to a file.
-
-        Parameters
-        ----------
-        saveDir = None
-            if None, opens file dialog to select save location, otherwise, saves in saveDir passed in
-        """
-
-        location = saveDir
-        if location == None:
-            location = filedialog.askdirectory(initialdir = '.')
-            if len(location) == 0:
-                return
-        if saveDir is not None and not os.path.exists(saveDir):
-            self.showErrorMessage('Save Error', 'ERROR - Save directory does not exist')
-            return
-        time = datetime.datetime.now()
-        log_file = open(location + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
-        log_file.write(self.log.get('1.0', END))
-        log_file.close()
-
 
 
 # ---------------- Start the GUI ---------------
