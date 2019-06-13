@@ -26,6 +26,7 @@ import tkinter.scrolledtext as ScrolledText
 # Some python utility libs
 import os
 import time
+import shutil
 import datetime
 import threading
 import webbrowser
@@ -298,7 +299,7 @@ class InstallSynAppsGUI:
             valid = False
             self.showErrorMessage("Config Error", "ERROR - No INSTALL_CONFIG file found in selected directory.")
         elif not os.path.exists(self.configure_path + "/injectionFiles") or not os.path.exists(self.configure_path + "/macroFiles"):
-            self.showWarningMessage("WARNING - Could not find injection files or macro files.")
+            self.showWarningMessage('Load Warning', "WARNING - Could not find injection files or macro files.")
         if not valid:
             self.configure_path = temp
             return
@@ -314,11 +315,57 @@ class InstallSynAppsGUI:
 
 
     def saveConfig(self):
-        pass
+        """ Function that opens a save as Dialog for saving currently loaded confguration """
+
+        dirpath = filedialog.asksaveasfilename(initialdir = '.')
+        self.writeToLog('Creating save directory...\n')
+        os.mkdir(dirpath)
+        if os.path.exists(self.configure_path + "/fixedRELEASEFiles"):
+            shutil.copytree(self.configure_path + "/fixedRELEASEFiles" , dirpath + "/fixedRELEASEFiles")
+        os.mkdir(dirpath + "/injectionFiles")
+        os.mkdir(dirpath + "/macroFiles")
+        for file in self.updater.config_injector.injector_file_contents:
+            new_fp = open(dirpath + "/injectionFiles/" + file, 'w')
+            new_fp.write('# Saved by InstallSynAppsGUI on {}\n\n'.format(datetime.datetime.now()))
+            new_fp.write(self.updater.config_injector.injector_file_contents[file])
+            new_fp.close()
+
+        new_build_flag = open(dirpath + "/macroFiles/BUILD_FLAG_CONFIG", 'w')
+        new_build_flag.write('# Saved by InstallSynAppsGUI on {}\n\n'.format(datetime.datetime.now()))
+        for macro_pair in self.updater.config_injector.macro_replace_list:
+            new_build_flag.write('{}={}\n'.format(macro_pair[0], macro_pair[1]))
+        new_build_flag.close()
+
+        self.writeToLog('Saved optional config files, moving to INSTALL_CONFIG...\n')
+
+        new_install_config = open(dirpath + "/INSTALL_CONFIG", "w+")
+        new_install_config.write('#\n# INSTALL_CONFIG file saved by InstallSynAppsGUI on {}, for {}\n#\n\n'.format(datetime.datetime.now(), platform)) 
+        new_install_config.write("INSTALL={}\n\n".format(self.install_config.install_location))
+        if platform == 'linux':
+            new_install_config.write("EPICS_ARCH=linux-x86_64\n\n")
+        elif platform == 'win32':
+            new_install_config.write("EPICS_ARCH=win32-x86\n\n")
+
+        new_install_config.write('#MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE\n')
+        new_install_config.write('#-----------------------------------------------------------------------------------------------------------------------------------\n')
+
+        current_url = ""
+        for module in self.install_config.get_module_list():
+            if module.url != current_url:
+                new_install_config.write("\n{}={}\n\n".format(module.url_type, module.url))
+                current_url = module.url
+            new_install_config.write("{:<16} {:<20} {:<40} {:<24} {:<16} {}\n".format(module.name, module.version, module.rel_path, module.repository, module.clone, module.build))
+
+        new_install_config.close()
+        self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
 
 
     def editConfig(self):
+        """ Function that opens up an Edit Config window """
+
         window = EditScreen.EditConfigGUI(self, self.install_config)
+        if window is None:
+            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
 
 
     def openOnlineDocs(self):
