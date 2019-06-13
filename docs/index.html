@@ -69,6 +69,105 @@
     <h4>Usage - installCLI</h4>
     <p class="text-section-local">
         One way to run installSynApps is to use the installCLI.py script. On linux this is done by running <code>./installCLI.py</code>, and on windows: <code>python installCLI.py</code>.
+        <img class='img-local' src="assets/installCLI.png" alt = "installCLI" />
+        <br/>
+        Once the script is run, it will begin execution. Simply follow the instructions as they come up. You may be prompted to enter your sudo password if running on linux to install dependency packages.
+        Simply enter 'y' when prompted to continue, or 'n' to skip the next step. The script will ask before starting each stage of the build process so if you wish to skip certain portions, simply select 'n'.
+        <br/>
+        <br />
+        installCLI also supports several optional flags as arguments. The '-h' flag will explain the remaining flags. The -y flag will simply automatically answer 'y' to each of the queries, and the '-c CONFIG PATH'
+        flag allows for selecting a different configure directory than the default configure/. The default configure folder is tailored to linux installations, and thus when building for windows it is recommended to
+        use the '-c' flag and point to addtlConfDirs/configureWindows.
     </p>
+    <hr />
+    <h4>Usage - installGUI</h4>
+    <p class="text-section-local">
+        The recommended way to use installSynApps is to use installGUI. To start it, in the terminal that has been configured with the proper build environment, run <code>./installGUI.py</code> on linux, and 
+        <code>python installGUI.py</code> on windows. Note that it must be started from the terminal with the proper build environment, as installSynApps uses terminal utilities via the python 'subprocess' module
+        to compile EPICS and synApps. Once it is run, you will see the following screen:
+        <br/>
+        <img class="img-local-smaller" src="assets/installGUI_main.png" alt="installGUI_main" />
+        <br/>
+        On the bottom left, you will see the currently loaded install configuration. On the right you will see the log which will show information regarding the clone and build. By default info, warning, and error messages
+        are only written to the log, though popups can be Toggled by entering Edit -> Toggle Popups. On the upper-right, you will see the 8 main control buttons.
+        <br />
+        <br />
+        In order to load a new Install configuration, click the 'Load Config' button, or select 'File -> Open'. Then select the directory containing a valid install configuration. Note that if it is not valid, the currently loaded
+        install config will remain the same. Once a config is loaded, you may edit it by entering the Edit menu and selecting an appropriate option. 'Edit -> Edit Config' will open a window that allows for selecting the install 
+        location, which module versions are selected, and whether or not the modules should be cloned and or built.
+        <br/>
+        <img class="img-local-smaller" src ="assets/installGUI_editInstall.png", alt="installGUI_editInstall" />
+        <br />
+        Simply edit whatever you wish and select either apply or apply and exit. You can see the panel displaying the currently loaded install config has been updated to reflect your changes. The 'Edit -> Edit Injector Files'
+        option will open a screen that displays the injector files that will be applied to your build process. Selecting each one from the dropdown will show which file the text will be injected into. You may simply edit these
+        in the given window, and press apply changes. If you wish to reload what it had been previously, provided you have not applied your changes, you may select 'Reload'. 
+        <br />
+        <img class="img-local-smaller" src ="assets/installGUI_editInjector.png", alt="installGUI_editInjector" />
+        <br />
+        Finally, selecting 'Edit -> Edit Build Flags' will open a window that will allow you to set macro values that will be applied to the areaDetector bulid. Simply follow the MACRO=VALUE standard as demonstrated.
+        <br />
+        <img class="img-local-smaller" src ="assets/installGUI_editMacros.png", alt="installGUI_editMacros" />
+        <br />
+        Once you are satisfied with your loaded configuration it may be wise to save it with 'File -> Save As', and then it can be applied using either 'Autorun' to run all processes sequentially, or individually by 
+        pressing each of the appropriate buttons. The log will output status messages, and any further instructions. buttons 
+    </p>
+    <hr />
+    <h4>installSynApps Releases:</h4>
+    <!--RELEASE START-->
+
+<h4>R2-0 (???-June-2019)</h4>
+<ul>
+<li>Rework of installSynApps with code readability and cross-platform support in mind.</li>
+<li>Legacy scripts still included, with slight edits  to support new configure format</li>
+<li>New installSynApps python module - allows for importing into other code.</li>
+<li>Modular solution - Easy port to CLI and GUI versions<ul>
+<li>DataModel/ViewModel</li>
+</ul>
+</li>
+<li>New GUI version, with ability to edit almost all config options.</li>
+<li>Tested an working on windows systems as well as linux - bash dependencies removed.</li>
+</ul>
+<h4>R1-0 (30-May-2019)</h4>
+<ul>
+<li>Initial release of installSynApps</li>
+<li>Based around a series of scripts</li>
+<li>Reliant on bash - only ran on Linux-based systems</li>
+<li>Included scripts<ul>
+<li>auto_build.sh - guided process through running remaining scripts</li>
+<li>installSynApps.sh - top level script that ran the remaining ones sequentially</li>
+<li>dependencyInstall.sh - Script for installing dependency packages</li>
+<li>read_install_config.py - Script for reading provided configure folder</li>
+<li>clone_and_checkout.py - script for cloning and checking out all modules</li>
+<li>ad_config_setup.py - port of adConfigSetup module - allowed for auto-config of areaDetector files</li>
+<li>update_release_file.py - top level script for updating configuration options</li>
+<li>buildEPICS.py - script for calling build commands</li>
+<li>script_generator.py - autogenerates some helpful information about build</li>
+</ul>
+</li>
+<li>Limitations:<ul>
+<li>Required constant edits of configure/INSTALL_CONFIG file.</li>
+<li>No support for multiple configure directories</li>
+<li>Code readability issues - arrays used to represent installation modules</li>
+<li>Limited customizability</li>
+<li>Issues when running scripts individually</li>
+</ul>
+</li>
+</ul>
+    <!--RELEASE END-->
+
+    <hr />
+    <h4>Copyright and Notes</h4>
+    <p>Copyright (c): Brookhaven National Laboratory as a part of Brookhaven Science Associates 2018 - 2019</p>
+    <p>Important Links:</p>
+    <ul>
+        <li><a href="https://github.com/epicsNSLS2-deploy/installSynApps">installSynApps on Github</a></li>
+        <li><a href="https://github.com/EPICS-synApps/">synApps on Github</a></li>
+        <li><a href="https://github.com/epics-base">EPICS on Github</a></li>
+        <li><a href="https://github.com/areaDetector">areaDetector on Github</a></li>
+        <li><a href="https://github.com/epicsNSLS2-deploy/synAppsRelease">synAppsRelease on Github</a></li>
+    </ul>
+    <br />
+    <br />
+    <hr />
 </body>
 </html>
