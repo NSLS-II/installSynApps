@@ -85,7 +85,9 @@ class EditInjectorGUI:
         self.dropdown.grid(row = 0, column = 0, columnspan = 2, padx = 5, pady = 5)
         self.currentEditVar.trace('w', self.updateEditPanel)
 
-        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges).grid(row = 0, column = 5, columnspan = 1)
+        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges).grid(row = 0, column = 3, columnspan = 1)
+        self.applyExitButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyExit).grid(row = 0, column = 4, columnspan = 1)
+        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel).grid(row = 0, column = 5, columnspan = 1)
 
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 37, width = 100)
         self.editPanel.grid(row = 1, column = 0, columnspan = 6)
@@ -96,9 +98,14 @@ class EditInjectorGUI:
 
 
     def updateEditPanel(self, *args):
+        """ Wrapper that reloads the panel based on selection """
+
+        self.reloadPanel()
+
+
+    def reloadPanel(self):
         """
-        Function called when dropdown menu is selected. Reads contents from dict and displays
-        them in the edit panel.
+        reloads Panel based on selection
         """
 
         target_file = self.currentEditVar.get()
@@ -116,4 +123,12 @@ class EditInjectorGUI:
         new_contents = self.editPanel.get('1.0', END)
         target = self.currentEditVar.get()
         self.config_injector.injector_file_contents[target] = new_contents
+        self.root.writeToLog('Applied updated injector file contents.\n')
+
+
+    def applyExit(self):
+        """ applies changes and exits window """
+
+        self.applyChanges()
+        self.master.destroy()
 

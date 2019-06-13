@@ -66,7 +66,7 @@ class EditConfigGUI:
         self.master = Toplevel()
         self.master.title('Edit Install Config')
         self.master.resizable(False, False)
-        sizex = 750
+        sizex = 800
         sizey = 600
         posx  = 100
         posy  = 100
@@ -92,9 +92,10 @@ class EditConfigGUI:
         self.canvas.create_window((0,0), window=self.viewFrame, anchor='nw')
         self.viewFrame.bind('<Configure>', self.scrollFunction)
         Label(self.viewFrame, text='    Edit Loaded Install Configuration', anchor=W, justify=LEFT).grid(row = 0, column = 0, columnspan = 1, pady = 5)
-        self.applyButton = Button(self.viewFrame, text = 'Apply', justify = LEFT, command=self.applyChanges).grid(row = 0, column = 5)
+        self.applyButton = Button(self.viewFrame, text = 'Apply Changes', justify = LEFT, command=self.applyChanges).grid(row = 0, column = 3)
+        self.applyExitButton = Button(self.viewFrame, text = 'Apply and Exit', justify = LEFT, command=self.applyExit).grid(row = 0, column = 4)
         self.splitter = Label(self.viewFrame, text='--------------------------------------------------------------------------------------------------------------------------------------')
-        self.splitter.grid(row = 1, column = 0, columnspan = 6)
+        self.splitter.grid(row = 1, column = 0, columnspan = 5)
 
         Label(self.viewFrame, text='Install Location: ').grid(row=2, column = 0)
         self.installTextBox = Text(self.viewFrame, height = 1, width = 32, padx = 3, pady = 3)
@@ -134,7 +135,7 @@ class EditConfigGUI:
     def scrollFunction(self, event):
         """ Function used for achieving scrolling """
         
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=700,height=575)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=750,height=575)
 
 
     def applyChanges(self):
@@ -159,3 +160,11 @@ class EditConfigGUI:
                 module.version = self.installModuleLines[module.name]['versionTextBox'].get('1.0', END).strip()
 
         self.root.updateConfigPanel()
+
+        self.root.writeToLog('Applied updated install configuration.\n')
+
+    def applyExit(self):
+        """ Function that runs apply changes and then exits the window """
+
+        self.applyChanges()
+        self.master.destroy()
