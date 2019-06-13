@@ -24,7 +24,6 @@ import os
 
 # installSynApps module imports
 import installSynApps.DataModel.install_config as Config
-import installSynApps.IO.config_parser as Parser
 
 
 class EditConfigGUI:
@@ -64,7 +63,7 @@ class EditConfigGUI:
         """ Constructor for the EditConfigGUI class """
 
         self.root = root
-        self.master=Toplevel()
+        self.master = Toplevel()
         self.master.title('Edit Install Config')
         self.master.resizable(False, False)
         sizex = 750
