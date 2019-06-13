@@ -41,7 +41,7 @@ import installSynApps.Driver.build_driver as Builder
 import installSynApps.IO.script_generator as Autogenerator
 import installSynApps.ViewModel.edit_install_screen as EditInstall
 import installSynApps.ViewModel.edit_injector_screen as EditInjectors
-import installSynApps.ViewModel.edit_install_screen as EditInstall
+import installSynApps.ViewModel.edit_macro_screen as EditMacros
 
 
 class InstallSynAppsGUI:
@@ -409,7 +409,9 @@ class InstallSynAppsGUI:
 
 
     def editBuildFlags(self):
-        pass
+        window = EditMacros.EditMacroGUI(self, self.updater.config_injector)
+        if window is None:
+            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
 
 
 #--------------------------------- Help/Documentation Functions -----------------------------
