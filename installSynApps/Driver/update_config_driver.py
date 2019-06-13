@@ -114,10 +114,11 @@ class UpdateConfigDriver:
         """
 
         install_macro_list = self.get_macros_from_install_config()
-        macro_replace_files = self.config_injector.get_macro_replace_files()
-        for file_path in macro_replace_files:
-            file_macros = self.config_injector.get_macro_replace_from_file(file_path)
-            install_macro_list = install_macro_list + file_macros
+        install_macro_list.extend(self.config_injector.macro_replace_list)
+        #macro_replace_files = self.config_injector.get_macro_replace_files()
+        #for file_path in macro_replace_files:
+        #    file_macros = self.config_injector.get_macro_replace_from_file(file_path)
+        #    install_macro_list = install_macro_list + file_macros
         
         if not single_file:
             self.config_injector.update_macros_dir(install_macro_list, target_path)
