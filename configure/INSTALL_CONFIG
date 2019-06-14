@@ -45,7 +45,7 @@ GIT_URL=https://github.com/epics-modules/
 
 ASYN                R4-35       $(SUPPORT)/asyn                             asyn                            YES             YES
 AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES
-ALIVE               R1-1-0      $(SUPPORT)/alive                            alive                           YES             YES
+ALIVE               R1-1-0      $(SUPPORT)/alive                            alive                           NO              NO
 BUSY                R1-7        $(SUPPORT)/busy                             busy                            YES             YES
 CALC                R3-7-2      $(SUPPORT)/calc                             calc                            YES             YES
 CAMAC               R2-7-1      $(SUPPORT)/camac                            camac                           YES             YES
