@@ -512,6 +512,7 @@ class InstallSynAppsGUI:
         self.writeToLog('Starting file injection process.\n')
         self.updater.perform_injection_updates()
         self.writeToLog('Done.\n')
+        return 0
 
 
     def updateConfig(self):
