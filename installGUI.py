@@ -318,6 +318,8 @@ class InstallSynAppsGUI:
         self.cloner.install_config = self.install_config
         self.updater.install_config = self.install_config
         self.updater.path_to_configure = self.configure_path
+        self.updater.config_injector.install_config = self.install_config
+        self.updater.config_injector.path_to_configure = self.configure_path
         self.builder.install_config = self.install_config
         self.autogenerator.install_config = self.install_config
 
@@ -512,6 +514,7 @@ class InstallSynAppsGUI:
         self.writeToLog('Starting file injection process.\n')
         self.updater.perform_injection_updates()
         self.writeToLog('Done.\n')
+        return 0
 
 
     def updateConfig(self):

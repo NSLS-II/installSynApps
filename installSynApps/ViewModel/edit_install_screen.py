@@ -159,9 +159,25 @@ class EditConfigGUI:
                     module.build = 'NO'
                 module.version = self.installModuleLines[module.name]['versionTextBox'].get('1.0', END).strip()
 
-        self.root.updateConfigPanel()
+            module.abs_path = self.install_config.convert_path_abs(module.rel_path)
 
+            if module.name == 'EPICS_BASE':
+                self.install_config.base_path = module.abs_path
+            elif module.name == 'SUPPORT':
+                self.install_config.support_path = module.abs_path
+            elif module.name == 'AREA_DETECTOR':
+                self.install_config.ad_path = module.abs_path
+
+        self.root.updateConfigPanel()
+        self.root.cloner.install_config = self.root.install_config
+        self.root.updater.install_config = self.root.install_config
+        self.root.updater.path_to_configure = self.root.configure_path
+        self.root.updater.config_injector.install_config = self.root.install_config
+        self.root.updater.config_injector.path_to_configure = self.root.configure_path
+        self.root.builder.install_config = self.root.install_config
+        self.root.autogenerator.install_config = self.root.install_config
         self.root.writeToLog('Applied updated install configuration.\n')
+
 
     def applyExit(self):
         """ Function that runs apply changes and then exits the window """
