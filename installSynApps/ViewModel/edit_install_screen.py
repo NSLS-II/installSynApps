@@ -160,7 +160,11 @@ class EditConfigGUI:
                 module.version = self.installModuleLines[module.name]['versionTextBox'].get('1.0', END).strip()
 
         self.root.updateConfigPanel()
-
+        self.root.cloner.install_config = self.root.install_config
+        self.root.updater.install_config = self.root.install_config
+        self.root.updater.path_to_configure = self.root.configure_path
+        self.root.builder.install_config = self.root.install_config
+        self.root.autogenerator.install_config = self.root.install_config
         self.root.writeToLog('Applied updated install configuration.\n')
 
     def applyExit(self):
