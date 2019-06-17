@@ -63,7 +63,9 @@ print()
 
 
 parser = Parser.ConfigParser(path_to_configure)
-install_config = parser.parse_install_config()
+install_config, message = parser.parse_install_config()
+if install_config is None:
+    print('Error parsing Install Config... {}'.format(message))
 cloner = Cloner.CloneDriver(install_config)
 updater = Updater.UpdateConfigDriver(path_to_configure, install_config)
 builder = Builder.BuildDriver(install_config)

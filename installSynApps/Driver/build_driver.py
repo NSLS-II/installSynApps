@@ -95,6 +95,16 @@ class BuildDriver:
         return 0, failed_builds
 
 
+    def build_ad_module(self, module):
+        """ Function that builds only ad modules """
+
+        if module.rel_path.startswith("$(AREA_DETECTOR)"):
+            out = subprocess.call(["make", "-C", module.abs_path , "-sj"])
+            return out, True
+        else:
+            return 0, False
+
+
     def build_all(self):
         """
         Main function that runs remaining ones sequentially

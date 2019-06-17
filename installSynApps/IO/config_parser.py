@@ -94,6 +94,7 @@ class ConfigParser:
         install_config : InstallConfiguration
             valid install_config object if parse was successful, or None
         """
+
         if os.path.exists(self.configure_path + "/" + config_filename):
             install_file = open(self.configure_path + "/" + config_filename, "r")
 
@@ -111,13 +112,14 @@ class ConfigParser:
                 if not line.startswith('#') and len(line) > 1:
                     if line.startswith("INSTALL="):
                         install_loc = line.split('=')[-1]
-                    elif line.startswith("EPICS_ARCH"):
-                        epics_arch = line.split('=')[-1]
-                        install_config = IC.InstallConfiguration(install_loc, self.configure_path, epics_arch)
+                        install_config = IC.InstallConfiguration(install_loc, self.configure_path)
                         if install_config.is_install_valid() < 0:
-                            return None
+                            return None, 'Permission Error'
                         elif install_config.is_install_valid() == 0:
-                            os.mkdir(install_config.install_location)
+                            try:
+                                os.mkdir(install_config.install_location)
+                            except FileNotFoundError:
+                                return None, 'Install filepath not valid'
                     elif line.startswith("GIT_URL") or line.startswith("WGET_URL"):
                         current_url = line.split('=')[1]
                         current_url_type = line.split('=')[0]
@@ -128,6 +130,6 @@ class ConfigParser:
             
             install_file.close()
             # install_config.print_installation_info()
-            return install_config
-        return None
+            return install_config , ''
+        return None, 'Configure Path not found'
                     
