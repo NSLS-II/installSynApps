@@ -53,15 +53,23 @@ class ConfigInjector:
             "MAKEFILE_CONFIG"       : "$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile",
             "PLUGIN_CONFIG"         : "$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd",
         }
-        self.injector_file_contents = {}
         self.path_to_configure = path_to_configure
+        self.injector_file_contents = {}
+        self.module_replace_list = []
+        self.initialize_addtl_config()
         self.install_config = install_config
-        self.parse_injector_file_contents()
+        self.ad_modules = ["ADCORE", "AREA_DETECTOR", "ADSUPPORT"]
+
+
+    def initialize_addtl_config(self):
+        """ Function that initializes macro replacers and injector files """
+
+        self.injector_file_contents = {}
         self.macro_replace_list = []
+        self.parse_injector_file_contents()
         macro_file_paths = self.get_macro_replace_files()
         for file in macro_file_paths:
             self.macro_replace_list.extend(self.get_macro_replace_from_file(file))
-        self.ad_modules = ["ADCORE", "AREA_DETECTOR", "ADSUPPORT"]
 
 
     def get_injector_files(self):
@@ -88,15 +96,21 @@ class ConfigInjector:
         """ Function that reads injector files and gets their contents """
 
         files = self.get_injector_files()
-        for file in files:
-            contents = ''
-            fp = open(file, "r")
-            line = fp.readline()
-            while line:
-                if not line.startswith('#') and len(line) > 0:
-                    contents = contents + line
-                line = fp.readline()
-            self.injector_file_contents[file.split('/')[-1]] = contents
+        for filename in self.injector_file_links:
+            found = False
+            for file in files:
+                if file.split('/')[-1] == filename:
+                    found = True
+                    contents = ''
+                    fp = open(file, "r")
+                    line = fp.readline()
+                    while line:
+                        if not line.startswith('#') and len(line) > 0:
+                            contents = contents + line
+                        line = fp.readline()
+                    self.injector_file_contents[file.split('/')[-1]] = contents
+            if not found:
+                self.injector_file_contents[filename] = ''
 
 
     def get_macro_replace_files(self):
