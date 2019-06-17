@@ -123,9 +123,18 @@ class InstallSynAppsGUI:
         editmenu.add_command(label='Edit Config', command=self.editConfig)
         editmenu.add_command(label='Edit Injection Files', command=self.editInjectors)
         editmenu.add_command(label='Edit Build Flags', command=self.editBuildFlags)
+        editmenu.add_command(label='Clear Log', command=self.resetLog)
         editmenu.add_checkbutton(label='Toggle Popups', onvalue=True, offvalue=False, variable=self.showPopups)
-        editmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Edit', menu=editmenu)
+
+        buildmenu = Menu(menubar, tearoff=0)
+        buildmenu.add_command(label='Autorun', command=self.autorun)
+        buildmenu.add_command(label='Clone Modules', command=self.cloneConfig)
+        buildmenu.add_command(label='Update Config Files', command=self.updateConfig)
+        buildmenu.add_command(label='Inject into Files', command=self.injectFiles)
+        buildmenu.add_command(label='Build Modules', command=self.buildConfig)
+        buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
+        menubar.add_cascade(label='Build', menu=buildmenu)
 
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label='Quick Help', command=self.loadHelp)
@@ -170,7 +179,7 @@ class InstallSynAppsGUI:
         # installSynApps options, initialzie + read default configure files
         self.parser = Parser.ConfigParser(self.configure_path)
 
-        self.install_config = self.parser.parse_install_config()
+        self.install_config, message = self.parser.parse_install_config()
 
         # Threads for async operation
         self.thread = threading.Thread()
@@ -190,7 +199,7 @@ class InstallSynAppsGUI:
         if self.install_config is not None:
             self.updateConfigPanel()
         else:
-            self.showErrorMessage('Load error', 'Error loading default install config... most likely invalid install location', force_popup=True)
+            self.showErrorMessage('Load error', 'Error loading default install config... {}'.format(message), force_popup=True)
 
 
 
@@ -223,6 +232,13 @@ class InstallSynAppsGUI:
         text = text +"+ This software comes with NO warranty!                          +\n"
         text = text +"+-----------------------------------------------------------------\n\n"
         return text
+
+
+    def resetLog(self):
+        """ Function that resets the log """
+
+        self.log.delete('1.0', END)
+        self.writeToLog(self.initLogText())
 
 
     def updateConfigPanel(self):
@@ -343,11 +359,11 @@ class InstallSynAppsGUI:
             return
         self.writeToLog('Loaded configure directory at {}.\n'.format(self.configure_path))
         self.parser.configure_path = self.configure_path
-        self.install_config = self.parser.parse_install_config()
+        self.install_config, message = self.parser.parse_install_config()
         if self.install_config is not None:
             self.updateConfigPanel()
         else:
-            self.showErrorMessage('Load error', 'Error loading install config... most likely invalid install location', force_popup=True)
+            self.showErrorMessage('Load error', 'Error loading install config... {}'.format(message), force_popup=True)
         self.cloner.install_config = self.install_config
         self.updater.install_config = self.install_config
         self.updater.path_to_configure = self.configure_path

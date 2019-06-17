@@ -114,9 +114,12 @@ class ConfigParser:
                         install_loc = line.split('=')[-1]
                         install_config = IC.InstallConfiguration(install_loc, self.configure_path)
                         if install_config.is_install_valid() < 0:
-                            return None
+                            return None, 'Permission Error'
                         elif install_config.is_install_valid() == 0:
-                            os.mkdir(install_config.install_location)
+                            try:
+                                os.mkdir(install_config.install_location)
+                            except FileNotFoundError:
+                                return None, 'Install filepath not valid'
                     elif line.startswith("GIT_URL") or line.startswith("WGET_URL"):
                         current_url = line.split('=')[1]
                         current_url_type = line.split('=')[0]
@@ -127,6 +130,6 @@ class ConfigParser:
             
             install_file.close()
             # install_config.print_installation_info()
-            return install_config
-        return None
+            return install_config , ''
+        return None, 'Configure Path not found'
                     

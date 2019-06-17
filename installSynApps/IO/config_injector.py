@@ -83,7 +83,7 @@ class ConfigInjector:
         """
 
         injector_files = []
-        if os.path.exists(self.path_to_configure) and os.path.isdir(self.path_to_configure):
+        if os.path.exists(self.path_to_configure + '/injectionFiles') and os.path.isdir(self.path_to_configure + '/injectionFiles'):
             for file in os.listdir(self.path_to_configure + "/injectionFiles"):
                 if os.path.isfile(self.path_to_configure + "/injectionFiles/" + file):
                     if self.injector_file_links[file] != None:
@@ -124,7 +124,7 @@ class ConfigInjector:
         """
 
         macro_replace_files = []
-        if os.path.exists(self.path_to_configure) and os.path.isdir(self.path_to_configure):
+        if os.path.exists(self.path_to_configure + '/macroFiles') and os.path.isdir(self.path_to_configure + '/macroFiles'):
             for file in os.listdir(self.path_to_configure + "/macroFiles"):
                 if os.path.isfile(self.path_to_configure + "/macroFiles/" + file):
                     macro_replace_files.append(self.path_to_configure + "/macroFiles/" + file)
