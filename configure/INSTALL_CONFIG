@@ -12,18 +12,13 @@
 INSTALL=/epics
 
 
-#-- CURRENT ARCH --
-
-EPICS_ARCH=linux-x86_64
-
-
 #-- MODULES --
 
 #MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 CLONE_MODULE    BUILD_MODULE
 #-----------------------------------------------------------------------------------------------------------------------------------
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE          R7.0.2.2     $(INSTALL)/base                             epics-base                      YES             YES
+EPICS_BASE          R7.0.2.2     $(INSTALL)/base                             epics-base                      YES            YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
@@ -36,12 +31,10 @@ UTILS               R6-0        $(SUPPORT)/utils                            util
 # Stream module is maintained by PSI as of 2019
 GIT_URL=https://github.com/paulscherrerinstitute/
 
-STREAM              2.8.9     $(SUPPORT)/stream                             StreamDevice                    YES             YES
+STREAM              2.8.9       $(SUPPORT)/stream                           StreamDevice                    YES             YES
 
 
 GIT_URL=https://github.com/epics-modules/
-
-# Support modules will be built via make release and make -sj in the support/ directory, so BUILD_MODULE is irrelevant.
 
 ASYN                R4-35       $(SUPPORT)/asyn                             asyn                            YES             YES
 AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES
@@ -52,7 +45,7 @@ CAMAC               R2-7-1      $(SUPPORT)/camac                            cama
 CAPUTRECORDER       R1-7-1      $(SUPPORT)/caputRecorder                    caputRecorder                   YES             YES
 DAC128V             R2-9        $(SUPPORT)/dac128V                          dac128V                         YES             YES
 DELAYGEN            R1-2-0      $(SUPPORT)/delaygen                         delaygen                        YES             YES
-DEVLIB2             2.9         $(SUPPORT)/devlib2                          devlib2                         YES             YES
+DEVLIB2             2.9         $(SUPPORT)/devlib2                          devlib2                         NO              NO
 DXP                 R5-0        $(SUPPORT)/dxp                              dxp                             NO              NO
 DXPSITORO           R1-1        $(SUPPORT)/dxpSITORO                        dxpSITORO                       NO              NO
 DEVIOCSTATS         3.1.15      $(SUPPORT)/iocStats                         iocStats                        YES             YES             
@@ -64,7 +57,7 @@ LOVE                R3-2-6      $(SUPPORT)/love                             love
 LUA                 R1-2        $(SUPPORT)/lua                              lua                             NO              NO
 MCA                 R7-7        $(SUPPORT)/mca                              mca                             YES             YES
 MEASCOMP            R2-1        $(SUPPORT)/measComp                         measComp                        NO              NO
-MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          YES             NO
+MODBUS              R2-10-1     $(SUPPORT)/modbus                           modbus                          YES             YES
 MOTOR               R6-11       $(SUPPORT)/motor                            motor                           YES             YES
 OPTICS              R2-13-1     $(SUPPORT)/optics                           optics                          NO              NO
 SOFTGLUE            R2-8-1      $(SUPPORT)/softGlue                         softGlue                        NO              NO
@@ -78,21 +71,29 @@ YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yoko
 XSPRESS3            master      $(SUPPORT)/xspress3                         xspress3                        YES             NO
 XXX                 master      $(SUPPORT)/xxx                              xxx                             NO              NO
 
+# Currently no support for auto-building quadem
+QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES             NO
+
+
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
 SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES             YES
+
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
 ALLENBRADLEY        2.3         $(SUPPORT)/allenBradley                     allenBradley-$(VERSION).tar.gz  NO              NO             
 
+
 WGET_URL=https://github.com/EPICSTools/ether_ip/archive/
 
 ETHERIP             2-26        $(SUPPORT)/ether_ip                         ether_ip-$(VERSION).tar.gz      NO              NO
 
+
 GIT_URL=https://github.com/motorapp/
 
 GALIL               V3-6        $(SUPPORT)/galil                            Galil-3-0                       NO              NO
+
 
 # Area Detector modules. Note that if you wish to build AD Drivers/Plugins, ADCore and ADSupport must be
 # set to build YES, and installed first, then any plugins, then the drivers
@@ -125,26 +126,15 @@ ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPl
 
 
 ######################################
-# Next any modules using AreaDetector#
-######################################
-
-GIT_URL=https://github.com/epics-modules/
-
-# Currently no support for auto-building quadem
-QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES             NO
-
-
-######################################
 # Finally any drivers or other repos #
 ######################################
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADUVC               R1-1        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES             YES
-ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                YES             NO
-ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     YES             NO
-ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        YES             NO
-adConfigSetup       master      $(AREA_DETECTOR)/configure/adConfigSetup    adConfigSetup                   NO              NO
+ADUVC               R1-2        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES             NO
+ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                NO              NO
+ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
+ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        NO              NO
 ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
 ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
 
@@ -154,8 +144,8 @@ GIT_URL=https://github.com/areaDetector/
 ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES
 ADSIMDETECTOR       R2-9        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES
-ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             NO
-ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      YES             NO
+ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             YES
+ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO
 #ADANDOR3           master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO
@@ -164,15 +154,15 @@ ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPo
 ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPICam                         NO              NO
 ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         NO              NO
 ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO              NO
-ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        YES             NO
+ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        NO              NO
 ADMYTHEN            R2-0        $(AREA_DETECTOR)/ADMythen                   ADMythen                        NO              NO
 ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO
-ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           YES             NO
+ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO              NO
 ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO              NO
 FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO
-ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           YES             NO
+ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           NO              NO
 ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO
-#ADPERKINELMER       R2-9        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
+#ADPERKINELMER       R2-9        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO
 ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO
 ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO
 ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO              NO
@@ -187,8 +177,8 @@ ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRo
 ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO              NO
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
-#ADSPINNAKER        R1-0        $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
-#ADLAMBDA           master      $(AREA_DETECTOR)/ADLambda                   ADLambda                        NO              NO
+#ADSPINNAKER         R1-0        $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
+#ADLAMBDA            master      $(AREA_DETECTOR)/ADLambda                   ADLambda                        NO              NO
 
 
 ####################################################
