@@ -240,34 +240,33 @@ class ConfigInjector:
         os.rename(target_dir + "/" + target_filename, target_dir + "/OLD_FILES/" + target_filename)
         old_fp = open(target_dir + "/OLD_FILES/" + target_filename, "r")
 
-        if target_filename.endswith(self.install_config.epics_arch) or target_filename.endswith(".local") or "." not in target_filename:
-            if target_filename.startswith("EXAMPLE_"):
-                new_fp = open(target_dir + "/" + target_filename[8:], "w")
+        if target_filename.startswith("EXAMPLE_"):
+            new_fp = open(target_dir + "/" + target_filename[8:], "w")
+        else:
+            new_fp = open(target_dir + "/" + target_filename, "w")
+        line = old_fp.readline()
+        while line:
+            line = line.strip()
+            if not line.startswith('#') and '=' in line:
+                line = line = re.sub(' +', '', line)
+            if line.startswith('#'):
+                new_fp.write(line + "\n")
             else:
-                new_fp = open(target_dir + "/" + target_filename, "w")
+                wrote_line = False
+                for macro in macro_replace_list:
+                    if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
+                        new_fp.write("{}={}\n".format(macro[0], macro[1]))
+                        wrote_line = True
+                    elif line.startswith("#" + macro[0] + "="):
+                        new_fp.write("#{}={}\n".format(macro[0], macro[1]))
+                        wrote_line = True
+                if not wrote_line:
+                    if comment_unsupported and not line.startswith('#'):
+                        new_fp.write("#" + line + "\n")
+                    else:
+                        new_fp.write(line + "\n")
             line = old_fp.readline()
-            while line:
-                line = line.strip()
-                if not line.startswith('#') and '=' in line:
-                    line = line = re.sub(' +', '', line)
-                if line.startswith('#'):
-                    new_fp.write(line + "\n")
-                else:
-                    wrote_line = False
-                    for macro in macro_replace_list:
-                        if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
-                            new_fp.write("{}={}\n".format(macro[0], macro[1]))
-                            wrote_line = True
-                        elif line.startswith("#" + macro[0] + "="):
-                            new_fp.write("#{}={}\n".format(macro[0], macro[1]))
-                            wrote_line = True
-                    if not wrote_line:
-                        if comment_unsupported and not line.startswith('#'):
-                            new_fp.write("#" + line + "\n")
-                        else:
-                            new_fp.write(line + "\n")
-                line = old_fp.readline()
-            new_fp.close()
+        new_fp.close()
         old_fp.close()
 
 

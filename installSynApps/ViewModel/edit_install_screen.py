@@ -71,7 +71,7 @@ class EditConfigGUI:
         posx  = 100
         posy  = 100
         self.installModuleLines = {}
-        self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
+        self.master.wm_geometry("%dx%d" % (sizex, sizey))
 
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
