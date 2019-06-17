@@ -32,6 +32,7 @@ def parse_user_input():
     yes = False
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
     parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
+    parser.add_argument('-d', '--dependency', action='store_true', help='Add this flag to install dependencies via a dependency script.')
     parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
     arguments = vars(parser.parse_args())
     print(arguments)
@@ -40,13 +41,13 @@ def parse_user_input():
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
 
-    return path_to_configure, yes
+    return path_to_configure, yes, arguments['dependency']
 
 
 
 # ----------------- Run the script ------------------------
 
-path_to_configure, yes = parse_user_input()
+path_to_configure, yes, dep = parse_user_input()
 
 
 # Welcome message
@@ -116,12 +117,14 @@ if update == "y":
 
 print("----------------------------------------------")
 print("Building EPICS base, support and areaDetector...")
-if not yes:
-    dep = input("Do you need installSynApps to now install dependency packages on this machine? (y/n) > ")
-else:
-    dep = "y"
+if not dep and not yes:
+    d = input("Do you need installSynApps to now install dependency packages on this machine? (y/n) > ")
+elif dep:
+    d = "y"
+elif yes:
+    d = 'n'
 
-if dep == "y":
+if d == "y":
     if platform == 'win32':
         print('Detected Windows platform... Currently no dependency script support.')
     else:
@@ -134,7 +137,7 @@ else:
     build = "y"
 
 if build == "y":
-    print("Done installing dependencies, starting build...")
+    print("Starting build...")
     ret, message, failed_list = builder.build_all()
 
     if ret < 0:
