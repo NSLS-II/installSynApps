@@ -19,7 +19,7 @@ SUPPORT=$INSTALL/support
 AREA_DETECTOR=$SUPPORT/areaDetector
 
 # Example custom dependency, we must build libuvc before compiling ADUVC
-ADUVC=$AREA_DETECTOR/ADUVC
+#ADUVC=$AREA_DETECTOR/ADUVC
 #ADEIGER=$AREA_DETECTOR/ADEiger
 
 cd $INSTALL

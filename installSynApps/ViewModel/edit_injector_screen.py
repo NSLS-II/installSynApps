@@ -64,14 +64,14 @@ class EditInjectorGUI:
         sizey = 700
         posx = 100
         posy = 100
-        self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
+        #self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
 
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
 
         self.config_injector = config_injector
 
-        self.viewFrame = Frame(self.master, relief = GROOVE)
+        self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
         self.injectorList = []

@@ -33,6 +33,7 @@ import webbrowser
 from sys import platform
 
 # installSynApps module imports
+import installSynApps
 import installSynApps.DataModel.install_config as Config
 import installSynApps.IO.config_parser as Parser
 import installSynApps.Driver.clone_driver as Cloner
