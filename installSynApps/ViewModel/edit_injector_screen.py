@@ -110,8 +110,11 @@ class EditInjectorGUI:
 
         target_file = self.currentEditVar.get()
         self.editPanel.delete('1.0', END)
+        self.editPanel.insert(INSERT, '#\n')
+        self.editPanel.insert(INSERT, '# The below contents will be injected into:\n')
+        self.editPanel.insert(INSERT, '# {}\n'.format(self.config_injector.injector_file_links[target_file]))
+        self.editPanel.insert(INSERT, '#\n')
         self.editPanel.insert(INSERT, self.config_injector.injector_file_contents[target_file])
-        self.editPanel.see(END)
 
 
     def applyChanges(self):
@@ -120,7 +123,11 @@ class EditInjectorGUI:
         wrote. Note that there are no checks to see if the injection will be valid.
         """
 
-        new_contents = self.editPanel.get('1.0', END)
+        temp = self.editPanel.get('1.0', END).splitlines()
+        new_contents = ''
+        for line in temp:
+            if not line.startswith('#'):
+                new_contents = new_contents + line + '\n'
         target = self.currentEditVar.get()
         self.config_injector.injector_file_contents[target] = new_contents
         self.root.writeToLog('Applied updated injector file contents.\n')
