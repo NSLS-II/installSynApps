@@ -44,10 +44,38 @@ def parse_user_input():
     return path_to_configure, yes, arguments['dependency']
 
 
+def check_dependencies_in_path():
+    status = True
+    message = ''
+    current = 'make'
+    FNULL = open(os.devnull, 'w')
+    try:
+        subprocess.call(['make'], stdout=FNULL, stderr=FNULL)
+        current = 'wget'
+        subprocess.call(['wget'], stdout=FNULL, stderr=FNULL)
+        current = 'git'
+        subprocess.call(['git'], stdout=FNULL, stderr=FNULL)
+        current = 'tar'
+        subprocess.call(['tar'], stdout=FNULL, stderr=FNULL)
+    except FileNotFoundError:
+        status = False
+        message = current
+
+    FNULL.close()
+    return status, message
+
 
 # ----------------- Run the script ------------------------
 
 path_to_configure, yes, dep = parse_user_input()
+
+status, message = check_dependencies_in_path()
+
+if not status:
+    print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
+    print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
+    print("Critical dependancy error, abort.")
+    exit()
 
 
 # Welcome message
@@ -160,7 +188,7 @@ else:
     print("Build aborted... Exiting.")
     exit()
 
-print("Auto-Build of EPICS, synApps, and areaDetector successfully.")
+print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
 
 
 
