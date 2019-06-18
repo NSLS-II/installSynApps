@@ -114,6 +114,7 @@ class InstallSynAppsGUI:
         menubar = Menu(self.master)
 
         filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label='Add Config', command=self.addConfig)
         filemenu.add_command(label='Open', command=self.loadConfig)
         filemenu.add_command(label='Save As', command=self.saveConfig)
         filemenu.add_command(label='Exit', command = self.master.quit)
@@ -334,6 +335,37 @@ class InstallSynAppsGUI:
 
 # ----------------------- Loading/saving Functions -----------------------------
 
+
+    def addConfig(self):
+        
+
+        self.writeToLog("Opening add install config file dialog...\n")
+        temp = self.configure_path
+        self.configure_path = filedialog.askdirectory(initialdir = '.')
+        if len(self.configure_path) == 0:
+            self.writeToLog('Operation cancelled.\n')
+            self.configure_path = temp
+            return
+        valid = True
+        if not os.path.exists(self.configure_path):
+            valid = False
+            self.showErrorMessage("Config Error", "ERROR - No INSTALL_CONFIG file found in selected directory.")
+        else:
+            self.writeToLog("Valid Pathing\n")
+            shutil.copy("resources/INSTALL_CONFIG",self.configure_path)
+            Parser.ConfigParser(self.configure_path)
+            if Parser.ConfigParser.parse_install_config(self, self.configure_path) is not None:
+                self.cloner.install_config = self.install_config
+                self.updater.install_config = self.install_config
+                self.updater.path_to_configure = self.configure_path
+                self.updater.config_injector.install_config = self.install_config
+                self.updater.config_injector.path_to_configure = self.configure_path
+                self.updater.config_injector.initialize_addtl_config()
+                self.builder.install_config = self.install_config
+                self.autogenerator.install_config = self.install_config
+                self.updateConfig()
+            else:
+                self.writeToLog("Error occured with the path you submitted.")
 
     def loadConfig(self):
         """
