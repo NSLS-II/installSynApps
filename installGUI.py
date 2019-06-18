@@ -337,8 +337,9 @@ class InstallSynAppsGUI:
 
 
     def addConfig(self):
-        
-
+        """
+        Will add a file to directory and allow the user to use that
+        """
         self.writeToLog("Opening add install config file dialog...\n")
         temp = self.configure_path
         self.configure_path = filedialog.askdirectory(initialdir = '.')
