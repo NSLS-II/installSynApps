@@ -53,15 +53,23 @@ class ConfigInjector:
             "MAKEFILE_CONFIG"       : "$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile",
             "PLUGIN_CONFIG"         : "$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd",
         }
-        self.injector_file_contents = {}
         self.path_to_configure = path_to_configure
+        self.injector_file_contents = {}
+        self.module_replace_list = []
+        self.initialize_addtl_config()
         self.install_config = install_config
-        self.parse_injector_file_contents()
+        self.ad_modules = ["ADCORE", "AREA_DETECTOR", "ADSUPPORT"]
+
+
+    def initialize_addtl_config(self):
+        """ Function that initializes macro replacers and injector files """
+
+        self.injector_file_contents = {}
         self.macro_replace_list = []
+        self.parse_injector_file_contents()
         macro_file_paths = self.get_macro_replace_files()
         for file in macro_file_paths:
             self.macro_replace_list.extend(self.get_macro_replace_from_file(file))
-        self.ad_modules = ["ADCORE", "AREA_DETECTOR", "ADSUPPORT"]
 
 
     def get_injector_files(self):
@@ -75,7 +83,7 @@ class ConfigInjector:
         """
 
         injector_files = []
-        if os.path.exists(self.path_to_configure) and os.path.isdir(self.path_to_configure):
+        if os.path.exists(self.path_to_configure + '/injectionFiles') and os.path.isdir(self.path_to_configure + '/injectionFiles'):
             for file in os.listdir(self.path_to_configure + "/injectionFiles"):
                 if os.path.isfile(self.path_to_configure + "/injectionFiles/" + file):
                     if self.injector_file_links[file] != None:
@@ -88,15 +96,21 @@ class ConfigInjector:
         """ Function that reads injector files and gets their contents """
 
         files = self.get_injector_files()
-        for file in files:
-            contents = ''
-            fp = open(file, "r")
-            line = fp.readline()
-            while line:
-                if not line.startswith('#') and len(line) > 0:
-                    contents = contents + line
-                line = fp.readline()
-            self.injector_file_contents[file.split('/')[-1]] = contents
+        for filename in self.injector_file_links:
+            found = False
+            for file in files:
+                if file.split('/')[-1] == filename:
+                    found = True
+                    contents = ''
+                    fp = open(file, "r")
+                    line = fp.readline()
+                    while line:
+                        if not line.startswith('#') and len(line) > 0:
+                            contents = contents + line
+                        line = fp.readline()
+                    self.injector_file_contents[file.split('/')[-1]] = contents
+            if not found:
+                self.injector_file_contents[filename] = ''
 
 
     def get_macro_replace_files(self):
@@ -110,7 +124,7 @@ class ConfigInjector:
         """
 
         macro_replace_files = []
-        if os.path.exists(self.path_to_configure) and os.path.isdir(self.path_to_configure):
+        if os.path.exists(self.path_to_configure + '/macroFiles') and os.path.isdir(self.path_to_configure + '/macroFiles'):
             for file in os.listdir(self.path_to_configure + "/macroFiles"):
                 if os.path.isfile(self.path_to_configure + "/macroFiles/" + file):
                     macro_replace_files.append(self.path_to_configure + "/macroFiles/" + file)
@@ -240,34 +254,33 @@ class ConfigInjector:
         os.rename(target_dir + "/" + target_filename, target_dir + "/OLD_FILES/" + target_filename)
         old_fp = open(target_dir + "/OLD_FILES/" + target_filename, "r")
 
-        if target_filename.endswith(self.install_config.epics_arch) or target_filename.endswith(".local") or "." not in target_filename:
-            if target_filename.startswith("EXAMPLE_"):
-                new_fp = open(target_dir + "/" + target_filename[8:], "w")
+        if target_filename.startswith("EXAMPLE_"):
+            new_fp = open(target_dir + "/" + target_filename[8:], "w")
+        else:
+            new_fp = open(target_dir + "/" + target_filename, "w")
+        line = old_fp.readline()
+        while line:
+            line = line.strip()
+            if not line.startswith('#') and '=' in line:
+                line = line = re.sub(' +', '', line)
+            if line.startswith('#'):
+                new_fp.write(line + "\n")
             else:
-                new_fp = open(target_dir + "/" + target_filename, "w")
+                wrote_line = False
+                for macro in macro_replace_list:
+                    if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
+                        new_fp.write("{}={}\n".format(macro[0], macro[1]))
+                        wrote_line = True
+                    elif line.startswith("#" + macro[0] + "="):
+                        new_fp.write("#{}={}\n".format(macro[0], macro[1]))
+                        wrote_line = True
+                if not wrote_line:
+                    if comment_unsupported and not line.startswith('#'):
+                        new_fp.write("#" + line + "\n")
+                    else:
+                        new_fp.write(line + "\n")
             line = old_fp.readline()
-            while line:
-                line = line.strip()
-                if not line.startswith('#') and '=' in line:
-                    line = line = re.sub(' +', '', line)
-                if line.startswith('#'):
-                    new_fp.write(line + "\n")
-                else:
-                    wrote_line = False
-                    for macro in macro_replace_list:
-                        if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
-                            new_fp.write("{}={}\n".format(macro[0], macro[1]))
-                            wrote_line = True
-                        elif line.startswith("#" + macro[0] + "="):
-                            new_fp.write("#{}={}\n".format(macro[0], macro[1]))
-                            wrote_line = True
-                    if not wrote_line:
-                        if comment_unsupported and not line.startswith('#'):
-                            new_fp.write("#" + line + "\n")
-                        else:
-                            new_fp.write(line + "\n")
-                line = old_fp.readline()
-            new_fp.close()
+        new_fp.close()
         old_fp.close()
 
 

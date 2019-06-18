@@ -71,7 +71,7 @@ class EditConfigGUI:
         posx  = 100
         posy  = 100
         self.installModuleLines = {}
-        self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
+        self.master.wm_geometry("%dx%d" % (sizex, sizey))
 
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
@@ -171,9 +171,7 @@ class EditConfigGUI:
         self.root.updateConfigPanel()
         self.root.cloner.install_config = self.root.install_config
         self.root.updater.install_config = self.root.install_config
-        self.root.updater.path_to_configure = self.root.configure_path
         self.root.updater.config_injector.install_config = self.root.install_config
-        self.root.updater.config_injector.path_to_configure = self.root.configure_path
         self.root.builder.install_config = self.root.install_config
         self.root.autogenerator.install_config = self.root.install_config
         self.root.writeToLog('Applied updated install configuration.\n')
