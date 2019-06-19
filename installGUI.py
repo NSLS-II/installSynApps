@@ -114,6 +114,7 @@ class InstallSynAppsGUI:
         menubar = Menu(self.master)
 
         filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label='Add Config', command=self.addConfig)
         filemenu.add_command(label='Open', command=self.loadConfig)
         filemenu.add_command(label='Save As', command=self.saveConfig)
         filemenu.add_command(label='Exit', command = self.master.quit)
@@ -289,6 +290,7 @@ class InstallSynAppsGUI:
         except FileNotFoundError:
             FNULL.close()
             self.showErrorMessage('Dep. Error', 'ERROR - {} not found in system path.'.format(current))
+            self.showErrorMessage('Required packages: git, make, wget, tar')
             return False, current
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
@@ -333,6 +335,38 @@ class InstallSynAppsGUI:
 
 # ----------------------- Loading/saving Functions -----------------------------
 
+
+    def addConfig(self):
+        """
+        Will add a file to directory and allow the user to use that
+        """
+        self.writeToLog("Opening add install config file dialog...\n")
+        temp = self.configure_path
+        self.configure_path = filedialog.askdirectory(initialdir = '.')
+        if len(self.configure_path) == 0:
+            self.writeToLog('Operation cancelled.\n')
+            self.configure_path = temp
+            return
+        valid = True
+        if not os.path.exists(self.configure_path):
+            valid = False
+            self.showErrorMessage("Config Error", "ERROR - No INSTALL_CONFIG file found in selected directory.")
+        else:
+            self.writeToLog("Valid Pathing\n")
+            shutil.copy("resources/INSTALL_CONFIG",self.configure_path)
+            Parser.ConfigParser(self.configure_path)
+            if Parser.ConfigParser.parse_install_config(self, self.configure_path) is not None:
+                self.cloner.install_config = self.install_config
+                self.updater.install_config = self.install_config
+                self.updater.path_to_configure = self.configure_path
+                self.updater.config_injector.install_config = self.install_config
+                self.updater.config_injector.path_to_configure = self.configure_path
+                self.updater.config_injector.initialize_addtl_config()
+                self.builder.install_config = self.install_config
+                self.autogenerator.install_config = self.install_config
+                self.updateConfig()
+            else:
+                self.writeToLog("Error occured with the path you submitted.")
 
     def loadConfig(self):
         """
@@ -506,7 +540,7 @@ class InstallSynAppsGUI:
         helpMessage = helpMessage + "Using this program, you may inject options into EPICS\nand synApps config files, automatically set"
         helpMessage = helpMessage + " build flags,\nclone and checkout all modules and their versions, update RELEASE\nand configuration files,"
         helpMessage = helpMessage + " and auto-build all of EPICS and synApps.\nPlease look over the current config below, and if changes are\n"
-        helpMessage = helpMessage + "required, edit the configure/INSTALL_CONFIG file, or load a new configure\ndirectory."
+        helpMessage = helpMessage + "required, edit it via the `Edit` tab, or load a new configure\ndirectory."
         self.showMessage("Help", helpMessage)
 
 
@@ -567,31 +601,6 @@ class InstallSynAppsGUI:
         return status
 
 
-    def injectFiles(self):
-        """
-        Event function that starts a thread on the injectFilesProcess function
-        """
-
-        if self.install_config is None:
-            self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
-        elif not self.thread.is_alive():
-            self.thread = threading.Thread(target=self.injectFilesProcess)
-            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-            self.thread.start()
-            self.loadingIconThread.start()
-        else:
-            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
-
-
-    def injectFilesProcess(self):
-        """ Function that injects settings into configuration files """
-
-        self.writeToLog('Starting file injection process.\n')
-        self.updater.perform_injection_updates()
-        self.writeToLog('Done.\n')
-        return 0
-
-
     def updateConfig(self):
         """
         Event function that starts a thread on the updateConfigProcess function
@@ -626,6 +635,31 @@ class InstallSynAppsGUI:
         self.updater.comment_non_build_macros()
         #self.injectFilesProcess()
         self.showMessage('Update RELEASE', 'Finished update RELEASE + configure process.')
+        return 0
+
+
+    def injectFiles(self):
+        """
+        Event function that starts a thread on the injectFilesProcess function
+        """
+
+        if self.install_config is None:
+            self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
+        elif not self.thread.is_alive():
+            self.thread = threading.Thread(target=self.injectFilesProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+            self.thread.start()
+            self.loadingIconThread.start()
+        else:
+            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+    def injectFilesProcess(self):
+        """ Function that injects settings into configuration files """
+
+        self.writeToLog('Starting file injection process.\n')
+        self.updater.perform_injection_updates()
+        self.writeToLog('Done.\n')
         return 0
 
 

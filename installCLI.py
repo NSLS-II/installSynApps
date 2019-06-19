@@ -14,6 +14,7 @@ __status__      = "Production"
 import os
 import subprocess
 import argparse
+from sys import platform
 
 # InstallSynAppsModules
 import installSynApps.DataModel.install_config as Configuration
@@ -24,26 +25,57 @@ import installSynApps.IO.config_parser as Parser
 import installSynApps.IO.script_generator as Autogenerator
 
 
-yes = False
-path_to_configure = "configure"
-
 # -------------- Some helper functions ------------------
 
 def parse_user_input():
+    path_to_configure = "configure"
+    yes = False
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
     parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
+    parser.add_argument('-d', '--dependency', action='store_true', help='Add this flag to install dependencies via a dependency script.')
     parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
     arguments = vars(parser.parse_args())
+    print(arguments)
     if arguments['forceyes'] == True:
         yes = True
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
 
+    return path_to_configure, yes, arguments['dependency']
+
+
+def check_dependencies_in_path():
+    status = True
+    message = ''
+    current = 'make'
+    FNULL = open(os.devnull, 'w')
+    try:
+        subprocess.call(['make'], stdout=FNULL, stderr=FNULL)
+        current = 'wget'
+        subprocess.call(['wget'], stdout=FNULL, stderr=FNULL)
+        current = 'git'
+        subprocess.call(['git'], stdout=FNULL, stderr=FNULL)
+        current = 'tar'
+        subprocess.call(['tar'], stdout=FNULL, stderr=FNULL)
+    except FileNotFoundError:
+        status = False
+        message = current
+
+    FNULL.close()
+    return status, message
 
 
 # ----------------- Run the script ------------------------
 
-parse_user_input()
+path_to_configure, yes, dep = parse_user_input()
+
+status, message = check_dependencies_in_path()
+
+if not status:
+    print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
+    print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
+    print("Critical dependancy error, abort.")
+    exit()
 
 
 # Welcome message
@@ -66,6 +98,7 @@ parser = Parser.ConfigParser(path_to_configure)
 install_config, message = parser.parse_install_config()
 if install_config is None:
     print('Error parsing Install Config... {}'.format(message))
+    exit()
 cloner = Cloner.CloneDriver(install_config)
 updater = Updater.UpdateConfigDriver(path_to_configure, install_config)
 builder = Builder.BuildDriver(install_config)
@@ -95,6 +128,9 @@ if clone == "y":
     if len(unsuccessful) > 0:
         for module in unsuccessful:
             print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
+            if module.name == "EPICS_BASE" or module.name == "SUPPORT" or module.name == "ADSUPPORT" or module.name == "ADCORE":
+                print("Critical clone error... abort.")
+                exit()
         print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
 
 print("----------------------------------------------")
@@ -109,26 +145,18 @@ if update == "y":
 
 print("----------------------------------------------")
 print("Building EPICS base, support and areaDetector...")
-if not yes:
-    dep = input("Do you need installSynApps to now install dependency packages on this machine? (y/n) > ")
-else:
-    dep = "y"
+if not dep and not yes:
+    d = input("Do you need installSynApps to now install dependency packages on this machine? (y/n) > ")
+elif dep:
+    d = "y"
+elif yes:
+    d = 'n'
 
-if dep == "y":
-    win = ""
-    while win != "win32" and win != "linux":
-        if win != "":
-            print("Please enter either win32 or linux")
-        win = input("Is this a windows or a linux installation? (win32/linux) > ")
-    
-    if win == "win32":
-        path = input("Please enter a path to your windows dependency script > ")
-        if os.path.exists(path):
-            builder.acquire_dependecies(path)
-        else:
-            print("Path does not exist. Continuing with build.")
+if d == "y":
+    if platform == 'win32':
+        print('Detected Windows platform... Currently no dependency script support.')
     else:
-        print("Installing all linux dependencies...")
+        print('Acquiring dependencies through dependency script...')
         builder.acquire_dependecies("scripts/dependencyInstall.sh")
 
 if not yes:
@@ -137,12 +165,14 @@ else:
     build = "y"
 
 if build == "y":
-    print("Done installing dependencies, starting build...")
+    print("Starting build...")
     ret, message, failed_list = builder.build_all()
 
     if ret < 0:
         print("Build failed - {}".format(message))
         print("Check the INSTALL_CONFIG file to make sure settings and paths are valid")
+        print('Critical build error - abort...')
+        exit()
     elif len(failed_list) > 0:
         for admodule in failed_list:
             print("AD Module {} failed to build".format(admodule.name))
@@ -156,6 +186,9 @@ if build == "y":
 
 else:
     print("Build aborted... Exiting.")
+    exit()
+
+print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
 
 
 
