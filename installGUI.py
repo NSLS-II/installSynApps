@@ -20,6 +20,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
+from tkinter import simpledialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
@@ -114,7 +115,7 @@ class InstallSynAppsGUI:
         menubar = Menu(self.master)
 
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label='Add Config', command=self.addConfig)
+        filemenu.add_command(label='New', command=self.newConfig)
         filemenu.add_command(label='Open', command=self.loadConfig)
         filemenu.add_command(label='Save As', command=self.saveConfig)
         filemenu.add_command(label='Exit', command = self.master.quit)
@@ -274,6 +275,20 @@ class InstallSynAppsGUI:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
 
+    def updateAllRefs(self, install_config):
+        """ Function that updates all references to install config and configure path """
+
+        self.install_config = install_config
+        self.cloner.install_config = self.install_config
+        self.updater.install_config = self.install_config
+        self.updater.path_to_configure = self.configure_path
+        self.updater.config_injector.install_config = self.install_config
+        self.updater.config_injector.path_to_configure = self.configure_path
+        self.updater.config_injector.initialize_addtl_config()
+        self.builder.install_config = self.install_config
+        self.autogenerator.install_config = self.install_config
+
+
     def checkDeps(self):
         current = 'make'
         FNULL = open(os.devnull, 'w')
@@ -336,37 +351,30 @@ class InstallSynAppsGUI:
 # ----------------------- Loading/saving Functions -----------------------------
 
 
-    def addConfig(self):
+    def newConfig(self):
         """
-        Will add a file to directory and allow the user to use that
+        Will load a new blank config and allow user to edit/save it
         """
-        self.writeToLog("Opening add install config file dialog...\n")
-        temp = self.configure_path
-        self.configure_path = filedialog.askdirectory(initialdir = '.')
-        if len(self.configure_path) == 0:
-            self.writeToLog('Operation cancelled.\n')
-            self.configure_path = temp
-            return
-        valid = True
-        if not os.path.exists(self.configure_path):
-            valid = False
-            self.showErrorMessage("Config Error", "ERROR - No INSTALL_CONFIG file found in selected directory.")
+
+        self.writeToLog("Opening new install config dialog...\n")
+        temp = simpledialog.askstring('New Install Config', 'Please enter a new desired install location.', parent = self.master)
+        if temp is None:
+            self.showWarningMessage('Warning', 'Operation cancelled')
         else:
-            self.writeToLog("Valid Pathing\n")
-            shutil.copy("resources/INSTALL_CONFIG",self.configure_path)
-            Parser.ConfigParser(self.configure_path)
-            if Parser.ConfigParser.parse_install_config(self, self.configure_path) is not None:
-                self.cloner.install_config = self.install_config
-                self.updater.install_config = self.install_config
-                self.updater.path_to_configure = self.configure_path
-                self.updater.config_injector.install_config = self.install_config
-                self.updater.config_injector.path_to_configure = self.configure_path
-                self.updater.config_injector.initialize_addtl_config()
-                self.builder.install_config = self.install_config
-                self.autogenerator.install_config = self.install_config
-                self.updateConfig()
+            self.writeToLog("Trying to load new default config with install location {}...\n".format(temp))
+            old_config = self.configure_path
+            self.configure_path = 'resources'
+            self.parser.configure_path = self.configure_path
+            loaded_install_config, message = self.parser.parse_install_config(config_filename='NEW_CONFIG', force_location=temp)
+
+            if loaded_install_config is None:
+                self.showErrorMessage('Error', 'ERROR - {}.'.format(message), force_popup=True)
+                self.parser.configure_path = old_config
+                self.configure_path = old_config
             else:
-                self.writeToLog("Error occured with the path you submitted.")
+                self.updateAllRefs(loaded_install_config)
+                self.updateConfigPanel()
+
 
     def loadConfig(self):
         """
@@ -398,14 +406,7 @@ class InstallSynAppsGUI:
             self.updateConfigPanel()
         else:
             self.showErrorMessage('Load error', 'Error loading install config... {}'.format(message), force_popup=True)
-        self.cloner.install_config = self.install_config
-        self.updater.install_config = self.install_config
-        self.updater.path_to_configure = self.configure_path
-        self.updater.config_injector.install_config = self.install_config
-        self.updater.config_injector.path_to_configure = self.configure_path
-        self.updater.config_injector.initialize_addtl_config()
-        self.builder.install_config = self.install_config
-        self.autogenerator.install_config = self.install_config
+        self.updateAllRefs(self.install_config)
 
 
     def saveConfig(self):
