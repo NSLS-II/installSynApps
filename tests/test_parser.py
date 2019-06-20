@@ -43,6 +43,12 @@ def test_no_permission():
     assert error == 'Permission Error'
 
 
+def test_not_exist():
+    parsed_into_dummy, error = parser.parse_install_config(force_location='/home/jwlodek/dummy/test')
+    assert parsed_into_dummy is None
+    assert error == 'Install filepath not valid'
+
+
 def test_loc_parse():
     assert install_config.install_location == parsed_config.install_location
 
