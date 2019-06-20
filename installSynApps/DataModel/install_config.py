@@ -158,7 +158,7 @@ class InstallConfiguration:
         elif "$(AREA_DETECTOR)" in rel_path and self.ad_path != None:
             return self.ad_path + "/" + temp
         else:
-            return None
+            return rel_path
 
 
     def print_installation_info(self, fp = None):

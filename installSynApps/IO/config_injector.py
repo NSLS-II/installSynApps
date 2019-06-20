@@ -263,7 +263,7 @@ class ConfigInjector:
             line = line.strip()
             if not line.startswith('#') and '=' in line:
                 line = line = re.sub(' +', '', line)
-            if line.startswith('#'):
+            if line.startswith('#') and '=' not in line:
                 new_fp.write(line + "\n")
             else:
                 wrote_line = False
@@ -272,10 +272,11 @@ class ConfigInjector:
                         new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
                     elif line.startswith("#" + macro[0] + "="):
+                        print(macro[0])
                         new_fp.write("#{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
                 if not wrote_line:
-                    if comment_unsupported and not line.startswith('#'):
+                    if comment_unsupported and not line.startswith('#') and len(line) > 1:
                         new_fp.write("#" + line + "\n")
                     else:
                         new_fp.write(line + "\n")
