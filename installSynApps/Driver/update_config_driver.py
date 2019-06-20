@@ -138,7 +138,7 @@ class UpdateConfigDriver:
 
         for module in self.install_config.get_module_list():
             if module.name == target_module_name:
-                replace_release_path = self.path_to_configure + "/fixedRELEASEFiles/" + module.name + "_RELEASE"
+                replace_release_path = "resources/fixedRELEASEFiles/" + module.name + "_RELEASE"
                 if os.path.exists(replace_release_path) and os.path.isfile(replace_release_path):
                     release_path = module.abs_path + "/configure/RELEASE"
                     if not os.path.exists(release_path):
