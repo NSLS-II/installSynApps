@@ -79,7 +79,7 @@ class ConfigParser:
         return install_module
 
 
-    def parse_install_config(self, config_filename = "INSTALL_CONFIG", force_location = None):
+    def parse_install_config(self, config_filename = "INSTALL_CONFIG", force_location = None, allow_illegal = False):
         """
         Top level install config parser function
         Parses the self.path_to_configure/config_filename file
@@ -105,6 +105,7 @@ class ConfigParser:
             current_url_type = ""
             epics_arch = ""
             install_loc = ""
+            message = ''
 
             line = install_file.readline()
             while line:
@@ -117,12 +118,18 @@ class ConfigParser:
                             install_loc = force_location
                         install_config = IC.InstallConfiguration(install_loc, self.configure_path)
                         if install_config.is_install_valid() < 0:
-                            return None, 'Permission Error'
+                            if not allow_illegal:
+                                return None, 'Permission Error'
+                            else:
+                                message = 'Permission Error'
                         elif install_config.is_install_valid() == 0:
                             try:
                                 os.mkdir(install_config.install_location)
                             except FileNotFoundError:
-                                return None, 'Install filepath not valid'
+                                if not allow_illegal:
+                                    return None, 'Install filepath not valid'
+                                else:
+                                    message = 'Install filepath not valid'
                     elif line.startswith("GIT_URL") or line.startswith("WGET_URL"):
                         current_url = line.split('=')[1]
                         current_url_type = line.split('=')[0]
@@ -133,6 +140,6 @@ class ConfigParser:
             
             install_file.close()
             # install_config.print_installation_info()
-            return install_config , ''
+            return install_config , message
         return None, 'Configure Path not found'
                     

@@ -122,7 +122,7 @@ class InstallSynAppsGUI:
         filemenu.add_command(label='Open',      command=self.loadConfig)
         filemenu.add_command(label='Save',      command=self.saveConfig)
         filemenu.add_command(label='Save As',   command=self.saveConfigAs)
-        filemenu.add_command(label='Exit',      command = self.master.quit)
+        filemenu.add_command(label='Exit',      command = self.master.destroy)
         menubar.add_cascade(label='File', menu=filemenu)
 
         # Edit Menu
@@ -139,6 +139,7 @@ class InstallSynAppsGUI:
         debugmenu = Menu(menubar, tearoff = 0)
         debugmenu.add_command(label='Print Loaded Config Info', command=self.printLoadedConfigInfo)
         debugmenu.add_command(label='Clear Log',                command=self.resetLog)
+        debugmenu.add_command(label='Recheck Dependancies',     command=self.recheckDeps)
         menubar.add_cascade(label='Debug', menu=debugmenu)
 
         # Build Menu
@@ -192,12 +193,18 @@ class InstallSynAppsGUI:
 
         # default configure path
         self.configure_path = 'configure'
+        self.valid_install = False
+        self.deps_found = True
 
         # installSynApps options, initialzie + read default configure files
         self.parser = Parser.ConfigParser(self.configure_path)
 
         self.install_config, message = self.parser.parse_install_config()
         self.install_loaded = False
+        if len(message) > 0:
+            self.valid_install = False
+        else:
+            self.valid_install = True
 
         # Threads for async operation
         self.thread = threading.Thread()
@@ -209,10 +216,7 @@ class InstallSynAppsGUI:
         self.builder        = Builder.BuildDriver(self.install_config)
         self.autogenerator  = Autogenerator.ScriptGenerator(self.install_config)
 
-        inPath, missing = self.checkDeps()
-        if not inPath:
-            self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
-            exit()
+        self.recheckDeps()
 
         if self.install_config is not None:
             self.updateConfigPanel()
@@ -306,6 +310,8 @@ class InstallSynAppsGUI:
 
 
     def checkDeps(self):
+        """ Function that quietly checks if all dependant packages are installed """
+
         current = 'make'
         FNULL = open(os.devnull, 'w')
         try:
@@ -323,6 +329,19 @@ class InstallSynAppsGUI:
             self.showErrorMessage('Dep. Error', 'ERROR - {} not found in system path.'.format(current))
             self.showErrorMessage('Required packages: git, make, wget, tar')
             return False, current
+
+
+    def recheckDeps(self):
+        """ Wrapper function for checking for installed dependancies """
+
+        self.writeToLog('Checking for installed dependancies...\n')
+        inPath, missing = self.checkDeps()
+        if not inPath:
+            self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
+            self.deps_found = False
+        else:
+            self.deps_found = True
+        self.writeToLog('Done.\n')
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
 
@@ -348,10 +367,10 @@ class InstallSynAppsGUI:
         self.writeToLog(text + "\n")
 
 
-    def showWarningMessage(self, title, text):
+    def showWarningMessage(self, title, text, force_popup = False):
         """ Function that displays warning popup and log message """
 
-        if self.showPopups.get():
+        if self.showPopups.get() or force_popup:
             messagebox.showwarning(title, text)
         self.writeToLog(text + "\n")
 
@@ -381,12 +400,20 @@ class InstallSynAppsGUI:
             old_config = self.configure_path
             self.configure_path = 'resources'
             self.parser.configure_path = self.configure_path
-            loaded_install_config, message = self.parser.parse_install_config(config_filename='NEW_CONFIG', force_location=temp)
+            loaded_install_config, message = self.parser.parse_install_config(config_filename='NEW_CONFIG', force_location=temp, allow_illegal=True)
+            if len(message) > 0:
+                self.valid_install = False
+            else:
+                self.valid_install = True
 
             if loaded_install_config is None:
                 self.showErrorMessage('Error', 'ERROR - {}.'.format(message), force_popup=True)
                 self.parser.configure_path = old_config
                 self.configure_path = old_config
+            elif not self.valid_install:
+                self.showWarningMessage('Warning', 'WARNING - {}.'.format(message), force_popup=True)
+                self.updateAllRefs(loaded_install_config)
+                self.updateConfigPanel()
             else:
                 self.updateAllRefs(loaded_install_config)
                 self.updateConfigPanel()
@@ -418,7 +445,12 @@ class InstallSynAppsGUI:
             return
         self.writeToLog('Loaded configure directory at {}.\n'.format(self.configure_path))
         self.parser.configure_path = self.configure_path
-        self.install_config, message = self.parser.parse_install_config()
+        self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
+        if len(message) > 0:
+            self.valid_install = False
+            self.showWarningMessage('Warning', 'WARNING - {}.'.format(message), force_popup=True)
+        else:
+            self.valid_install = True
         if self.install_config is not None:
             self.updateConfigPanel()
         else:
@@ -468,12 +500,8 @@ class InstallSynAppsGUI:
         self.writeToLog('Saved optional config files, moving to INSTALL_CONFIG...\n')
 
         new_install_config = open(dirpath + "/INSTALL_CONFIG", "w+")
-        new_install_config.write('#\n# INSTALL_CONFIG file saved by InstallSynAppsGUI on {}, for {}\n#\n\n'.format(datetime.datetime.now(), platform)) 
-        new_install_config.write("INSTALL={}\n\n".format(self.install_config.install_location))
-        if platform == 'linux':
-            new_install_config.write("EPICS_ARCH=linux-x86_64\n\n")
-        elif platform == 'win32':
-            new_install_config.write("EPICS_ARCH=win32-x86\n\n")
+        new_install_config.write('#\n# INSTALL_CONFIG file saved by InstallSynAppsGUI on {}\n#\n\n'.format(datetime.datetime.now())) 
+        new_install_config.write("INSTALL={}\n\n\n".format(self.install_config.install_location))
 
         new_install_config.write('#MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE\n')
         new_install_config.write('#-----------------------------------------------------------------------------------------------------------------------------------\n')
@@ -627,6 +655,10 @@ class InstallSynAppsGUI:
 
         if self.install_config is None:
             self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
+        elif not self.valid_install:
+            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
+        elif not self.deps_found:
+            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
         elif not self.thread.is_alive():
             self.thread = threading.Thread(target=self.cloneConfigProcess)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -677,6 +709,10 @@ class InstallSynAppsGUI:
 
         if self.install_config is None:
             self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
+        elif not self.valid_install:
+            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
+        elif not self.deps_found:
+            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
         elif not self.thread.is_alive():
             self.thread = threading.Thread(target=self.updateConfigProcess)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -714,6 +750,10 @@ class InstallSynAppsGUI:
 
         if self.install_config is None:
             self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
+        elif not self.valid_install:
+            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
+        elif not self.deps_found:
+            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
         elif not self.thread.is_alive():
             self.thread = threading.Thread(target=self.injectFilesProcess)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -739,6 +779,10 @@ class InstallSynAppsGUI:
 
         if self.install_config is None:
             self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
+        elif not self.valid_install:
+            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
+        elif not self.deps_found:
+            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
         elif not self.thread.is_alive():
             self.thread = threading.Thread(target=self.buildConfigProcess)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -807,6 +851,10 @@ class InstallSynAppsGUI:
 
         if self.install_config is None:
             self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
+        elif not self.valid_install:
+            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
+        elif not self.deps_found:
+            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
         elif not self.thread.is_alive():
             self.thread = threading.Thread(target=self.autorunProcess)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
