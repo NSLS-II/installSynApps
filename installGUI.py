@@ -154,9 +154,10 @@ class InstallSynAppsGUI:
 
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
-        helpmenu.add_command(label='Quick Help',            command=self.loadHelp)
-        helpmenu.add_command(label='Online Documentation',  command=self.openOnlineDocs)
-        helpmenu.add_command(label='About',                 command=self.showAbout)
+        helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
+        helpmenu.add_command(label='Dependency Script Help',    command=self.depScriptHelp)
+        helpmenu.add_command(label='Online Documentation',      command=self.openOnlineDocs)
+        helpmenu.add_command(label='About',                     command=self.showAbout)
         menubar.add_cascade(label='Help', menu=helpmenu)
 
         self.master.config(menu=menubar)
@@ -641,6 +642,14 @@ class InstallSynAppsGUI:
 
         self.writeToLog(self.install_config.get_printable_string())
 
+
+    def depScriptHelp(self):
+        """ Function that displays help message for adding dependancy script """
+
+        self.writeToLog('When dependency install is enabled, installSynApps will attempt\nto run a dependency script')
+        self.writeToLog('in the configure directory,\ncalled dependencyInstall.sh on Linux, and dependencyInstall.bat\non win32.')
+        self.writeToLog('To add a script, simply write a shell/batch script,\nand place it in the configure directory.\n')
+
 #--------------------------------- Build Process Functions ------------------------------------------#
 #                                                                                                    #
 # Note that each of the build process functions has a wrapper that quickly returns, after starting   #
@@ -801,10 +810,17 @@ class InstallSynAppsGUI:
         if not platform == "win32" and self.installDep.get():
             self.writeToLog('Running dependency script...\n')
             self.writeToLog('Please enter your sudo password into the terminal...\n')
-            self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
-            self.writeToLog('Dependencies have been installed.\n')
-        elif platform == "win32":
-            self.writeToLog("Windows ARCH detected - currently no support for auto-install dependencies.\n")
+            if os.path.exists(self.path_to_configure + '/dependencyInstall.sh'):
+                self.builder.acquire_dependecies(self.path_to_configure + '/dependencyInstall.sh')
+                self.writeToLog('Dependencies have been installed.\n')
+            else:
+                self.writeToLog('No dependency script found.\n')
+        elif platform == "win32" and self.installDep.get():
+            if os.path.exists(self.path_to_configure + '/dependencyInstall.bat'):
+                self.builder.acquire_dependecies(self.path_to_configure + '/dependencyInstall.bat')
+                self.writeToLog('Dependencies have been installed.\n')
+            else:
+                self.writeToLog('No dependency script found.\n')
         else:
             self.writeToLog("Auto install dependencies toggled off.\n")
         self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))

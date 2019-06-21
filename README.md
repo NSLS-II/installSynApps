@@ -13,14 +13,22 @@ There are two recommended usage procedures for the module, through the use of `i
 
 ### installCLI
 
+Before running the command line option, you must edit the install configuration stored in the `configure` directory of this program. Open the `INSTALL_CONFIG` file and you will see a large table representing all modules to clone and or build. Make sure to set the install location as desired at the top of the file, along with any other changes. Note that the file is structured so that packages must be below their dependacies. For example, an ADDriver depends on ADCore, which means it has to be below it in the table.
+
+In addition, in the configure directory, there are two folders: `injectionFiles`, and `macroFiles`. In the `injectionFiles` directory, you will find files whose contents are injected into `commonPlugins.cmd`, `RELEASE_PRODS.local`, `commonPlugin_settings.req`, and `commonDriverMakefile`. These injections allow for customizing the areaDetector build past the defaults. In the `macroFiles` directory, all files located there are read and parsed for macro values, which are then used to update the areaDetector configuration. For example writing `JPEG_EXTERNAL=YES` will set the `JPEG_EXTERNAL` macro in the `CONFIG_SITE.local` file in the areaDetector configuration.
+
+Once all of these configuration files are edited to your liking, you may run the script.
+
 To use the command line option, simply run this file either with:
 ```
 ./installCLI.py
 ```
 OR
 ```
-python3 installCLI.py
+python installCLI.py
 ```
+**Note that python 3.* is required for this script to run**
+
 For information on the available options, run with the `-h` flag. After running the file, simply follow the instructions as they guide you through the build process.
 
 ### installGUI
@@ -29,7 +37,7 @@ The GUI requires Tkinter to be installed for operation. Tkinter is a standard mo
 
 Similar to `installCLI.py`, to use the GUI, simply run it with python3. You will then see the option for each individual operation, along with an autorun that will perform them all sequentially. You may also load another configuration directory, provided that it follows the same file format as the given default configure directory.
 
-The GUI version also allowes finer control of install configurations. In the open window, select the `Edit` menu, then choose one of the three options. From there, a window will open allowing you to edit any portion of the install process. You may also save the install configuration with it's edits by selecting the File -> Save As option.
+The GUI version also allowes finer control of install configurations. In the open window, select the `Edit` menu, then choose an edit option. From there, a window will open allowing you to edit any portion of the install process. You may also save the install configuration with it's edits by selecting the File -> Save As option. When you select File -> Save, the currently loaded config will overwrite whereever it was previously saved.
 
 In addition, the GUI keeps a log of the operations completed, which can be saved to an arbitrary location. Note that if a process is running (as indicated by the animated process status message), you will be unable to run another process.
 
@@ -43,14 +51,7 @@ The installSynApps module requires the following to be in the environment PATH i
 * wget
 * tar
 
-If these packages are available, then the script should be able to run through the entirety of the build process. The only caveat is that when building on windows, the dependency install script (which uses `apt` and `bash`) will not be able to run. This means that modules requiring external packages as dependencies will need these to be compiled and placed in the system path prior to compilation.
-
-In addition, it is possible that on windows the downloaded python 3 .exe file will actually simply be called python. Thus, the scripts must be executed with
-
-```
-python installCLI.py
-python installGUI.py
-```
+If these packages are available, then the script should be able to run through the entirety of the build process.
 
 ### Included Configuration files
 
@@ -67,45 +68,4 @@ BUILD_FLAG_CONFIG   | Allows for manually setting Area Detector build flags ex. 
 
 It is possible to use different `configure` directories when using `installSynApps`. To do so, it is required that there is an `INSTALL_CONFIG` file within the selected directory. Additionally, the `fixedRELEASEFiles` directory should be copied as well. The remaining two directories are optional, though a warning will be displayed on load if they are missing.
 
-**BELOW ARE INSTRUCTIONS FOR RUNNING THE LEGACY VERSION OF INSTALLSYNAPPS**
-
-### Auto Build - Legacy
-
-For most purposes, it is simplest to run the auto-build script, which will give you a guided process through building the modules.
-To do this, run:
-```
-./auto_build.sh
-```
-The script will first ask if you wish to keep the default build config, which in most cases is yes. Next, it will ask if
-the curret install location is OK. If no, simply enter the new install location.
-
-### Included scripts - Legacy
-
-Script name                    | Script Function
-------------------- | ------------------------------------------------------
-auto_build.sh | Recommended script that gives a guided build process
-installSynApps.sh | top level bash script that runs the remaining scripts sequentially
-clone_and_checkout.py | Clones all required repositories and checks out correct versions
-read_install_config.py | Script that reads the data in the INSTALL_CONFIG file
-update_release_file.py | Script that updates the release files in support and area detector
-ad_config_setup.py | Script based on adConfigSetup, that replaces area detector configuration files
-dependencyInstall.sh | bash script that installs all required packages for EPICS and synApps
-script_generator.py | script that creates bash scripts for installing and uninstalling, so that compilation for other operating systems is simplified.
-
-### Usage - Legacy
-
-For more granular control over the build process, do the following:  
-
-There are only 2 locations with files that need to be edited before running the script. These are the `configure/*` files, and the `scripts/dependencyInstall.sh` file. In the first, edit the install configurations for your installation. In most cases, you may simply change the `MODULE_INSTALL` tag  in the `INSTALL_CONFIG` file for the modules you wish to build and those you don't wish to build, and you must also edit the line
-```
-INSTALL=/epics
-```
-to point to the top level directory in which you wish to install EPICS and synApps. The other files in the `configure/` directory contain other configurations, with each one being inserted into a different Area Detector build file. Details can be found in comments in the files themselves.
-
-In the only other file that you must edit (`scripts/dependencyInstall.sh`). In addition, if there are any other dependencies for your build of EPICS and synApps, add them here. For example, to auto-build the ADUVC driver, libuvc must be built, so I added a condition for building and installing libuvc.
-
-From here, you are ready to run the script, and this is done simply by running:
-```
-./installSynApps.sh
-```
-from the /scripts directory. Note that you will be prompted for a sudo password to install the dependency packages. Once the script completes, a new directory `autogenerated` is created, and `install.sh` and `uninstall.sh` files are placed within each. Run the appropriate file to uninstall or recompile the packages appropriately. This should simplify building the same sources on multiple operating systems.
+**For information regarding the usage of the Legacy scripts of installSynApps, please check the LEGACY.md file in this repo**

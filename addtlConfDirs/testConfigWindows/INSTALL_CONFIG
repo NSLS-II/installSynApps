@@ -1,8 +1,8 @@
 #
-# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-21 10:10:53.573635.
+# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-21 14:23:10.050055
 #
 
-INSTALL=C:/epics
+INSTALL=D:/epics
 
 
 #MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE
@@ -84,7 +84,7 @@ ADCORE           R3-6                 $(AREA_DETECTOR)/ADCore                  A
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADCOMPVISION     master               $(AREA_DETECTOR)/ADCompVision            ADCompVision             NO               NO
+ADCOMPVISION     master               $(AREA_DETECTOR)/ADCompVision            ADCompVision             YES              NO
 ADPLUGINBAR      R2-1                 $(AREA_DETECTOR)/ADPluginBar             ADPluginBar              NO               NO
 ADPLUGINDMTX     master               $(AREA_DETECTOR)/ADPluginDmtx            ADPluginDmtx             NO               NO
 
@@ -94,7 +94,7 @@ ADPLUGINEDGE     master               $(AREA_DETECTOR)/ADPluginEdge            A
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADUVC            R1-2                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    NO               NO
+ADUVC            R1-2                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    YES              NO
 ADEMERGENTVISION master               $(AREA_DETECTOR)/ADEmergentVision        ADEmergentVision         NO               NO
 ADSPINNAKER      u18_compile          $(AREA_DETECTOR)/ADSpinnaker             ADSpinnaker              NO               NO
 ADLAMBDA         dual_threshold_feature $(AREA_DETECTOR)/ADLambda                ADLambda                 NO               NO
