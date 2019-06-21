@@ -1,19 +1,6 @@
-#
-# The contents of this file will be inserted into the commonPlugin_settings.req file,
-# which is used to enable autosave functionality for the driver/plugin loaded at
-# IOC startup.
-#
-# Author: Jakub Wlodek
-# Created on: 8-May-2019
-# Copyright (c): Brookhaven National Laboratory
-#
-# NOTE: Only uncommented lines will be injected into commonPlugin_settings.req
+# Saved by InstallSynAppsGUI on 2019-06-21 12:52:37.318359
+
+
 
 file "NDPva_settings.req",          P=$(P),  R=Pva1:
 
-#file "NDEdge_settings.req",         P=$(P),  R=Edge1:
-#file "scan_settings.req",           P=$(P),  S=scan1
-#file "scan_settings.req",           P=$(P),  S=scan2
-#file "scan_settings.req",           P=$(P),  S=scan3
-#file "scan_settings.req",           P=$(P),  S=scan4
-#file "sseqRecord_settings.req", P=$(P), S=AcquireSequence

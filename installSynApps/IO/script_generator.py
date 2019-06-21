@@ -70,6 +70,8 @@ class ScriptGenerator:
                 install_fp.write("cd ${}\n".format(module.name))
                 install_fp.write("make -sj\n")
 
+        install_fp.close()
+
 
     def generate_uninstall(self):
         """ Function that generates an uninstall file based on currently loaded install_config """
@@ -91,6 +93,9 @@ class ScriptGenerator:
                 uninstall_fp.write("cd ${}\n".format(module.name))
                 uninstall_fp.write("make clean uninstall\n")
                 uninstall_fp.write("make clean uninstall\n")
+    
+        modules.reverse()
+        uninstall_fp.close()
 
 
     def generate_readme(self):
@@ -116,6 +121,8 @@ class ScriptGenerator:
         for module in self.install_config.get_module_list():
             if module.build == "NO" and module.clone == "YES":
                 readme_fp.write("{} -> {}\n".format(module.name, module.version))
+        
+        readme_fp.close()
 
 
     def autogenerate_all(self):

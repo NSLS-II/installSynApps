@@ -1,0 +1,16 @@
+# This file will contain code to insert into the commonDriverMakefile to link libraries for any external plugins
+# not included by default with areaDetector/ADCore
+
+
+ifeq ($(WITH_TEST),YES)
+  ifeq ($(TEST_EXTERNAL),NO)
+    PROD_SYS_LIBS += test
+  else
+    ifdef TEST_LIB
+      TEST_DIR        = $(TEST_LIB)
+      PROD_LIBS     += test
+    else
+      PROD_SYS_LIBS += test_system
+    endif
+  endif
+endif

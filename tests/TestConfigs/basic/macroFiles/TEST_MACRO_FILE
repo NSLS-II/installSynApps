@@ -1,0 +1,6 @@
+# This is a test file for checking macro reads and writes
+
+
+MACRO_A=YES
+MACRO_B=12
+MACRO_C=TEST

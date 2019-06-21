@@ -1,0 +1,6 @@
+# A temp macro file for testing
+
+MACRO_A=NO
+MACRO_B=12
+#MACRO_C=HELLO
+MACRO_D=HI

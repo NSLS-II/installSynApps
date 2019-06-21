@@ -1,0 +1,34 @@
+#
+# This file contains all required information for building EPICS base and synapps.
+# Please place modules in the order that they need to be compiled.
+#
+# Author: Jakub Wlodek
+#
+
+#-- INSTALL LOCATION --
+
+# Top level install location for the build
+
+INSTALL=/epics/test
+
+
+#-- MODULES --
+
+#MODULE_NAME    MODULE_VERSION      MODULE_PATH                             MODULE_REPO                 CLONE_MODULE    BUILD_MODULE
+#-----------------------------------------------------------------------------------------------------------------------------------
+GIT_URL=https://github.com/dummyurl/
+
+EPICS_BASE          R7.0.2.2     $(INSTALL)/base                             base                      YES            YES
+
+GIT_URL=https://github.com/dummyurl/
+
+SUPPORT             R6-0        $(INSTALL)/support                          support                         YES             YES
+
+GIT_URL=https://github.com/dummyurl/
+
+AREA_DETECTOR       R3-6        $(SUPPORT)/areaDetector                     ad                    YES             YES
+
+
+GIT_URL=https://github.com/dummyurl/
+
+DUMMY                R1-0       $(AREA_DETECTOR)/dummy                             dummy                            YES             YES

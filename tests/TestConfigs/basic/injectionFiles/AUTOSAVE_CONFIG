@@ -1,0 +1,11 @@
+#
+# The contents of this file will be inserted into the commonPlugin_settings.req file,
+# which is used to enable autosave functionality for the driver/plugin loaded at
+# IOC startup.
+#
+# Author: Jakub Wlodek
+# Created on: 8-May-2019
+# Copyright (c): Brookhaven National Laboratory
+#
+# NOTE: Only uncommented lines will be injected into commonPlugin_settings.req
+file "NDTEST_settings.req",          P=$(P),  R=TEST1:

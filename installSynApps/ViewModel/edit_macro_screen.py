@@ -49,11 +49,13 @@ class EditMacroGUI:
         updates the main edit panel based on current selection
     applyChanges()
         Applies changes to the loaded config
+    applyAndExit()
+        Applies changes and exits the window
     """
 
     def __init__(self, root, config_injector):
         """
-        Constructor for the EditInjectoGUI class
+        Constructor for the EditMacroGUI class
         """
 
         self.root = root
@@ -89,6 +91,7 @@ class EditMacroGUI:
         """
         Function that initializes the edit panel text the currently loaded one.
         """
+
         self.editPanel.delete('1.0', END)
         self.editPanel.insert(INSERT, '# Below are currently loaded macros.\n# Please keep new macros in the format MACRO=VALUE.\n\n')
         for pair in self.config_injector.macro_replace_list:
@@ -99,8 +102,8 @@ class EditMacroGUI:
 
     def applyChanges(self):
         """
-        Method that reads the edit panel, and sets the injector contents to whatever the user
-        wrote. Note that there are no checks to see if the injection will be valid.
+        Method that reads the edit panel, and sets the macro file contents to whatever the user
+        wrote. Note that there are no checks to see if the edited macros will be valid
         """
 
         new_list = []
@@ -116,6 +119,8 @@ class EditMacroGUI:
 
 
     def applyChangesExit(self):
+        """ Applies changes and exits """
+
         self.applyChanges()
         self.master.destroy()
 

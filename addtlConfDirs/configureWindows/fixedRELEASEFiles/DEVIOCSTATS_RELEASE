@@ -1,4 +1,0 @@
-EPICS_BASE=.
-SUPPORT=.
-SNCSEQ=.
--include $(SUPPORT)/configure/EPICS_BASE.$(EPICS_HOST_ARCH)

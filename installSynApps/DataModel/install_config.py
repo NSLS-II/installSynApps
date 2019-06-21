@@ -158,7 +158,7 @@ class InstallConfiguration:
         elif "$(AREA_DETECTOR)" in rel_path and self.ad_path != None:
             return self.ad_path + "/" + temp
         else:
-            return None
+            return rel_path
 
 
     def print_installation_info(self, fp = None):
@@ -172,14 +172,18 @@ class InstallConfiguration:
         """
 
         if fp == None:
-            print("--------------------------------")
-            print("Install Location = {}".format(self.install_location))
-            for module in self.modules:
-                if module.clone == "YES":
-                    module.print_info()
+            print(self.get_printable_string().strip())
         else:
-            fp.write("---------------------------------\n")
-            fp.write("Install Location = {}\n".format(self.install_location))
-            for module in self.modules:
-                if module.clone == "YES":
-                    module.print_info(fp = fp)
+            fp.write(self.get_printable_string())
+
+
+    def get_printable_string(self):
+        """ Function that gets a toString for an InstallConfigurations """
+
+        out = "--------------------------------\n"
+        out = out + "Install Location = {}\n".format(self.install_location)
+        out = out + "This Install Config is saved at {}\n".format(self.path_to_configure)
+        for module in self.modules:
+            if module.clone == 'YES':
+                out = out + module.get_printable_string()
+        return out
