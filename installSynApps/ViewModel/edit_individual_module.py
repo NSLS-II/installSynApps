@@ -17,6 +17,7 @@ import os
 import tkinter as tk
 from tkinter import *
 from tkinter import font as tkFont
+from tkinter import ttk
 
 # installSynApps module imports
 import installSynApps.DataModel.install_config as Config
@@ -35,36 +36,53 @@ class EditSingleModuleGUI:
         The main container Tk object
     viewFrame
         Tk frame that contains all widgets
-    dropdown : OptionMenu
-        dropdown menu for selecting from injector files
-    applyButton : Button
-        button that runs the apply method
-    editPanel : ScrolledText
-        Panel for editing the loaded injector file.
+    url_type_var/edit_name_var : StringVar
+        tied to url type and list of module names respectively
+    legal_url_types/legal_names : list of str
+        lists legal url types and list of module names
+    clone_check/build_check : BooleanVar
+        boolean variables that track whether or not to build the module
+    module_dropdown : Checkbox
+        A dropdown menu for selecting which module to edit
+    applyButton/exitWindowButton : Button
+        button that runs the apply method (and exits)
+    name_box/version_box/rel_path_box/url_box/repository_box : Text
+        Boxes for editing certain module features.
+    url_type_dropdown : OptionMenu
+        dropdown for url types
+    clone_button/build_button : CheckButton
+        toggles to clone/build
     
     Methods
     -------
-    updateEditPanel(*args)
-        updates the main edit panel based on current selection
+    reloadPanelWrapper(*args)
+        A wrapper function that just calls reloadPanel()
+    reloadPanel()
+        resets all text fields to blank
     applyChanges()
-        Applies changes to the loaded config
+        Applies changes to the loaded config and updates all references
+    exitWindow()
+        exits from the window
     """
+
 
     def __init__(self, root, install_config):
         """
         Constructor for the EditSingleModuleGUI class
+
+        Parameters
+        ----------
+        root : InstallSynAppsGUI
+            The root opening window. Used to refresh references on apply
+        install_config : InstallConfiguration
+            The currently loaded install configuration
         """
 
         self.root = root
         self.install_config = install_config
         self.master = Toplevel()
-        self.master.title('Add New Module')
+        self.master.title('Edit Single Module')
         self.master.resizable(False, False)
-        sizex = 600
-        sizey = 400
-        posx = 100
-        posy = 100
-        #self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
 
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
@@ -90,11 +108,12 @@ class EditSingleModuleGUI:
         self.viewFrame.pack()
 
         self.applyButton = Button(self.viewFrame, text='Save Changes', command = self.applyChanges).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.applyExitButton = Button(self.viewFrame, text='Return', command = self.applyExit).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
+        self.exitWindowButton = Button(self.viewFrame, text='Return', command = self.exitWindow).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
         self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
 
         self.title_label = Label(self.viewFrame, text='Edit individual module:').grid(row = 1, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.module_dropdown = OptionMenu(self.viewFrame, self.edit_name_var, *self.legal_names)
+        #self.module_dropdown = OptionMenu(self.viewFrame, self.edit_name_var, *self.legal_names)
+        self.module_dropdown = ttk.Combobox(self.viewFrame, textvariable=self.edit_name_var, values=self.legal_names)
         self.module_dropdown.grid(row = 1, column = 1)
         self.edit_name_var.trace('w', self.reloadPanelWrapper)
 
@@ -132,7 +151,10 @@ class EditSingleModuleGUI:
 
 
     def reloadPanelWrapper(self, *args):
+        """ A wrapper function for reloading the panel """
+
         self.reloadPanel()
+
 
     def reloadPanel(self):
         """
@@ -165,8 +187,7 @@ class EditSingleModuleGUI:
 
     def applyChanges(self):
         """
-        Method that reads the edit panel, and sets the injector contents to whatever the user
-        wrote. Note that there are no checks to see if the injection will be valid.
+
         """
 
         name = self.name_box.get('1.0', END).strip()
@@ -185,7 +206,7 @@ class EditSingleModuleGUI:
             build_str = 'YES'
 
         if len(name) == 0:
-            self.root.showErrorMessage('Add Module Error', 'ERROR - Please enter a valid name.', force_popup = True)
+            self.root.showErrorMessage('Edit Module Error', 'ERROR - Please enter a valid name.', force_popup = True)
             return
 
         name = name.upper()
@@ -194,11 +215,11 @@ class EditSingleModuleGUI:
             version = 'master'
         
         if len(rel_path) == 0:
-            self.root.showErrorMessage('Add Module Error', 'ERROR - Please enter a valid relative path.', force_popup = True)
+            self.root.showErrorMessage('Edit Module Error', 'ERROR - Please enter a valid relative path.', force_popup = True)
             return
 
         if len(url) == 0  or len(repo) == 0:
-            self.root.showErrorMessage('Add Module Error', 'ERROR - Please enter a url and repository.', force_popup = True)
+            self.root.showErrorMessage('Edit Module Error', 'ERROR - Please enter a url and repository.', force_popup = True)
 
         if not url.endswith('/'):
             url = url + '/'
@@ -219,7 +240,7 @@ class EditSingleModuleGUI:
         self.root.showMessage('Info', 'Upated module: {}'.format(name))
 
 
-    def applyExit(self):
-        """ applies changes and exits window """
+    def exitWindow(self):
+        """ exits from the window """
 
         self.master.destroy()

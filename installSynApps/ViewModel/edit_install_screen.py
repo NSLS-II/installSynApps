@@ -59,8 +59,18 @@ class EditConfigGUI:
         converts the widget information back into install configuration information, and then applies it to the loaded info
     """
 
+
     def __init__(self, root, install_config):
-        """ Constructor for the EditConfigGUI class """
+        """
+        Constructor for the EditConfigGUI class
+
+        Parameters
+        ----------
+        root : InstallSynAppsGUI
+            The root opening window. Used to refresh references on apply
+        install_config : InstallConfiguration
+            The currently loaded install configuration
+        """
 
         self.root = root
         self.master = Toplevel()
@@ -68,8 +78,6 @@ class EditConfigGUI:
         self.master.resizable(False, False)
         sizex = 800
         sizey = 600
-        posx  = 100
-        posy  = 100
         self.installModuleLines = {}
         self.individualEditButtons = {}
         self.master.wm_geometry("%dx%d" % (sizex, sizey))
