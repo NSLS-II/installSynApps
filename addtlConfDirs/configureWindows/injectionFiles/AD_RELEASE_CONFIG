@@ -1,9 +1,4 @@
-# This file contains definitions for any Area Detector elements you wish to define in the AD build process.
-#
-# Essentially, in order to compile drivers with support for external plugins, define them here
-#
-# Autho: Jakub Wlodek
-# Created on: 4-Feb-2019
-# Copyright (c): Brookhaven National Laboratory
-#
+# Saved by InstallSynAppsGUI on 2019-06-21 12:52:37.318182
+
+
 

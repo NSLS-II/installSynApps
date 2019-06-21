@@ -1,17 +1,7 @@
-# This file will contain code to insert into the commonDriverMakefile to link libraries for any external plugins
-# not included by default with areaDetector/ADCore
+# Saved by InstallSynAppsGUI on 2019-06-21 12:52:37.318471
 
 
-ifdef ADPLUGINBAR
-  $(DBD_NAME)_DBD += NDPluginBar.dbd
-  PROD_LIBS	  += NDPluginBar
-  ifdef OPENCV_LIB
-    opencv_core_DIR +=$(OPENCV_LIB)
-    PROD_LIBS       += opencv_core opencv_imgproc opencv_highgui zbar
-  else
-    PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui zbar
-  endif
-endif
+
 
 ifdef ADCOMPVISION
   $(DBD_NAME)_DBD  += NDPluginCV.dbd
@@ -22,29 +12,6 @@ ifdef ADCOMPVISION
   else
     PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui
   endif 
-endif
-
-ifdef ADPLUGINEDGE
-  $(DBD_NAME)_DBD  += NDPluginEdge.dbd
-  PROD_LIBS         += NDPluginEdge
-  ifdef OPENCV_LIB
-    opencv_core_DIR += $(OPENCV_LIB)
-    PROD_LIBS       += opencv_core opencv_imgproc
-  else
-    PROD_SYS_LIBS   += opencv_core opencv_imgproc
-  endif
-endif
-
-
-ifdef ADPLUGINDMTX
-  $(DBD_NAME)_DBD += NDPluginDmtx.dbd
-  PROD_LIBS	  += NDPluginDmtx
-  ifdef DMTX_LIB
-    dmtx_DIR +=$(DMTX_LIB)
-    PROD_LIBS       += dmtx
-  else
-    PROD_SYS_LIBS   += dmtx
-  endif
 endif
 
 
@@ -60,3 +27,4 @@ ifeq ($(WITH_BOOST),YES)
     endif
   endif
 endif
+
