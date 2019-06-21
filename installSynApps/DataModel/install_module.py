@@ -69,14 +69,17 @@ class InstallModule:
         """
 
         if fp == None:
-            print("-----------------------------------------")
-            print("Module: {}, Version: {}".format(self.name, self.version))
-            print("Install Location Abs: {}".format(self.abs_path))
-            print("Install Location Rel: {}".format(self.rel_path))
-            print("Repository: {}{}".format(self.url, self.repository))
+            print(self.get_printable_string().strip())
         else:
-            fp.write("-----------------------------------------\n")
-            fp.write("Module: {}, Version: {}\n".format(self.name, self.version))
-            fp.write("Install Location Abs: {}\n".format(self.abs_path))
-            fp.write("Install Location Rel: {}\n".format(self.rel_path))
-            fp.write("Repository: {}{}\n".format(self.url, self.repository))
+            fp.write(self.get_printable_string())
+
+
+    def get_printable_string(self):
+        """ Function that gets an InstallModule toString """
+
+        out = "-----------------------------------------\n"
+        out = out + "Module: {}, Version: {}\n".format(self.name, self.version)
+        out = out + "Install Location Abs: {}\n".format(self.abs_path)
+        out = out + "Install Location Rel: {}\n".format(self.rel_path)
+        out = out + "Repository: {}{} w/ Type: {}\n".format(self.url, self.repository, self.url_type)
+        return out
