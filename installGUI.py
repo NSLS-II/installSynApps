@@ -44,6 +44,8 @@ import installSynApps.IO.script_generator as Autogenerator
 import installSynApps.ViewModel.edit_install_screen as EditInstall
 import installSynApps.ViewModel.edit_injector_screen as EditInjectors
 import installSynApps.ViewModel.edit_macro_screen as EditMacros
+import installSynApps.ViewModel.add_module_screen as AddModule
+import installSynApps.ViewModel.edit_individual_module as EditIndividual
 
 
 class InstallSynAppsGUI:
@@ -114,33 +116,46 @@ class InstallSynAppsGUI:
 
         menubar = Menu(self.master)
 
+        # File menu
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label='New', command=self.newConfig)
-        filemenu.add_command(label='Open', command=self.loadConfig)
-        filemenu.add_command(label='Save As', command=self.saveConfig)
-        filemenu.add_command(label='Exit', command = self.master.quit)
+        filemenu.add_command(label='New',       command=self.newConfig)
+        filemenu.add_command(label='Open',      command=self.loadConfig)
+        filemenu.add_command(label='Save',      command=self.saveConfig)
+        filemenu.add_command(label='Save As',   command=self.saveConfigAs)
+        filemenu.add_command(label='Exit',      command = self.master.quit)
         menubar.add_cascade(label='File', menu=filemenu)
 
+        # Edit Menu
         editmenu = Menu(menubar, tearoff=0)
-        editmenu.add_command(label='Edit Config', command=self.editConfig)
-        editmenu.add_command(label='Edit Injection Files', command=self.editInjectors)
-        editmenu.add_command(label='Edit Build Flags', command=self.editBuildFlags)
-        editmenu.add_command(label='Clear Log', command=self.resetLog)
+        editmenu.add_command(label='Edit Config',               command=self.editConfig)
+        editmenu.add_command(label='Add New Module',            command=self.addModule)
+        editmenu.add_command(label='Edit Individual Module',    command=self.editSingleModule)
+        editmenu.add_command(label='Edit Injection Files',      command=self.editInjectors)
+        editmenu.add_command(label='Edit Build Flags',          command=self.editBuildFlags)
         editmenu.add_checkbutton(label='Toggle Popups', onvalue=True, offvalue=False, variable=self.showPopups)
         menubar.add_cascade(label='Edit', menu=editmenu)
 
+        # Debug Menu
+        debugmenu = Menu(menubar, tearoff = 0)
+        debugmenu.add_command(label='Print Loaded Config Info', command=self.printLoadedConfigInfo)
+        debugmenu.add_command(label='Clear Log',                command=self.resetLog)
+        menubar.add_cascade(label='Debug', menu=debugmenu)
+
+        # Build Menu
         buildmenu = Menu(menubar, tearoff=0)
-        buildmenu.add_command(label='Autorun', command=self.autorun)
-        buildmenu.add_command(label='Clone Modules', command=self.cloneConfig)
-        buildmenu.add_command(label='Update Config Files', command=self.updateConfig)
-        buildmenu.add_command(label='Inject into Files', command=self.injectFiles)
-        buildmenu.add_command(label='Build Modules', command=self.buildConfig)
+        buildmenu.add_command(label='Autorun',              command=self.autorun)
+        buildmenu.add_command(label='Clone Modules',        command=self.cloneConfig)
+        buildmenu.add_command(label='Update Config Files',  command=self.updateConfig)
+        buildmenu.add_command(label='Inject into Files',    command=self.injectFiles)
+        buildmenu.add_command(label='Build Modules',        command=self.buildConfig)
         buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Build', menu=buildmenu)
 
+        # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
-        helpmenu.add_command(label='Quick Help', command=self.loadHelp)
-        helpmenu.add_command(label='Online Documentation', command=self.openOnlineDocs)
+        helpmenu.add_command(label='Quick Help',            command=self.loadHelp)
+        helpmenu.add_command(label='Online Documentation',  command=self.openOnlineDocs)
+        helpmenu.add_command(label='About',                 command=self.showAbout)
         menubar.add_cascade(label='Help', menu=helpmenu)
 
         self.master.config(menu=menubar)
@@ -182,6 +197,7 @@ class InstallSynAppsGUI:
         self.parser = Parser.ConfigParser(self.configure_path)
 
         self.install_config, message = self.parser.parse_install_config()
+        self.install_loaded = False
 
         # Threads for async operation
         self.thread = threading.Thread()
@@ -374,6 +390,7 @@ class InstallSynAppsGUI:
             else:
                 self.updateAllRefs(loaded_install_config)
                 self.updateConfigPanel()
+        self.install_loaded = False
 
 
     def loadConfig(self):
@@ -407,21 +424,33 @@ class InstallSynAppsGUI:
         else:
             self.showErrorMessage('Load error', 'Error loading install config... {}'.format(message), force_popup=True)
         self.updateAllRefs(self.install_config)
+        self.install_loaded = True
 
 
     def saveConfig(self):
+        """ Function that saves an existing config, or opens save as if it was not previously saved. """
+
+        self.writeToLog("Saving...\n")
+        if not self.install_loaded:
+            self.saveConfigAs()
+        else:
+            self.saveConfigAs(force_loc = self.configure_path)
+
+
+    def saveConfigAs(self, force_loc = None):
         """ Function that opens a save as Dialog for saving currently loaded confguration """
 
         if self.install_config is None:
             self.showErrorMessage('Save error', 'No loaded install config to save.', force_popup=True)
             return
-            
-
-        dirpath = filedialog.asksaveasfilename(initialdir = '.')
-        self.writeToLog('Creating save directory...\n')
+        
+        if force_loc is None:
+            dirpath = filedialog.asksaveasfilename(initialdir = '.')
+            self.writeToLog('Creating save directory...\n')
+        else:
+            dirpath = force_loc
+            shutil.rmtree(dirpath)
         os.mkdir(dirpath)
-        if os.path.exists(self.configure_path + "/fixedRELEASEFiles"):
-            shutil.copytree(self.configure_path + "/fixedRELEASEFiles" , dirpath + "/fixedRELEASEFiles")
         os.mkdir(dirpath + "/injectionFiles")
         os.mkdir(dirpath + "/macroFiles")
         for file in self.updater.config_injector.injector_file_contents:
@@ -498,6 +527,31 @@ class InstallSynAppsGUI:
         if window is None:
             self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
 
+
+    def addModule(self):
+        """ Function that opens up an Add Module window """
+
+        if self.install_config is None:
+            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
+            return
+
+        window = AddModule.AddModuleGUI(self, self.install_config)
+        if window is None:
+            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+
+
+    def editSingleModule(self):
+        """ Function that opens up an Edit Single Module window """
+
+        if self.install_config is None:
+            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
+            return
+
+        window = EditIndividual.EditSingleModuleGUI(self, self.install_config)
+        if window is None:
+            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+
+
     def editInjectors(self):
         """ Function that opens edit injectors window """
 
@@ -544,6 +598,20 @@ class InstallSynAppsGUI:
         helpMessage = helpMessage + "required, edit it via the `Edit` tab, or load a new configure\ndirectory."
         self.showMessage("Help", helpMessage)
 
+
+    def showAbout(self):
+        """ Simple function that shows about message """
+
+        self.showMessage('About', self.initLogText())
+
+
+    def printLoadedConfigInfo(self):
+        """ Simple function that prints all info about a loaded configuration """
+
+        if self.install_config is None:
+            self.showErrorMessage('Error', 'ERROR - No loaded install config found', force_popup=True)
+
+        self.writeToLog(self.install_config.get_printable_string())
 
 #--------------------------------- Build Process Functions ------------------------------------------#
 #                                                                                                    #
