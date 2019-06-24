@@ -1,8 +1,8 @@
 #
-# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-24 12:01:19.129050
+# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-24 12:01:38.016848
 #
 
-INSTALL=/epics
+INSTALL=/home/jwlodek/temp/test
 
 
 #MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE
@@ -142,7 +142,7 @@ GIT_URL=https://github.com/epicsNSLS2-deploy/
 
 UPDATEIOC        master               $(INSTALL)/utils/updateIOC               updateIOC                NO               NO
 IOCDEPLOY        master               $(INSTALL)/utils/ioc_deploy              ioc_deploy               NO               NO
-INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  YES              NO
+INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  NO               NO
 OPIORGANIZER     master               $(INSTALL)/utils/opi_organizer           opi_organizer            NO               NO
 
 WGET_URL=https://sourceforge.net/projects/cs-studio/files/nsls2-release/
