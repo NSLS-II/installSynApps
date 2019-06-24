@@ -816,7 +816,7 @@ class InstallSynAppsGUI:
             else:
                 self.writeToLog('No dependency script found.\n')
         elif platform == "win32" and self.installDep.get():
-            if os.path.exists(self.path_to_configure + '/dependencyInstall.bat'):
+            if os.path.exists(self.configure_path + '/dependencyInstall.bat'):
                 self.builder.acquire_dependecies(self.path_to_configure + '/dependencyInstall.bat')
                 self.writeToLog('Dependencies have been installed.\n')
             else:
