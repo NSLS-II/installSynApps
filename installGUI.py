@@ -127,11 +127,11 @@ class InstallSynAppsGUI:
 
         # Edit Menu
         editmenu = Menu(menubar, tearoff=0)
-        editmenu.add_command(label='Edit Config',               command=self.editConfig)
-        editmenu.add_command(label='Add New Module',            command=self.addModule)
-        editmenu.add_command(label='Edit Individual Module',    command=self.editSingleModule)
-        editmenu.add_command(label='Edit Injection Files',      command=self.editInjectors)
-        editmenu.add_command(label='Edit Build Flags',          command=self.editBuildFlags)
+        editmenu.add_command(label='Edit Config',               command=lambda : self.openEditWindow('edit_config'))
+        editmenu.add_command(label='Add New Module',            command=lambda : self.openEditWindow('add_module'))
+        editmenu.add_command(label='Edit Individual Module',    command=lambda : self.openEditWindow('edit_single_mod'))
+        editmenu.add_command(label='Edit Injection Files',      command=lambda : self.openEditWindow('edit_injectors'))
+        editmenu.add_command(label='Edit Build Flags',          command=lambda : self.openEditWindow('edit_build_flags'))
         editmenu.add_checkbutton(label='Toggle Popups', onvalue=True, offvalue=False, variable=self.showPopups)
         menubar.add_cascade(label='Edit', menu=editmenu)
 
@@ -555,62 +555,28 @@ class InstallSynAppsGUI:
 #---------------------------- Editing Functions --------------------------------
 
 
-    def editConfig(self):
+    def openEditWindow(self, edit_window_str):
         """ Function that opens up an Edit Config window """
 
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
-            return
-
-        window = EditInstall.EditConfigGUI(self, self.install_config)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
-
-
-    def addModule(self):
-        """ Function that opens up an Add Module window """
+        window = None
 
         if self.install_config is None:
             self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
             return
 
-        window = AddModule.AddModuleGUI(self, self.install_config)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+        if edit_window_str == 'edit_config':
+            window = EditInstall.EditConfigGUI(self, self.install_config)
+        elif edit_window_str == 'add_module':
+            window = AddModule.AddModuleGUI(self, self.install_config)
+        elif edit_window_str == 'edit_single_mod':
+            window = EditIndividual.EditSingleModuleGUI(self, self.install_config)
+        elif edit_window_str == 'edit_injectors':
+            window = EditInjectors.EditInjectorGUI(self, self.updater.config_injector)
+        elif edit_window_str == 'edit_build_flags':
+            window = EditMacros.EditMacroGUI(self, self.updater.config_injector)
+        else:
+            self.showErrorMessage('Open Error', 'ERROR - Illegal Edit Window selection')
 
-
-    def editSingleModule(self):
-        """ Function that opens up an Edit Single Module window """
-
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
-            return
-
-        window = EditIndividual.EditSingleModuleGUI(self, self.install_config)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
-
-
-    def editInjectors(self):
-        """ Function that opens edit injectors window """
-
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
-            return
-
-        window = EditInjectors.EditInjectorGUI(self, self.updater.config_injector)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
-
-
-    def editBuildFlags(self):
-        """ Function that opens edit build flags window """
-
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
-            return
-
-        window = EditMacros.EditMacroGUI(self, self.updater.config_injector)
         if window is None:
             self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
 
