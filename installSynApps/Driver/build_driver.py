@@ -95,10 +95,30 @@ class BuildDriver:
         return 0, failed_builds
 
 
+    def build_ad_support(self):
+        """ Function that builds ad support """
+
+        for module in self.install_config.get_module_list():
+            if module.name == 'ADSUPPORT':
+                out = subprocess.call(["make", "-C", module.abs_path , "-sj"])
+                return out
+        return -1
+
+
+    def build_ad_core(self):
+        """ Function that builds ad core """
+
+        for module in self.install_config.get_module_list():
+            if module.name == 'ADCORE':
+                out = subprocess.call(["make", "-C", module.abs_path , "-sj"])
+                return out
+        return -1
+
+
     def build_ad_module(self, module):
         """ Function that builds only ad modules """
 
-        if module.rel_path.startswith("$(AREA_DETECTOR)"):
+        if module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT':
             out = subprocess.call(["make", "-C", module.abs_path , "-sj"])
             return out, True
         else:

@@ -272,7 +272,6 @@ class ConfigInjector:
                         new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
                     elif line.startswith("#" + macro[0] + "="):
-                        print(macro[0])
                         new_fp.write("#{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
                 if not wrote_line:

@@ -137,7 +137,7 @@ ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEm
 ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
 ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        NO              NO
 ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
-ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES             NO
+ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO
 
 
 GIT_URL=https://github.com/areaDetector/
@@ -148,7 +148,8 @@ ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPi
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             YES
 ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO
-#ADANDOR3           master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
+ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO
+ADGENICAM           master      $(AREA_DETECTOR)/ADGenICam                  ADGenICam                       NO              NO
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO
 ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO
 ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             NO
@@ -163,7 +164,6 @@ ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCa
 FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO
 ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           NO              NO
 ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO
-#ADPERKINELMER       R2-9        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO
 ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO
 ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO
 ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO              NO
@@ -178,8 +178,13 @@ ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRo
 ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO              NO
 ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO
+ADRIXSCAM           master      $(AREA_DETECTOR)/ADRIXSCam                  ADRIXSCam                       NO              NO
+ADVIEWERS           master      $(AREA_DETECTOR)/ADViewers                  ADViewers                       NO              NO
+
 #ADSPINNAKER         R1-0        $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO
 #ADLAMBDA            master      $(AREA_DETECTOR)/ADLambda                   ADLambda                        NO              NO
+#ADPERKINELMER       R2-9        $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO
+#ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES
 
 
 ####################################################
@@ -201,7 +206,4 @@ OPIORGANIZER        master      $(INSTALL)/utils/opi_organizer              opi_
 WGET_URL=https://sourceforge.net/projects/cs-studio/files/nsls2-release/
 
 CSSTUDIO            4.5.1       $(INSTALL)/cs-studio      cs-studio-nsls2-$(VERSION)-linux.gtx.x86_64.tar.gz      NO       NO
-
-
-
 
