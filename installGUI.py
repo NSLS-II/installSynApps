@@ -102,6 +102,7 @@ class InstallSynAppsGUI:
 
         # Initialize the frame and window
         self.master = master
+        self.master.protocol('WM_DELETE_WINDOW', self.close_cleanup)
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
         frame = Frame(self.master)
@@ -122,7 +123,7 @@ class InstallSynAppsGUI:
         filemenu.add_command(label='Open',      command=self.loadConfig)
         filemenu.add_command(label='Save',      command=self.saveConfig)
         filemenu.add_command(label='Save As',   command=self.saveConfigAs)
-        filemenu.add_command(label='Exit',      command=self.master.destroy)
+        filemenu.add_command(label='Exit',      command=self.close_cleanup)
         menubar.add_cascade(label='File', menu=filemenu)
 
         # Edit Menu
@@ -353,6 +354,15 @@ class InstallSynAppsGUI:
         else:
             self.deps_found = True
         self.writeToLog('Done.\n')
+
+
+    def close_cleanup(self):
+        """ Function that asks user if he/she wants to close, and cleans up threads """
+
+        if self.thread.is_alive():
+            self.showWarningMessage('Warning', 'Qutting while process is running may result in invalid installation!', force_popup=True)
+        if messagebox.askokcancel('Quit', 'Do you want to quit?'):
+            self.master.destroy()
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
 

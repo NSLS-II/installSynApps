@@ -1,5 +1,5 @@
 #
-# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-21 12:52:37.318931
+# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-26 17:08:10.142781
 #
 
 INSTALL=C:/epics
@@ -34,7 +34,7 @@ CAMAC            R2-7-1               $(SUPPORT)/camac                         c
 CAPUTRECORDER    R1-7-1               $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES
 DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  YES              YES
 DELAYGEN         R1-2-0               $(SUPPORT)/delaygen                      delaygen                 YES              YES
-DEVLIB2          2.9                  $(SUPPORT)/devlib2                       devlib2                  YES              YES
+DEVLIB2          2.9                  $(SUPPORT)/devlib2                       devlib2                  NO               NO
 DXP              R5-0                 $(SUPPORT)/dxp                           dxp                      NO               NO
 DXPSITORO        R1-1                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO
 DEVIOCSTATS      3.1.15               $(SUPPORT)/iocStats                      iocStats                 YES              YES
@@ -46,7 +46,7 @@ LOVE             R3-2-6               $(SUPPORT)/love                          l
 LUA              R1-2                 $(SUPPORT)/lua                           lua                      NO               NO
 MCA              R7-7                 $(SUPPORT)/mca                           mca                      YES              YES
 MEASCOMP         R2-1                 $(SUPPORT)/measComp                      measComp                 NO               NO
-MODBUS           R2-10-1              $(SUPPORT)/modbus                        modbus                   YES              NO
+MODBUS           R2-10-1              $(SUPPORT)/modbus                        modbus                   YES              YES
 MOTOR            R6-11                $(SUPPORT)/motor                         motor                    YES              YES
 OPTICS           R2-13-1              $(SUPPORT)/optics                        optics                   NO               NO
 SOFTGLUE         R2-8-1               $(SUPPORT)/softGlue                      softGlue                 NO               NO
@@ -144,10 +144,10 @@ FFMPEGVIEWER     master               $(AREA_DETECTOR)/ffmpegViewer            f
 
 GIT_URL=https://github.com/epicsNSLS2-deploy/
 
-UPDATEIOC        master               $(INSTALL)/utils/updateIOC               updateIOC                YES              NO
+UPDATEIOC        master               $(INSTALL)/utils/updateIOC               updateIOC                NO               NO
 IOCDEPLOY        master               $(INSTALL)/utils/ioc_deploy              ioc_deploy               YES              NO
 INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  YES              NO
-OPIORGANIZER     master               $(INSTALL)/utils/opi_organizer           opi_organizer            YES              NO
+OPIORGANIZER     master               $(INSTALL)/utils/opi_organizer           opi_organizer            NO               NO
 
 WGET_URL=https://sourceforge.net/projects/cs-studio/files/nsls2-release/
 
