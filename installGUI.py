@@ -338,8 +338,8 @@ class InstallSynAppsGUI:
             return True, ''
         except FileNotFoundError:
             FNULL.close()
-            self.showErrorMessage('Dep. Error', 'ERROR - {} not found in system path.'.format(current))
-            self.showErrorMessage('Required packages: git, make, wget, tar')
+            self.showErrorMessage('Dep. Error', 'ERROR - {} not found in system path.'.format(current), force_popup=True)
+            self.writeToLog('Required packages: git, make, wget, tar\n')
             return False, current
 
 
@@ -349,7 +349,7 @@ class InstallSynAppsGUI:
         self.writeToLog('Checking for installed dependancies...\n')
         inPath, missing = self.checkDeps()
         if not inPath:
-            self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
+            #self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
             self.deps_found = False
         else:
             self.deps_found = True
