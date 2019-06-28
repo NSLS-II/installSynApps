@@ -1,8 +1,10 @@
-#
-# Class responsible for driving the build process of installSynApps
-#
-# Author: Jakub Wlodek
-#
+"""
+Class responsible for driving the build process of installSynApps
+"""
+
+__author__   = 'Jakub Wlodek'
+__version__  = 'R2-0'
+__date__     = '15-Jun-2019'
 
 
 import os
@@ -34,10 +36,46 @@ class BuildDriver:
     """
 
 
-    def __init__(self, install_config):
+    def __init__(self, install_config, threads, one_thread=False):
         """ Constructor for BuildDriver """
 
         self.install_config = install_config
+        self.threads = threads
+        self.one_thread = one_thread
+        self.make_flag = '-sj'
+        self.create_make_flags()
+
+
+    def create_make_flags(self):
+        """ Function that creates the flags used by make depending on the thread config passed in. """
+
+        if self.one_thread:
+            self.make_flag = '-s'
+        elif self.threads == 0:
+            self.make_flag = '-sj'
+        else:
+            self.make_flag = '-sj{}'.format(self.threads)
+
+
+    def check_dependencies_in_path(self):
+        status = True
+        message = ''
+        current = 'make'
+        FNULL = open(os.devnull, 'w')
+        try:
+            subprocess.call(['make'], stdout=FNULL, stderr=FNULL)
+            current = 'wget'
+            subprocess.call(['wget'], stdout=FNULL, stderr=FNULL)
+            current = 'git'
+            subprocess.call(['git'], stdout=FNULL, stderr=FNULL)
+            current = 'tar'
+            subprocess.call(['tar'], stdout=FNULL, stderr=FNULL)
+        except FileNotFoundError:
+            status = False
+            message = current
+
+        FNULL.close()
+        return status, message
 
 
     def acquire_dependecies(self, dependency_script_path, with_gui = False):
@@ -50,7 +88,7 @@ class BuildDriver:
     def build_base(self):
         """ Function that compiles epics base """
 
-        out = subprocess.call(["make", "-C", self.install_config.base_path, "-sj"])
+        out = subprocess.call(["make", "-C", self.install_config.base_path, self.make_flag])
         return out
 
 
@@ -60,7 +98,7 @@ class BuildDriver:
         out = subprocess.call(["make", "-C", self.install_config.support_path, "release"])
         if out != 0:
             return out
-        out = subprocess.call(["make", "-C", self.install_config.support_path, "-sj"])
+        out = subprocess.call(["make", "-C", self.install_config.support_path, self.make_flag])
         return out
 
 
@@ -77,21 +115,21 @@ class BuildDriver:
         """
 
         failed_builds = []
-        out_support = subprocess.call(["make", "-C", self.install_config.ad_path + "/ADSupport", "-sj"])
+        out_support = subprocess.call(["make", "-C", self.install_config.ad_path + "/ADSupport", self.make_flag])
         if out_support != 0:
             return out_support, [] 
 
-        out_core = subprocess.call(["make", "-C", self.install_config.ad_path + "/ADCore", "-sj"])
+        out_core = subprocess.call(["make", "-C", self.install_config.ad_path + "/ADCore", self.make_flag])
         if out_core != 0:
             return out_core, []
 
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith("$(AREA_DETECTOR)") and module.build == "YES":
                 if module.name != "ADCORE" and module.name != "ADSUPPORT":
-                    out_mod = subprocess.call(["make", "-C", module.abs_path, "-sj"])
+                    out_mod = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
                     if out_mod != 0:
                         failed_builds.append(module)
-                        
+
         return 0, failed_builds
 
 
@@ -100,7 +138,7 @@ class BuildDriver:
 
         for module in self.install_config.get_module_list():
             if module.name == 'ADSUPPORT':
-                out = subprocess.call(["make", "-C", module.abs_path , "-sj"])
+                out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
                 return out
         return -1
 
@@ -110,7 +148,7 @@ class BuildDriver:
 
         for module in self.install_config.get_module_list():
             if module.name == 'ADCORE':
-                out = subprocess.call(["make", "-C", module.abs_path , "-sj"])
+                out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
                 return out
         return -1
 
@@ -119,7 +157,7 @@ class BuildDriver:
         """ Function that builds only ad modules """
 
         if module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT':
-            out = subprocess.call(["make", "-C", module.abs_path , "-sj"])
+            out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
             return out, True
         else:
             return 0, False
@@ -152,4 +190,3 @@ class BuildDriver:
             return -1, "Error building ADSupport and ADCore", []
         else:
             return 0, "", []
-        
