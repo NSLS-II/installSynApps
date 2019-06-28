@@ -79,18 +79,30 @@ class InstallSynAppsGUI:
         returns initial log text
     updateConfigPanel
         Syncs the config panel with the currently loaded config
+    updateAllRefs
+        Updates references to install config so that build remains consistent
+    recheckDeps
+        Function that checks if dependancies are in the system path
+    newConfig
+        Function that asks user for an install location, and then loads a basic install config with that path.
     loadConfig
         event function that gives directory selection prompt and loads configure if dir is valid
-    injectFiles, injectFilesProcess
-        event and thread process functions for injecting into files
-    updateConfig, updateConfigProcess
-        event and thread process functions for updating RELEASE and configuration files
-    cloneConfig, cloneConfigProcess
-        event and thread process functions for cloning all selected modules
-    buildConfig, buildConfigProcss
-        event anf thread process functions for building all selected modules
-    autorun, autorunProcss
-        event and thread process functions for building all selected modules
+    saveConfig
+        overwrites the existing config path with whatever changes had been added
+    saveConfigAs
+        Opens dialog for file path, and saves to a specific directory
+    openEditWindow
+        Function that opens appropriate edit window depending on argument.
+    injectFilesProcess
+        process function for injecting into files
+    updateConfigProcess
+        process function for updating RELEASE and configuration files
+    cloneConfigProcess
+        process function for cloning all selected modules
+    buildConfigProcess
+        process function for building all selected modules
+    autorunProcss
+        process function for building all selected modules
     loadHelp
         prints help information
     saveLog
@@ -109,7 +121,6 @@ class InstallSynAppsGUI:
         frame.pack()
 
         # version and popups toggle
-        self.version = 'R2-0'
         self.showPopups = tk.BooleanVar()
         self.showPopups.set(False)
         self.installDep = tk.BooleanVar()
@@ -265,7 +276,7 @@ class InstallSynAppsGUI:
         """ Function that initializes log text """
 
         text = "+-----------------------------------------------------------------\n"
-        text = text + "+ installSynApps, version: {}                                  +\n".format(self.version)
+        text = text + "+ installSynApps, version: {}                                  +\n".format(__version__)
         text = text +"+ Author: Jakub Wlodek                                           +\n"
         text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
         text = text +"+ This software comes with NO warranty!                          +\n"
