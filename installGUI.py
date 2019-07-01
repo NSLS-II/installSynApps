@@ -211,10 +211,11 @@ class InstallSynAppsGUI:
         # installSynApps options, initialzie + read default configure files
         self.parser = Parser.ConfigParser(self.configure_path)
 
-        self.install_config, message = self.parser.parse_install_config()
+        self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
         self.install_loaded = False
         if len(message) > 0:
             self.valid_install = False
+            self.showWarningMessage('Warning', 'Illegal Install Config: {}'.format(message), force_popup=True)
         else:
             self.valid_install = True
 

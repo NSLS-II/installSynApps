@@ -183,11 +183,11 @@ class EditConfigGUI:
                 self.install_config.ad_path = module.abs_path
 
         self.root.updateConfigPanel()
-        self.root.cloner.install_config = self.root.install_config
-        self.root.updater.install_config = self.root.install_config
-        self.root.updater.config_injector.install_config = self.root.install_config
-        self.root.builder.install_config = self.root.install_config
-        self.root.autogenerator.install_config = self.root.install_config
+        self.root.updateAllRefs(self.install_config)
+        if self.install_config.is_install_valid():
+            self.root.valid_install = True
+        else:
+            self.root.valid_install = False
         self.root.writeToLog('Applied updated install configuration.\n')
 
 
