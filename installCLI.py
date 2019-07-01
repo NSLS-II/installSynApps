@@ -29,53 +29,29 @@ import installSynApps.IO.script_generator as Autogenerator
 
 def parse_user_input():
     path_to_configure = "configure"
-    yes = False
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
     parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
     parser.add_argument('-d', '--dependency', action='store_true', help='Add this flag to install dependencies via a dependency script.')
     parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
+    parser.add_argument('-t', '--threads', help = 'Define a limit on the number of threads that make is allowed to use')
+    parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
     arguments = vars(parser.parse_args())
     print(arguments)
-    if arguments['forceyes'] == True:
-        yes = True
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
 
-    return path_to_configure, yes, arguments['dependency']
-
-
-def check_dependencies_in_path():
-    status = True
-    message = ''
-    current = 'make'
-    FNULL = open(os.devnull, 'w')
-    try:
-        subprocess.call(['make'], stdout=FNULL, stderr=FNULL)
-        current = 'wget'
-        subprocess.call(['wget'], stdout=FNULL, stderr=FNULL)
-        current = 'git'
-        subprocess.call(['git'], stdout=FNULL, stderr=FNULL)
-        current = 'tar'
-        subprocess.call(['tar'], stdout=FNULL, stderr=FNULL)
-    except FileNotFoundError:
-        status = False
-        message = current
-
-    FNULL.close()
-    return status, message
+    return path_to_configure, arguments
 
 
 # ----------------- Run the script ------------------------
 
-path_to_configure, yes, dep = parse_user_input()
-
-status, message = check_dependencies_in_path()
-
-if not status:
-    print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
-    print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
-    print("Critical dependancy error, abort.")
-    exit()
+path_to_configure, args = parse_user_input()
+yes = args['forceyes']
+single_thread = args['singlethread']
+threads = args['threads']
+if threads is None:
+    threads = 0
+dep = args['dependency']
 
 
 # Welcome message
@@ -101,8 +77,18 @@ if install_config is None:
     exit()
 cloner = Cloner.CloneDriver(install_config)
 updater = Updater.UpdateConfigDriver(path_to_configure, install_config)
-builder = Builder.BuildDriver(install_config)
+builder = Builder.BuildDriver(install_config, threads, one_thread=single_thread)
 autogenerator = Autogenerator.ScriptGenerator(install_config)
+
+
+status, message = builder.check_dependencies_in_path()
+
+if not status:
+    print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
+    print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
+    print("Critical dependancy error, abort.")
+    exit()
+
 
 print("Ready to clone and build EPICS and synApps into {}...".format(install_config.install_location))
 if not yes:
@@ -160,6 +146,14 @@ if d == "y":
         builder.acquire_dependecies("scripts/dependencyInstall.sh")
 
 if not yes:
+    if builder.one_thread:
+        num_cores = 'one CPU core'
+    elif builder.threads == 0:
+        num_cores = 'as many CPU cores as possible'
+    else:
+        num_cores = '{} CPU cores'.format(builder.threads)
+    print("----------------------------------------------")
+    print('Builder is configured to use {} during compilation...'.format(num_cores))
     build = input("Ready to build selected modules... Continue (y/n) > ")
 else:
     build = "y"

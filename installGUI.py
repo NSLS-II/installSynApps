@@ -79,18 +79,30 @@ class InstallSynAppsGUI:
         returns initial log text
     updateConfigPanel
         Syncs the config panel with the currently loaded config
+    updateAllRefs
+        Updates references to install config so that build remains consistent
+    recheckDeps
+        Function that checks if dependancies are in the system path
+    newConfig
+        Function that asks user for an install location, and then loads a basic install config with that path.
     loadConfig
         event function that gives directory selection prompt and loads configure if dir is valid
-    injectFiles, injectFilesProcess
-        event and thread process functions for injecting into files
-    updateConfig, updateConfigProcess
-        event and thread process functions for updating RELEASE and configuration files
-    cloneConfig, cloneConfigProcess
-        event and thread process functions for cloning all selected modules
-    buildConfig, buildConfigProcss
-        event anf thread process functions for building all selected modules
-    autorun, autorunProcss
-        event and thread process functions for building all selected modules
+    saveConfig
+        overwrites the existing config path with whatever changes had been added
+    saveConfigAs
+        Opens dialog for file path, and saves to a specific directory
+    openEditWindow
+        Function that opens appropriate edit window depending on argument.
+    injectFilesProcess
+        process function for injecting into files
+    updateConfigProcess
+        process function for updating RELEASE and configuration files
+    cloneConfigProcess
+        process function for cloning all selected modules
+    buildConfigProcess
+        process function for building all selected modules
+    autorunProcss
+        process function for building all selected modules
     loadHelp
         prints help information
     saveLog
@@ -109,11 +121,12 @@ class InstallSynAppsGUI:
         frame.pack()
 
         # version and popups toggle
-        self.version = 'R2-0'
         self.showPopups = tk.BooleanVar()
         self.showPopups.set(False)
         self.installDep = tk.BooleanVar()
         self.installDep.set(False)
+        self.singleCore = tk.BooleanVar()
+        self.singleCore.set(False)
 
         menubar = Menu(self.master)
 
@@ -133,7 +146,10 @@ class InstallSynAppsGUI:
         editmenu.add_command(label='Edit Individual Module',    command=lambda : self.openEditWindow('edit_single_mod'))
         editmenu.add_command(label='Edit Injection Files',      command=lambda : self.openEditWindow('edit_injectors'))
         editmenu.add_command(label='Edit Build Flags',          command=lambda : self.openEditWindow('edit_build_flags'))
-        editmenu.add_checkbutton(label='Toggle Popups', onvalue=True, offvalue=False, variable=self.showPopups)
+        editmenu.add_command(label='Edit Core Count',           command=self.editCoreCount)
+        editmenu.add_checkbutton(label='Toggle Popups',         onvalue=True, offvalue=False, variable=self.showPopups)
+        editmenu.add_checkbutton(label='Toggle Single Core',    onvalue=True, offvalue=False, variable=self.singleCore)
+        self.singleCore.trace('w', self.setSingleCore)
         menubar.add_cascade(label='Edit', menu=editmenu)
 
         # Debug Menu
@@ -226,7 +242,7 @@ class InstallSynAppsGUI:
         # installSynApps drivers
         self.cloner         = Cloner.CloneDriver(self.install_config)
         self.updater        = Updater.UpdateConfigDriver(self.configure_path, self.install_config)
-        self.builder        = Builder.BuildDriver(self.install_config)
+        self.builder        = Builder.BuildDriver(self.install_config, 0)
         self.autogenerator  = Autogenerator.ScriptGenerator(self.install_config)
 
         self.recheckDeps()
@@ -261,7 +277,7 @@ class InstallSynAppsGUI:
         """ Function that initializes log text """
 
         text = "+-----------------------------------------------------------------\n"
-        text = text + "+ installSynApps, version: {}                                  +\n".format(self.version)
+        text = text + "+ installSynApps, version: {}                                  +\n".format(__version__)
         text = text +"+ Author: Jakub Wlodek                                           +\n"
         text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
         text = text +"+ This software comes with NO warranty!                          +\n"
@@ -322,35 +338,13 @@ class InstallSynAppsGUI:
         self.autogenerator.install_config = self.install_config
 
 
-    def checkDeps(self):
-        """ Function that quietly checks if all dependant packages are installed """
-
-        current = 'make'
-        FNULL = open(os.devnull, 'w')
-        try:
-            subprocess.call(['make'], stdout=FNULL, stderr=FNULL)
-            current = 'wget'
-            subprocess.call(['wget'], stdout=FNULL, stderr=FNULL)
-            current = 'git'
-            subprocess.call(['git'], stdout=FNULL, stderr=FNULL)
-            current = 'tar'
-            subprocess.call(['tar'], stdout=FNULL, stderr=FNULL)
-            FNULL.close()
-            return True, ''
-        except FileNotFoundError:
-            FNULL.close()
-            self.showErrorMessage('Dep. Error', 'ERROR - {} not found in system path.'.format(current))
-            self.showErrorMessage('Required packages: git, make, wget, tar')
-            return False, current
-
-
     def recheckDeps(self):
         """ Wrapper function for checking for installed dependancies """
 
         self.writeToLog('Checking for installed dependancies...\n')
-        inPath, missing = self.checkDeps()
+        inPath, missing = self.builder.check_dependencies_in_path()
         if not inPath:
-            self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
+            #self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
             self.deps_found = False
         else:
             self.deps_found = True
@@ -397,10 +391,10 @@ class InstallSynAppsGUI:
         self.writeToLog(text + "\n")
 
 
-    def showMessage(self, title, text):
+    def showMessage(self, title, text, force_popup = False):
         """ Function that displays info popup and log message """
 
-        if self.showPopups.get():
+        if self.showPopups.get() or force_popup:
             messagebox.showinfo(title, text)
         self.writeToLog(text + '\n')
 
@@ -590,6 +584,32 @@ class InstallSynAppsGUI:
 
         if window is None:
             self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+
+
+    def editCoreCount(self):
+        """ Function that prompts the user to enter a core count """
+
+        if self.singleCore.get():
+            self.showMessage('Message', 'Currently single core mode is enabled, please toggle off to set core count', force_popup=True)
+            return
+
+        cores = simpledialog.askinteger('Set Core Count', 'Please enter a core count, or 0 to use all cores', parent = self.master)
+        if cores < 0 or cores > 16:
+            self.showErrorMessage('Core Count Error', 'ERROR - You have entered an illegal core count, try again.', force_popup=True)
+        current_count = self.builder.threads
+        new_count = cores
+        if self.builder.threads == 0:
+            current_count = 'Max core count'
+        if cores == 0:
+            new_count = 'Max core count'
+        self.writeToLog('New core count to use: {}, old core count to use: {}\n'.format(new_count, current_count))
+        self.builder.threads = cores
+
+
+    def setSingleCore(self, *args):
+        """ Function that sets the single core option if toggle is pressed """
+
+        self.builder.one_thread = self.singleCore.get()
 
 
 #--------------------------------- Help/Documentation Functions -----------------------------
