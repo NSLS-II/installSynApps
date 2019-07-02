@@ -1,8 +1,8 @@
 #
-# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-21 10:10:53.573635.
+# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-24 12:01:38.016848
 #
 
-INSTALL=C:/epics
+INSTALL=/home/jwlodek/temp/test
 
 
 #MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE
@@ -28,7 +28,7 @@ GIT_URL=https://github.com/epics-modules/
 ASYN             R4-35                $(SUPPORT)/asyn                          asyn                     YES              YES
 AUTOSAVE         R5-9                 $(SUPPORT)/autosave                      autosave                 YES              YES
 ALIVE            R1-1-0               $(SUPPORT)/alive                         alive                    NO               NO
-BUSY             R1-7                 $(SUPPORT)/busy                          busy                     NO               NO
+BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES
 CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES
 CAMAC            R2-7-1               $(SUPPORT)/camac                         camac                    NO               NO
 CAPUTRECORDER    R1-7-1               $(SUPPORT)/caputRecorder                 caputRecorder            NO               NO
@@ -142,7 +142,7 @@ GIT_URL=https://github.com/epicsNSLS2-deploy/
 
 UPDATEIOC        master               $(INSTALL)/utils/updateIOC               updateIOC                NO               NO
 IOCDEPLOY        master               $(INSTALL)/utils/ioc_deploy              ioc_deploy               NO               NO
-INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  YES              NO
+INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  NO               NO
 OPIORGANIZER     master               $(INSTALL)/utils/opi_organizer           opi_organizer            NO               NO
 
 WGET_URL=https://sourceforge.net/projects/cs-studio/files/nsls2-release/

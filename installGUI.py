@@ -79,18 +79,30 @@ class InstallSynAppsGUI:
         returns initial log text
     updateConfigPanel
         Syncs the config panel with the currently loaded config
+    updateAllRefs
+        Updates references to install config so that build remains consistent
+    recheckDeps
+        Function that checks if dependancies are in the system path
+    newConfig
+        Function that asks user for an install location, and then loads a basic install config with that path.
     loadConfig
         event function that gives directory selection prompt and loads configure if dir is valid
-    injectFiles, injectFilesProcess
-        event and thread process functions for injecting into files
-    updateConfig, updateConfigProcess
-        event and thread process functions for updating RELEASE and configuration files
-    cloneConfig, cloneConfigProcess
-        event and thread process functions for cloning all selected modules
-    buildConfig, buildConfigProcss
-        event anf thread process functions for building all selected modules
-    autorun, autorunProcss
-        event and thread process functions for building all selected modules
+    saveConfig
+        overwrites the existing config path with whatever changes had been added
+    saveConfigAs
+        Opens dialog for file path, and saves to a specific directory
+    openEditWindow
+        Function that opens appropriate edit window depending on argument.
+    injectFilesProcess
+        process function for injecting into files
+    updateConfigProcess
+        process function for updating RELEASE and configuration files
+    cloneConfigProcess
+        process function for cloning all selected modules
+    buildConfigProcess
+        process function for building all selected modules
+    autorunProcss
+        process function for building all selected modules
     loadHelp
         prints help information
     saveLog
@@ -102,17 +114,19 @@ class InstallSynAppsGUI:
 
         # Initialize the frame and window
         self.master = master
+        self.master.protocol('WM_DELETE_WINDOW', self.close_cleanup)
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
         frame = Frame(self.master)
         frame.pack()
 
         # version and popups toggle
-        self.version = 'R2-0'
         self.showPopups = tk.BooleanVar()
         self.showPopups.set(False)
         self.installDep = tk.BooleanVar()
         self.installDep.set(False)
+        self.singleCore = tk.BooleanVar()
+        self.singleCore.set(False)
 
         menubar = Menu(self.master)
 
@@ -122,17 +136,20 @@ class InstallSynAppsGUI:
         filemenu.add_command(label='Open',      command=self.loadConfig)
         filemenu.add_command(label='Save',      command=self.saveConfig)
         filemenu.add_command(label='Save As',   command=self.saveConfigAs)
-        filemenu.add_command(label='Exit',      command = self.master.destroy)
+        filemenu.add_command(label='Exit',      command=self.close_cleanup)
         menubar.add_cascade(label='File', menu=filemenu)
 
         # Edit Menu
         editmenu = Menu(menubar, tearoff=0)
-        editmenu.add_command(label='Edit Config',               command=self.editConfig)
-        editmenu.add_command(label='Add New Module',            command=self.addModule)
-        editmenu.add_command(label='Edit Individual Module',    command=self.editSingleModule)
-        editmenu.add_command(label='Edit Injection Files',      command=self.editInjectors)
-        editmenu.add_command(label='Edit Build Flags',          command=self.editBuildFlags)
-        editmenu.add_checkbutton(label='Toggle Popups', onvalue=True, offvalue=False, variable=self.showPopups)
+        editmenu.add_command(label='Edit Config',               command=lambda : self.openEditWindow('edit_config'))
+        editmenu.add_command(label='Add New Module',            command=lambda : self.openEditWindow('add_module'))
+        editmenu.add_command(label='Edit Individual Module',    command=lambda : self.openEditWindow('edit_single_mod'))
+        editmenu.add_command(label='Edit Injection Files',      command=lambda : self.openEditWindow('edit_injectors'))
+        editmenu.add_command(label='Edit Build Flags',          command=lambda : self.openEditWindow('edit_build_flags'))
+        editmenu.add_command(label='Edit Core Count',           command=self.editCoreCount)
+        editmenu.add_checkbutton(label='Toggle Popups',         onvalue=True, offvalue=False, variable=self.showPopups)
+        editmenu.add_checkbutton(label='Toggle Single Core',    onvalue=True, offvalue=False, variable=self.singleCore)
+        self.singleCore.trace('w', self.setSingleCore)
         menubar.add_cascade(label='Edit', menu=editmenu)
 
         # Debug Menu
@@ -144,19 +161,20 @@ class InstallSynAppsGUI:
 
         # Build Menu
         buildmenu = Menu(menubar, tearoff=0)
-        buildmenu.add_command(label='Autorun',              command=self.autorun)
-        buildmenu.add_command(label='Clone Modules',        command=self.cloneConfig)
-        buildmenu.add_command(label='Update Config Files',  command=self.updateConfig)
-        buildmenu.add_command(label='Inject into Files',    command=self.injectFiles)
-        buildmenu.add_command(label='Build Modules',        command=self.buildConfig)
+        buildmenu.add_command(label='Autorun',              command=lambda : self.initBuildProcess('autorun'))
+        buildmenu.add_command(label='Clone Modules',        command=lambda : self.initBuildProcess('clone'))
+        buildmenu.add_command(label='Update Config Files',  command=lambda : self.initBuildProcess('update'))
+        buildmenu.add_command(label='Inject into Files',    command=lambda : self.initBuildProcess('inject'))
+        buildmenu.add_command(label='Build Modules',        command=lambda : self.initBuildProcess('build'))
         buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Build', menu=buildmenu)
 
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
-        helpmenu.add_command(label='Quick Help',            command=self.loadHelp)
-        helpmenu.add_command(label='Online Documentation',  command=self.openOnlineDocs)
-        helpmenu.add_command(label='About',                 command=self.showAbout)
+        helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
+        helpmenu.add_command(label='Dependency Script Help',    command=self.depScriptHelp)
+        helpmenu.add_command(label='Online Documentation',      command=self.openOnlineDocs)
+        helpmenu.add_command(label='About',                     command=self.showAbout)
         menubar.add_cascade(label='Help', menu=helpmenu)
 
         self.master.config(menu=menubar)
@@ -168,15 +186,25 @@ class InstallSynAppsGUI:
         self.topLabel.grid(row = 0, column = 0, padx = 10, pady = 10, columnspan = 2)
 
         # Control buttons
-        self.loadButton     = Button(frame, font = self.smallFont, text = 'Load Config', command = self.loadConfig, height = '3', width = '20').grid(row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.cloneButton    = Button(frame, font = self.smallFont, text = 'Clone Modules', command = self.cloneConfig, height = '3', width = '20').grid(row = 1, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.updateButton   = Button(frame, font = self.smallFont, text = 'Update RELEASE', command = self.updateConfig, height = '3', width = '20').grid(row = 2, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.injectButton   = Button(frame, font = self.smallFont, text = 'Inject Files', command = self.injectFiles, height = '3', width = '20').grid(row = 2, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.buildButton    = Button(frame, font = self.smallFont, text = 'Build Modules', command = self.buildConfig, height = '3', width = '20').grid(row = 3, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.autorunButton  = Button(frame, font = self.smallFont, text = 'Autorun', command = self.autorun, height = '3', width = '20').grid(row = 3, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.helpButton     = Button(frame, font = self.smallFont, text = 'Help', command = self.loadHelp, height = '3', width = '20').grid(row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
-        self.saveLog        = Button(frame, font = self.smallFont, text = 'Save Log', command = self.saveLog, height = '3', width = '20').grid(row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
-        
+        self.loadButton     = Button(frame, font=self.smallFont, text='Load Config',    command=self.loadConfig,                            height='3', width='20')
+        self.cloneButton    = Button(frame, font=self.smallFont, text='Clone Modules',  command=lambda : self.initBuildProcess('clone'),    height='3', width='20')
+        self.updateButton   = Button(frame, font=self.smallFont, text='Update RELEASE', command=lambda : self.initBuildProcess('update'),   height='3', width='20')
+        self.injectButton   = Button(frame, font=self.smallFont, text='Inject Files',   command=lambda : self.initBuildProcess('inject'),   height='3', width='20')
+        self.buildButton    = Button(frame, font=self.smallFont, text='Build Modules',  command=lambda : self.initBuildProcess('build'),    height='3', width='20')
+        self.autorunButton  = Button(frame, font=self.smallFont, text='Autorun',        command=lambda : self.initBuildProcess('autorun'),  height='3', width='20')
+        self.helpButton     = Button(frame, font=self.smallFont, text='Help',           command=self.loadHelp,                              height='3', width='20')
+        self.saveLog        = Button(frame, font=self.smallFont, text='Save Log',       command=self.saveLog,                               height='3', width='20')
+
+        self.loadButton.grid(   row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.cloneButton.grid(  row = 1, column = 1, padx = 15, pady = 15, columnspan = 1)
+        self.updateButton.grid( row = 2, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.injectButton.grid( row = 2, column = 1, padx = 15, pady = 15, columnspan = 1)
+        self.buildButton.grid(  row = 3, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.autorunButton.grid(row = 3, column = 1, padx = 15, pady = 15, columnspan = 1)
+        self.helpButton.grid(   row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.saveLog.grid(      row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
+
+
         # Log and loading label
         self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
         self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '1')
@@ -199,10 +227,11 @@ class InstallSynAppsGUI:
         # installSynApps options, initialzie + read default configure files
         self.parser = Parser.ConfigParser(self.configure_path)
 
-        self.install_config, message = self.parser.parse_install_config()
+        self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
         self.install_loaded = False
         if len(message) > 0:
             self.valid_install = False
+            self.showWarningMessage('Warning', 'Illegal Install Config: {}'.format(message), force_popup=True)
         else:
             self.valid_install = True
 
@@ -213,7 +242,7 @@ class InstallSynAppsGUI:
         # installSynApps drivers
         self.cloner         = Cloner.CloneDriver(self.install_config)
         self.updater        = Updater.UpdateConfigDriver(self.configure_path, self.install_config)
-        self.builder        = Builder.BuildDriver(self.install_config)
+        self.builder        = Builder.BuildDriver(self.install_config, 0)
         self.autogenerator  = Autogenerator.ScriptGenerator(self.install_config)
 
         self.recheckDeps()
@@ -248,7 +277,7 @@ class InstallSynAppsGUI:
         """ Function that initializes log text """
 
         text = "+-----------------------------------------------------------------\n"
-        text = text + "+ installSynApps, version: {}                                  +\n".format(self.version)
+        text = text + "+ installSynApps, version: {}                                  +\n".format(__version__)
         text = text +"+ Author: Jakub Wlodek                                           +\n"
         text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
         text = text +"+ This software comes with NO warranty!                          +\n"
@@ -309,39 +338,26 @@ class InstallSynAppsGUI:
         self.autogenerator.install_config = self.install_config
 
 
-    def checkDeps(self):
-        """ Function that quietly checks if all dependant packages are installed """
-
-        current = 'make'
-        FNULL = open(os.devnull, 'w')
-        try:
-            subprocess.call(['make'], stdout=FNULL, stderr=FNULL)
-            current = 'wget'
-            subprocess.call(['wget'], stdout=FNULL, stderr=FNULL)
-            current = 'git'
-            subprocess.call(['git'], stdout=FNULL, stderr=FNULL)
-            current = 'tar'
-            subprocess.call(['tar'], stdout=FNULL, stderr=FNULL)
-            FNULL.close()
-            return True, ''
-        except FileNotFoundError:
-            FNULL.close()
-            self.showErrorMessage('Dep. Error', 'ERROR - {} not found in system path.'.format(current))
-            self.showErrorMessage('Required packages: git, make, wget, tar')
-            return False, current
-
-
     def recheckDeps(self):
         """ Wrapper function for checking for installed dependancies """
 
         self.writeToLog('Checking for installed dependancies...\n')
-        inPath, missing = self.checkDeps()
+        inPath, missing = self.builder.check_dependencies_in_path()
         if not inPath:
-            self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
+            #self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
             self.deps_found = False
         else:
             self.deps_found = True
         self.writeToLog('Done.\n')
+
+
+    def close_cleanup(self):
+        """ Function that asks user if he/she wants to close, and cleans up threads """
+
+        if self.thread.is_alive():
+            self.showWarningMessage('Warning', 'Qutting while process is running may result in invalid installation!', force_popup=True)
+        if messagebox.askokcancel('Quit', 'Do you want to quit?'):
+            self.master.destroy()
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
 
@@ -375,10 +391,10 @@ class InstallSynAppsGUI:
         self.writeToLog(text + "\n")
 
 
-    def showMessage(self, title, text):
+    def showMessage(self, title, text, force_popup = False):
         """ Function that displays info popup and log message """
 
-        if self.showPopups.get():
+        if self.showPopups.get() or force_popup:
             messagebox.showinfo(title, text)
         self.writeToLog(text + '\n')
 
@@ -544,64 +560,56 @@ class InstallSynAppsGUI:
 #---------------------------- Editing Functions --------------------------------
 
 
-    def editConfig(self):
+    def openEditWindow(self, edit_window_str):
         """ Function that opens up an Edit Config window """
 
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
-            return
-
-        window = EditInstall.EditConfigGUI(self, self.install_config)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
-
-
-    def addModule(self):
-        """ Function that opens up an Add Module window """
+        window = None
 
         if self.install_config is None:
             self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
             return
 
-        window = AddModule.AddModuleGUI(self, self.install_config)
+        if edit_window_str == 'edit_config':
+            window = EditInstall.EditConfigGUI(self, self.install_config)
+        elif edit_window_str == 'add_module':
+            window = AddModule.AddModuleGUI(self, self.install_config)
+        elif edit_window_str == 'edit_single_mod':
+            window = EditIndividual.EditSingleModuleGUI(self, self.install_config)
+        elif edit_window_str == 'edit_injectors':
+            window = EditInjectors.EditInjectorGUI(self, self.updater.config_injector)
+        elif edit_window_str == 'edit_build_flags':
+            window = EditMacros.EditMacroGUI(self, self.updater.config_injector)
+        else:
+            self.showErrorMessage('Open Error', 'ERROR - Illegal Edit Window selection')
+
         if window is None:
             self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
 
 
-    def editSingleModule(self):
-        """ Function that opens up an Edit Single Module window """
+    def editCoreCount(self):
+        """ Function that prompts the user to enter a core count """
 
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
+        if self.singleCore.get():
+            self.showMessage('Message', 'Currently single core mode is enabled, please toggle off to set core count', force_popup=True)
             return
 
-        window = EditIndividual.EditSingleModuleGUI(self, self.install_config)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+        cores = simpledialog.askinteger('Set Core Count', 'Please enter a core count, or 0 to use all cores', parent = self.master)
+        if cores < 0 or cores > 16:
+            self.showErrorMessage('Core Count Error', 'ERROR - You have entered an illegal core count, try again.', force_popup=True)
+        current_count = self.builder.threads
+        new_count = cores
+        if self.builder.threads == 0:
+            current_count = 'Max core count'
+        if cores == 0:
+            new_count = 'Max core count'
+        self.writeToLog('New core count to use: {}, old core count to use: {}\n'.format(new_count, current_count))
+        self.builder.threads = cores
 
 
-    def editInjectors(self):
-        """ Function that opens edit injectors window """
+    def setSingleCore(self, *args):
+        """ Function that sets the single core option if toggle is pressed """
 
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
-            return
-
-        window = EditInjectors.EditInjectorGUI(self, self.updater.config_injector)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
-
-
-    def editBuildFlags(self):
-        """ Function that opens edit build flags window """
-
-        if self.install_config is None:
-            self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
-            return
-
-        window = EditMacros.EditMacroGUI(self, self.updater.config_injector)
-        if window is None:
-            self.showErrorMessage('Open Error', 'ERROR - Unable to open Edit Window')
+        self.builder.one_thread = self.singleCore.get()
 
 
 #--------------------------------- Help/Documentation Functions -----------------------------
@@ -641,6 +649,14 @@ class InstallSynAppsGUI:
 
         self.writeToLog(self.install_config.get_printable_string())
 
+
+    def depScriptHelp(self):
+        """ Function that displays help message for adding dependancy script """
+
+        self.writeToLog('When dependency install is enabled, installSynApps will attempt\nto run a dependency script')
+        self.writeToLog('in the configure directory,\ncalled dependencyInstall.sh on Linux, and dependencyInstall.bat\non win32.')
+        self.writeToLog('To add a script, simply write a shell/batch script,\nand place it in the configure directory.\n')
+
 #--------------------------------- Build Process Functions ------------------------------------------#
 #                                                                                                    #
 # Note that each of the build process functions has a wrapper that quickly returns, after starting   #
@@ -648,9 +664,9 @@ class InstallSynAppsGUI:
 #----------------------------------------------------------------------------------------------------#
 
 
-    def cloneConfig(self):
+    def initBuildProcess(self, action):
         """
-        Event function that starts a thread on the cloneConfigProcess function
+        Event function that starts a thread on the appropriate build process function
         """
 
         if self.install_config is None:
@@ -660,7 +676,18 @@ class InstallSynAppsGUI:
         elif not self.deps_found:
             self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
         elif not self.thread.is_alive():
-            self.thread = threading.Thread(target=self.cloneConfigProcess)
+            if action == 'autorun':
+                self.thread = threading.Thread(target=self.autorunProcess)
+            elif action == 'clone':
+                self.thread = threading.Thread(target=self.cloneConfigProcess)
+            elif action == 'update':
+                self.thread = threading.Thread(target=self.updateConfigProcess)
+            elif action == 'inject':
+                self.thread = threading.Thread(target=self.injectFilesProcess)
+            elif action == 'build':
+                self.thread = threading.Thread(target=self.buildConfigProcess)
+            else:
+                self.showErrorMessage('Start Error', 'ERROR - Illegal init process call', force_popup=True)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
             self.thread.start()
             self.loadingIconThread.start()
@@ -702,26 +729,6 @@ class InstallSynAppsGUI:
         return status
 
 
-    def updateConfig(self):
-        """
-        Event function that starts a thread on the updateConfigProcess function
-        """
-
-        if self.install_config is None:
-            self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
-        elif not self.valid_install:
-            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
-        elif not self.deps_found:
-            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
-        elif not self.thread.is_alive():
-            self.thread = threading.Thread(target=self.updateConfigProcess)
-            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-            self.thread.start()
-            self.loadingIconThread.start()
-        else:
-            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
-
-
     def updateConfigProcess(self):
         """ Function that updates RELEASE and configuration files """
         
@@ -743,26 +750,6 @@ class InstallSynAppsGUI:
         return 0
 
 
-    def injectFiles(self):
-        """
-        Event function that starts a thread on the injectFilesProcess function
-        """
-
-        if self.install_config is None:
-            self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
-        elif not self.valid_install:
-            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
-        elif not self.deps_found:
-            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
-        elif not self.thread.is_alive():
-            self.thread = threading.Thread(target=self.injectFilesProcess)
-            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-            self.thread.start()
-            self.loadingIconThread.start()
-        else:
-            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
-
-
     def injectFilesProcess(self):
         """ Function that injects settings into configuration files """
 
@@ -770,26 +757,6 @@ class InstallSynAppsGUI:
         self.updater.perform_injection_updates()
         self.writeToLog('Done.\n')
         return 0
-
-
-    def buildConfig(self):
-        """
-        Event function that starts a thread on the buildConfigProcess function
-        """
-
-        if self.install_config is None:
-            self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
-        elif not self.valid_install:
-            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
-        elif not self.deps_found:
-            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
-        elif not self.thread.is_alive():
-            self.thread = threading.Thread(target=self.buildConfigProcess)
-            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-            self.thread.start()
-            self.loadingIconThread.start()
-        else:
-            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
 
 
     def buildConfigProcess(self):
@@ -800,11 +767,18 @@ class InstallSynAppsGUI:
         self.writeToLog('Beginning build process...\n')
         if not platform == "win32" and self.installDep.get():
             self.writeToLog('Running dependency script...\n')
-            self.writeToLog('Please enter your sudo password into the terminal...\n')
-            self.builder.acquire_dependecies('scripts/dependencyInstall.sh')
-            self.writeToLog('Dependencies have been installed.\n')
-        elif platform == "win32":
-            self.writeToLog("Windows ARCH detected - currently no support for auto-install dependencies.\n")
+            if os.path.exists(self.configure_path + '/dependencyInstall.sh'):
+                self.writeToLog('Please enter your sudo password into the terminal...\n')
+                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.sh')
+                self.writeToLog('Dependencies have been installed.\n')
+            else:
+                self.writeToLog('No dependency script found.\n')
+        elif platform == "win32" and self.installDep.get():
+            if os.path.exists(self.configure_path + '/dependencyInstall.bat'):
+                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.bat')
+                self.writeToLog('Dependencies have been installed.\n')
+            else:
+                self.writeToLog('No dependency script found.\n')
         else:
             self.writeToLog("Auto install dependencies toggled off.\n")
         self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
@@ -820,19 +794,23 @@ class InstallSynAppsGUI:
             return status
         self.writeToLog('Done.\n')
         self.writeToLog('Compiling selected areaDetector modules at location {}...\n'.format(self.install_config.ad_path))
-        #status, failedModules = self.builder.build_ad()
-        for module in self.install_config.get_module_list():
-            status, was_ad = self.builder.build_ad_module(self, module)
-            if was_ad and status == 0:
-                self.writeToLog("Build AD module {}\n".format(module.name))
-            elif status < 0:
-                self.writeToLog("Failed to build AD module {}\n".format(module.name))
-        if status < 0:
-            self.showErrorMessage('Build Error', 'ERROR - Failed to ADCore or ADSupport, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
+        self.writeToLog('Compiling ADSupport...\n')
+        status = self.builder.build_ad_support()
+        if status != 0:
+            self.showErrorMessage('Build Error', 'ERROR - Failed to build ADSupport, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
             return status
-        elif len(failedModules) > 0:
-            for module in failedModules:
-                self.writeToLog('areaDetector module {} failed to auto-build\n'.format(module.name))
+        self.writeToLog('Compiling ADCore...\n')
+        status = self.builder.build_ad_core()
+        if status != 0:
+            self.showErrorMessage('Build Error', 'ERROR - Failed to build ADCore, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
+            return status
+        for module in self.install_config.get_module_list():
+            if module.build == 'YES':
+                status, was_ad = self.builder.build_ad_module(module)
+                if was_ad and status == 0:
+                    self.writeToLog("Built AD module {}\n".format(module.name))
+                elif was_ad and status != 0:
+                    self.writeToLog("Failed to build AD module {}\n".format(module.name))
         self.writeToLog('Done.\n')
         self.writeToLog('Autogenerating install/uninstall scripts...\n')
         self.autogenerator.initialize_dir()
@@ -842,27 +820,6 @@ class InstallSynAppsGUI:
         self.autogenerator.generate_readme()
         self.writeToLog('Done.\n')
         return status
-
-
-    def autorun(self):
-        """
-        Event function that starts a thread on the autorunProcess function
-        """
-
-        if self.install_config is None:
-            self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
-        elif not self.valid_install:
-            self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
-        elif not self.deps_found:
-            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
-        elif not self.thread.is_alive():
-            self.thread = threading.Thread(target=self.autorunProcess)
-            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-            self.thread.start()
-            self.loadingIconThread.start()
-        else:
-            self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
-
 
 
     def autorunProcess(self):

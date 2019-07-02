@@ -150,11 +150,16 @@ class EditConfigGUI:
     def applyChanges(self):
         """ Function that applies changes made to the install configuration to the currently loaded one. """
 
+        old_loc = self.install_config.install_location
         new_install_loc = self.installTextBox.get('1.0', END)
         new_install_loc = new_install_loc.strip()
         if len(new_install_loc) > 0:
             if os.path.exists(new_install_loc):
                 self.install_config.install_location = new_install_loc
+            else:
+                self.root.showErrorMessage('Edit Error', 'ERROR - Edited path does not exist', force_popup=True)
+                self.installTextBox.delete('1.0', END)
+                self.installTextBox.insert(INSERT, old_loc)
 
         for module in self.install_config.get_module_list():
             if self.installModuleLines[module.name] is not None:
@@ -178,11 +183,11 @@ class EditConfigGUI:
                 self.install_config.ad_path = module.abs_path
 
         self.root.updateConfigPanel()
-        self.root.cloner.install_config = self.root.install_config
-        self.root.updater.install_config = self.root.install_config
-        self.root.updater.config_injector.install_config = self.root.install_config
-        self.root.builder.install_config = self.root.install_config
-        self.root.autogenerator.install_config = self.root.install_config
+        self.root.updateAllRefs(self.install_config)
+        if self.install_config.is_install_valid():
+            self.root.valid_install = True
+        else:
+            self.root.valid_install = False
         self.root.writeToLog('Applied updated install configuration.\n')
 
 
