@@ -133,6 +133,16 @@ class InstallConfiguration:
         return self.modules
 
 
+    def get_core_version(self):
+        """
+        Funciton that returns selected version of ADCore
+        """
+
+        for module in self.get_module_list():
+            if module.name == "ADCORE":
+                return module.version
+
+
     def convert_path_abs(self, rel_path):
         """
         Function that converts a given modules relative path to an absolute path

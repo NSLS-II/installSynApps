@@ -202,6 +202,7 @@ class AddModuleGUI:
         new_module = Module.InstallModule(name, version, rel_path, url_type, url, repo, clone_str, build_str)
         self.install_config.add_module(new_module)
         self.root.updateAllRefs(self.install_config)
+        self.root.updateConfigPanel()
         self.root.showMessage('Info', 'Added module: {} with version {} to config'.format(name, version))
 
 
