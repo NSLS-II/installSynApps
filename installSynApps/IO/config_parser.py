@@ -139,7 +139,71 @@ class ConfigParser:
                 line = install_file.readline()
             
             install_file.close()
-            # install_config.print_installation_info()
+            self.read_injector_files(install_config)
+            self.read_build_flags(install_config)
             return install_config , message
         return None, 'Configure Path not found'
-                    
+
+
+    def read_injector_files(self, install_config):
+        """ Function that reads the injector files and adds them to install config """
+
+        if install_config is None:
+            return
+        for file in os.listdir(self.configure_path + '/injectionFiles'):
+            if os.path.isfile(self.configure_path + '/injectionFiles/' + file):
+                self.parse_injector_file(file, install_config)
+
+
+    def parse_injector_file(self, injector_file_name, install_config):
+        """
+        Function that parses an injector file and adds it to the install_config
+
+        Parameters
+        ----------
+        injector_file_name : str
+            name of the file
+        install_config : InstallConfiguration
+            config to add the file to
+        """
+
+        fp = open(self.configure_path + '/injectionFiles/' + injector_file_name, 'r')
+        contents = ''
+        link=''
+
+        line = fp.readline()
+        while line:
+            if not line.startswith('#') and len(line) > 1:
+                if line.startswith('__TARGET_LOC__='):
+                    line = line.strip()
+                    link = line.split('=')[1]
+                else:
+                    contents = contents + line
+
+            line = fp.readline()
+
+        fp.close()
+        install_config.add_injector_file(injector_file_name, contents, link)
+
+
+    def read_build_flags(self, install_config):
+        """ Function that reads the build flag files and adds them to install config """
+
+        if install_config is None:
+            return
+        for file in os.listdir(self.configure_path + '/macroFiles'):
+            if os.path.isfile(self.configure_path + '/macroFiles/' + file):
+                self.parse_macro_file(file, install_config)
+
+
+    def parse_macro_file(self, macro_file_name, install_config):
+
+        with open(self.configure_path + '/macroFiles/' + macro_file_name) as fp:
+            contents = fp.read().split()
+
+        macros = []
+        for line in contents:
+            if not line.startswith('#') and len(line) > 1 and '=' in line:
+                macros.append(line.split('='))
+
+        install_config.add_macros(macros)
