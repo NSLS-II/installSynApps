@@ -1,5 +1,6 @@
 # This file will contain code to insert into the commonPlugins.cmd to load any external plugins
 # not included by default with areaDetector/ADCore
+__TARGET_LOC__=$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd
 
 NDTESTConfigure("TEST1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
 dbLoadRecords("$(ADTEST)/db/NDTEST.template", "P=$(PREFIX), R=TEST1:, PORT=TEST1, ADDR=0, TIMEOUT=1, NDARRAY_PORT=$(PORT), NAME=CV1, NCHANS=$(XSIZE)")
