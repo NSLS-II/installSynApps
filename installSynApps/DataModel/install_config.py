@@ -56,6 +56,8 @@ class InstallConfiguration:
 
         self.install_location = install_location
         self.modules = []
+        self.injector_files = []
+        self.build_flags = []
 
         # Paths to the three install location paths used for relative path correction
         self.base_path = None
@@ -113,6 +115,37 @@ class InstallConfiguration:
                 self.ad_path = module.abs_path
             
             self.modules.append(module)
+
+
+    def add_injector_file(self, name, contents, target):
+        """
+        Function that adds a new injector file to the install_config object
+        
+        Parameters
+        ----------
+        name : str
+            name of the file
+        contents : str
+            The contents of the file
+        target : str
+            The target location file into which contents will be injected.
+        """
+
+        new_injector = InjectorFile(self.path_to_configure, name, contents, target)
+        self.injector_files.append(new_injector)
+
+
+    def add_macros(self, macro_list):
+        """
+        Function that adds macro-value pairs to the list of macros
+
+        Parameters
+        ----------
+        macro_list : list of [str, str]
+            list of new macros to append
+        """
+
+        self.build_flags = self.build_flags + macro_list
 
 
     def get_module_list(self):
@@ -197,3 +230,28 @@ class InstallConfiguration:
             if module.clone == 'YES':
                 out = out + module.get_printable_string()
         return out
+
+
+class InjectorFile:
+    """
+    Class that represents an injector file and stores its name, contents, and target
+
+    Attributes
+    ----------
+    path_to_configure : str
+        path to the configure dir that houses this injector file
+    name : str
+        name of the file
+    contents : str
+        The contents of the file
+    target : str
+        The target location file into which contents will be injected.
+    """
+
+    def __init__(self, path_to_configure, name, contents, target):
+        """ Constructor of InjectorFile """
+
+        self.path_to_configure = path_to_configure
+        self.name = name
+        self.contents = contents
+        self.target = target
