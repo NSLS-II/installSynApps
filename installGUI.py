@@ -222,7 +222,7 @@ class InstallSynAppsGUI:
 
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
         self.install_loaded = False
-        if len(message) > 0:
+        if message is not None:
             self.valid_install = False
             self.showWarningMessage('Warning', 'Illegal Install Config: {}'.format(message), force_popup=True)
         else:
@@ -487,12 +487,19 @@ class InstallSynAppsGUI:
             dirpath = filedialog.asksaveasfilename(initialdir = '.')
             self.writeToLog('Creating save directory...\n')
         else:
+            ans = messagebox.askyesno('Confirm', 'Do you wish to overwrite existing install config with new changes?')
+            if ans is None:
+                return
+            elif not ans:
+                return
             dirpath = force_loc
             shutil.rmtree(dirpath)
 
-        self.writer.write_install_config(filepath=dirpath)
-       
-        self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
+        wrote, message = self.writer.write_install_config(filepath=dirpath)
+        if not wrote:
+            self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
+        else:
+            self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
 
 
     def saveLog(self, saveDir = None):
