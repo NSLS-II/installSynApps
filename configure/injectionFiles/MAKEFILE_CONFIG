@@ -1,6 +1,6 @@
 # This file will contain code to insert into the commonDriverMakefile to link libraries for any external plugins
 # not included by default with areaDetector/ADCore
-
+__TARGET_LOC__=$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile
 
 ifdef ADPLUGINBAR
   $(DBD_NAME)_DBD += NDPluginBar.dbd
