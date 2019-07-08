@@ -56,7 +56,7 @@ class UpdateConfigDriver:
 
         self.install_config = install_config
         self.path_to_configure = path_to_configure
-        self.config_injector = CI.ConfigInjector(path_to_configure, self.install_config)
+        self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS"]
 
@@ -64,9 +64,9 @@ class UpdateConfigDriver:
     def perform_injection_updates(self):
         """ Function that calls the ConfigInjector functions for appending config files """
 
-        injector_files = self.config_injector.get_injector_files()
-        for file_path in injector_files:
-            self.config_injector.inject_to_file(file_path)
+        injector_files = self.install_config.injector_files
+        for injector in injector_files:
+            self.config_injector.inject_to_file(injector)
         
     
     def get_macros_from_install_config(self):
@@ -88,6 +88,7 @@ class UpdateConfigDriver:
                 else:
                     macro_list.append([module.name, module.rel_path])
 
+        macro_list.extend(self.install_config.build_flags)
         return macro_list
 
 
@@ -114,11 +115,6 @@ class UpdateConfigDriver:
         """
 
         install_macro_list = self.get_macros_from_install_config()
-        install_macro_list.extend(self.config_injector.macro_replace_list)
-        #macro_replace_files = self.config_injector.get_macro_replace_files()
-        #for file_path in macro_replace_files:
-        #    file_macros = self.config_injector.get_macro_replace_from_file(file_path)
-        #    install_macro_list = install_macro_list + file_macros
         
         if not single_file:
             self.config_injector.update_macros_dir(install_macro_list, target_path)

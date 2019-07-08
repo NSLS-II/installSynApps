@@ -1,5 +1,5 @@
 #
-# INSTALL_CONFIG file saved by InstallSynAppsGUI on 2019-06-24 12:01:19.129050
+# INSTALL_CONFIG file saved by installSynApps on 2019-07-08 10:07:59.868813
 #
 
 INSTALL=/epics
@@ -21,7 +21,7 @@ UTILS            R6-0                 $(SUPPORT)/utils                         u
 
 GIT_URL=https://github.com/paulscherrerinstitute/
 
-STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             NO               NO
+STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             YES              YES
 
 GIT_URL=https://github.com/epics-modules/
 
@@ -46,13 +46,13 @@ LOVE             R3-2-6               $(SUPPORT)/love                          l
 LUA              R1-2                 $(SUPPORT)/lua                           lua                      NO               NO
 MCA              R7-7                 $(SUPPORT)/mca                           mca                      NO               NO
 MEASCOMP         R2-1                 $(SUPPORT)/measComp                      measComp                 NO               NO
-MODBUS           R2-10-1              $(SUPPORT)/modbus                        modbus                   NO               NO
+MODBUS           R2-10-1              $(SUPPORT)/modbus                        modbus                   YES              YES
 MOTOR            R6-11                $(SUPPORT)/motor                         motor                    NO               NO
 OPTICS           R2-13-1              $(SUPPORT)/optics                        optics                   NO               NO
 SOFTGLUE         R2-8-1               $(SUPPORT)/softGlue                      softGlue                 NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO
 SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES
-STD              R3-5                 $(SUPPORT)/std                           std                      NO               NO
+STD              R3-5                 $(SUPPORT)/std                           std                      YES              YES
 VAC              R1-7                 $(SUPPORT)/vac                           vac                      NO               NO
 VME              R2-9                 $(SUPPORT)/vme                           vme                      NO               NO
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO
@@ -62,15 +62,15 @@ QUADEM           R9-1                 $(SUPPORT)/quadEM                        q
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-2.2.6.tar.gz         YES              YES
+SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
-ALLENBRADLEY     2.3                  $(SUPPORT)/allenBradley                  allenBradley-2.3.tar.gz  NO               NO
+ALLENBRADLEY     2.3                  $(SUPPORT)/allenBradley                  allenBradley-$(VERSION).tar.gz NO               NO
 
 WGET_URL=https://github.com/EPICSTools/ether_ip/archive/
 
-ETHERIP          2-26                 $(SUPPORT)/ether_ip                      ether_ip-2-26.tar.gz     NO               NO
+ETHERIP          2-26                 $(SUPPORT)/ether_ip                      ether_ip-$(VERSION).tar.gz NO               NO
 
 GIT_URL=https://github.com/motorapp/
 
@@ -109,6 +109,8 @@ ADPILATUS        R2-7                 $(AREA_DETECTOR)/ADPilatus               A
 ADMERLIN         master               $(AREA_DETECTOR)/ADMerlin                ADMerlin                 NO               NO
 ADARAVIS         R3-0                 $(AREA_DETECTOR)/aravisGigE              aravisGigE               NO               NO
 ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 ADEiger                  NO               NO
+ADVIMBA          master               $(AREA_DETECTOR)/ADVimba                 ADVimba                  NO               NO
+ADGENICAM        master               $(AREA_DETECTOR)/ADGenICam               ADGenICam                NO               NO
 ADMMPAD          master               $(AREA_DETECTOR)/ADMMPAD                 ADMMPAD                  NO               NO
 ADFASTCCD        R1-0                 $(AREA_DETECTOR)/ADFastCCD               ADFastCCD                NO               NO
 ADPOINTGREY      R2-8                 $(AREA_DETECTOR)/ADPointGrey             ADPointGrey              NO               NO
@@ -137,14 +139,16 @@ ADROPER          R2-3                 $(AREA_DETECTOR)/ADRoper                 A
 ADADSC           R2-1                 $(AREA_DETECTOR)/ADADSC                  ADADSC                   NO               NO
 ADSBIG           master               $(AREA_DETECTOR)/ADSBIG                  ADSBIG                   NO               NO
 FFMPEGVIEWER     master               $(AREA_DETECTOR)/ffmpegViewer            ffmpegViewer             NO               NO
+ADRIXSCAM        master               $(AREA_DETECTOR)/ADRIXSCam               ADRIXSCam                NO               NO
+ADVIEWERS        master               $(AREA_DETECTOR)/ADViewers               ADViewers                NO               NO
 
 GIT_URL=https://github.com/epicsNSLS2-deploy/
 
 UPDATEIOC        master               $(INSTALL)/utils/updateIOC               updateIOC                NO               NO
 IOCDEPLOY        master               $(INSTALL)/utils/ioc_deploy              ioc_deploy               NO               NO
-INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  YES              NO
+INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  NO               NO
 OPIORGANIZER     master               $(INSTALL)/utils/opi_organizer           opi_organizer            NO               NO
 
 WGET_URL=https://sourceforge.net/projects/cs-studio/files/nsls2-release/
 
-CSSTUDIO         4.5.1                $(INSTALL)/cs-studio                     cs-studio-nsls2-4.5.1-linux.gtx.x86_64.tar.gz NO               NO
+CSSTUDIO         4.5.1                $(INSTALL)/cs-studio                     cs-studio-nsls2-$(VERSION)-linux.gtx.x86_64.tar.gz NO               NO

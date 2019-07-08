@@ -1,5 +1,5 @@
-# Saved by InstallSynAppsGUI on 2019-06-24 12:01:19.128579
-
+# Saved by installSynApps on 2019-07-08 10:07:59.868315
+__TARGET_LOC__=$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile
 
 
 ifeq ($(WITH_BOOST),YES)
@@ -14,3 +14,4 @@ ifeq ($(WITH_BOOST),YES)
     endif
   endif
 endif
+

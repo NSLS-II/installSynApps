@@ -51,7 +51,7 @@ class EditInjectorGUI:
         Applies changes to the loaded config
     """
 
-    def __init__(self, root, config_injector):
+    def __init__(self, root, install_config):
         """
         Constructor for the EditInjectoGUI class
         """
@@ -69,14 +69,14 @@ class EditInjectorGUI:
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
 
-        self.config_injector = config_injector
+        self.install_config = install_config
 
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
         self.injectorList = []
-        for file in self.config_injector.injector_file_contents:
-            self.injectorList.append(file)
+        for file in self.install_config.injector_files:
+            self.injectorList.append(file.name)
 
         self.currentEditVar = StringVar()
         self.currentEditVar.set(self.injectorList[0])
@@ -109,12 +109,18 @@ class EditInjectorGUI:
         """
 
         target_file = self.currentEditVar.get()
+        contents = ''
+        link = ''
+        for file in self.install_config.injector_files:
+            if file.name == target_file:
+                contents = file.contents
+                link = file.target
         self.editPanel.delete('1.0', END)
         self.editPanel.insert(INSERT, '#\n')
         self.editPanel.insert(INSERT, '# The below contents will be injected into:\n')
-        self.editPanel.insert(INSERT, '# {}\n'.format(self.config_injector.injector_file_links[target_file]))
-        self.editPanel.insert(INSERT, '#\n')
-        self.editPanel.insert(INSERT, self.config_injector.injector_file_contents[target_file])
+        self.editPanel.insert(INSERT, '# {}\n'.format(link))
+        self.editPanel.insert(INSERT, '#\n\n')
+        self.editPanel.insert(INSERT, contents)
 
 
     def applyChanges(self):
@@ -129,7 +135,9 @@ class EditInjectorGUI:
             if not line.startswith('#'):
                 new_contents = new_contents + line + '\n'
         target = self.currentEditVar.get()
-        self.config_injector.injector_file_contents[target] = new_contents
+        for file in self.install_config.injector_files:
+            if file.name == target:
+                file.contents = new_contents
         self.root.writeToLog('Applied updated injector file contents.\n')
 
 

@@ -153,13 +153,19 @@ class EditConfigGUI:
         old_loc = self.install_config.install_location
         new_install_loc = self.installTextBox.get('1.0', END)
         new_install_loc = new_install_loc.strip()
-        if len(new_install_loc) > 0:
-            if os.path.exists(new_install_loc):
-                self.install_config.install_location = new_install_loc
-            else:
-                self.root.showErrorMessage('Edit Error', 'ERROR - Edited path does not exist', force_popup=True)
-                self.installTextBox.delete('1.0', END)
-                self.installTextBox.insert(INSERT, old_loc)
+        self.install_config.install_location = new_install_loc
+        res = self.install_config.is_install_valid()
+        if res < 0:
+            self.root.showWarningMessage('Edit Error', 'WARNING - Permission Error for selected install location', force_popup=True)
+            self.root.valid_install = False
+        elif res == 0:
+            try:
+                os.mkdir(self.install_config.install_location)
+            except FileNotFoundError:
+                self.root.showWarningMessage('Edit Error', 'WARNING - Edited path does not exist', force_popup=True)
+                self.root.valid_install = False
+        else:
+            self.root.valid_install = True
 
         for module in self.install_config.get_module_list():
             if self.installModuleLines[module.name] is not None:
