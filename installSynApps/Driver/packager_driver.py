@@ -81,10 +81,10 @@ class Packager:
             if os.path.exists(module_location + '/' + module_name + '/iocs'):
                 for dir in os.listdir(module_location + '/' + module_name + '/iocs'):
                     if 'IOC' in dir:
-                        self.grab_folder(module_location + '/' + module_name + '/' + dir + '/bin/' + self.arch, top + '/' + module_name + '/' + dir + '/bin/' + self.arch)
-                        self.grab_folder(module_location + '/' + module_name + '/' + dir + '/lib/' + self.arch, top + '/' + module_name + '/' + dir + '/lib/' + self.arch)
-                        self.grab_folder(module_location + '/' + module_name + '/' + dir + '/dbd', top + '/' + module_name + '/' + dir + '/dbd')
-                        self.grab_folder(module_location + '/' + module_name + '/' + dir + '/iocBoot', top + '/' + module_name + '/' + dir + '/iocBoot')
+                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/bin/' + self.arch, top + '/' + module_name + '/iocs/' + dir + '/bin/' + self.arch)
+                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/lib/' + self.arch, top + '/' + module_name + '/iocs/' + dir + '/lib/' + self.arch)
+                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/dbd', top + '/' + module_name + '/iocs/' + dir + '/dbd')
+                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/iocBoot', top + '/' + module_name + '/iocs/' + dir + '/iocBoot')
 
         try:
             out = subprocess.check_output(['git', '-C', module_location + '/' + module_name, 'describe', '--tags'])
@@ -127,21 +127,26 @@ class Packager:
 
 
     def create_tarball(self, filename):
-        os.mkdir('temp')
+        if os.path.exists('__temp__'):
+                    shutil.rmtree('__temp__')
+        os.mkdir('__temp__')
         readme_fp = open('DEPLOYMENTS/README_{}.txt'.format(filename), 'w')
         readme_fp.write('{}\n\n'.format(filename))
         readme_fp.write('Versions used in this deployment:\n')
         readme_fp.write('[folder name] : [git tag]\n\n')
 
-        self.grab_base('temp', readme_fp)
-        self.grab_support('temp', readme_fp)
-        self.grab_ad('temp', readme_fp)
-        out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', 'temp', '.'])
+        self.grab_base(     '__temp__', readme_fp)
+        self.grab_support(  '__temp__', readme_fp)
+        self.grab_ad(       '__temp__', readme_fp)
+
+        readme_fp.close()
+        shutil.copy('DEPLOYMENTS/README_{}.txt'.format(filename), '__temp__/README_{}.txt'.format(filename))
+
+        out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', '__temp__', '.'])
         if out < 0:
             return out
         os.rename(filename + '.tgz', 'DEPLOYMENTS/' + filename + '.tgz')
-        shutil.rmtree('temp')
-        readme_fp.close()
+        shutil.rmtree('__temp__')
         return out
 
 
