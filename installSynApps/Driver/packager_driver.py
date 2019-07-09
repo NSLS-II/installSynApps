@@ -50,7 +50,7 @@ class Packager:
             shutil.copytree(src, dest)
 
 
-    def grab_base(self, top):
+    def grab_base(self, top, readme_fp):
         base_path = self.install_config.base_path
         self.grab_folder(base_path + '/bin/' + self.arch,   top + '/base/bin/' + self.arch)
         self.grab_folder(base_path + '/lib/' + self.arch,   top + '/base/lib/' + self.arch)
@@ -58,9 +58,14 @@ class Packager:
         self.grab_folder(base_path + '/configure',          top + '/base/configure')
         self.grab_folder(base_path + '/include',            top + '/base/include')
         self.grab_folder(base_path + '/startup',            top + '/base/startup')
+        try:
+            out = subprocess.check_output(['git', '-C', base_path, 'describe', '--tags'])
+            readme_fp.write('base : {}'.format(out.decode("utf-8")))
+        except subprocess.CalledProcessError:
+            pass
 
 
-    def grab_module(self, top, module_name, module_location, is_ad_module = False):
+    def grab_module(self, top, module_name, module_location, readme_fp, is_ad_module = False):
         self.grab_folder(module_location + '/' + module_name + '/opi', top + '/' + module_name +'/opi')
         self.grab_folder(module_location + '/' + module_name + '/db', top + '/' + module_name +'/db')
         self.grab_folder(module_location + '/' + module_name + '/include', top + '/' + module_name +'/include')
@@ -81,17 +86,22 @@ class Packager:
                         self.grab_folder(module_location + '/' + module_name + '/' + dir + '/dbd', top + '/' + module_name + '/' + dir + '/dbd')
                         self.grab_folder(module_location + '/' + module_name + '/' + dir + '/iocBoot', top + '/' + module_name + '/' + dir + '/iocBoot')
 
+        try:
+            out = subprocess.check_output(['git', '-C', module_location + '/' + module_name, 'describe', '--tags'])
+            readme_fp.write('{} : {}'.format(module_name, out.decode("utf-8")))
+        except subprocess.CalledProcessError:
+            pass
 
-    def grab_support(self, top):
+    def grab_support(self, top, readme_fp):
         support_path = self.install_config.support_path
         support_modules = ['asyn', 'autosave', 'busy', 'calc', 'iocStats', 'seq', 'sscan']
         if self.opt_modules is not None:
             support_modules = support_modules.extend(self.opt_modules)
         for module in support_modules:
-            self.grab_module(top, module, support_path)
+            self.grab_module(top, module, support_path, readme_fp)
 
 
-    def grab_ad(self, top):
+    def grab_ad(self, top, readme_fp):
         ad_path = self.install_config.ad_path
         self.grab_folder(ad_path + '/ADCore/db',        top + '/areaDetector/ADCore/db')
         self.grab_folder(ad_path + '/ADCore/ADApp/Db',        top + '/areaDetector/ADCore/ADApp/Db')
@@ -102,9 +112,16 @@ class Packager:
         self.grab_folder(ad_path + '/ADCore/lib/' + self.arch,          top + '/areaDetector/ADCore/lib/' + self.arch)
         self.grab_folder(ad_path + '/ADSupport/bin/' + self.arch,        top + '/areaDetector/ADSupport/bin/' + self.arch)
         self.grab_folder(ad_path + '/ADSupport/lib/' + self.arch,          top + '/areaDetector/ADSupport/lib/' + self.arch)
+        try:
+            out = subprocess.check_output(['git', '-C', ad_path + '/ADCore', 'describe', '--tags'])
+            readme_fp.write('ADCore : {}'.format(out.decode("utf-8")))
+            out = subprocess.check_output(['git', '-C', ad_path + '/ADSupport', 'describe', '--tags'])
+            readme_fp.write('ADSupport : {}'.format(out.decode("utf-8")))
+        except subprocess.CalledProcessError:
+            pass
         if self.ad_drivers is not None:
             for driver in self.ad_drivers:
-                self.grab_module(top + '/areaDetector', driver, ad_path)
+                self.grab_module(top + '/areaDetector', driver, ad_path, readme_fp, is_ad_module=True)
 
 
 
@@ -116,9 +133,9 @@ class Packager:
         readme_fp.write('Versions used in this deployment:\n')
         readme_fp.write('[folder name] : [git tag]\n\n')
 
-        self.grab_base('temp')
-        self.grab_support('temp')
-        self.grab_ad('temp')
+        self.grab_base('temp', readme_fp)
+        self.grab_support('temp', readme_fp)
+        self.grab_ad('temp', readme_fp)
         out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', 'temp', '.'])
         if out < 0:
             return out
