@@ -3,6 +3,7 @@ Class responsible for packaging compiled binaries based on install config
 """
 
 
+# imports
 import os
 import shutil
 from sys import platform
@@ -10,12 +11,63 @@ import platform as p
 import datetime
 import time
 import subprocess
+
+# Only depends on install config
 import installSynApps.DataModel.install_config as IC
 
 class Packager:
+    """
+    Class responsible for packaging compiled binaries based on install config
 
+    Attributes
+    ----------
+    install_config : InstallConfiguration
+        The currently loaded install configuration
+    ad_drivers : list of str
+        a list of ADDrivers and Plugins to include in the bundle
+    opt_modules : list of str
+        list of optional modules to include in the bundle
+    arch : str
+        architecture of bundle. Used for locating binaries in file structure and for naming
+    OS : str
+        used for naming on linux. Allows for using different bundles for different linux distributions
+    start_time : a timestamp for the start of the tarring process
+
+    Methods
+    -------
+    start_timer()
+        starts the tar timer
+    stop_timer()
+        stops the timer and returns the elapsed time
+    grab_folder(src : str, dest : str)
+        helper function that copies a specified dir if it exists
+    grab_base(top : str, readme_fp : FILE*)
+        grabs all required base directories
+    grab_ad(top : str, readme_fp : FILE*)
+        grabs all required ad directories
+    grab_support(top : str, readme_fp : FILE*)
+        grabs all required support directories
+    create_tarball(filename : str)
+        top level generator that creates tarball in DEPLOTMENTS/tarball
+    create_package():
+        function that should be called to use packager. Generates a unique package name, creates tarball, and measures time
+    """
 
     def __init__(self, install_config, ad_drivers, opt_modules, force_arch=None):
+        """
+        Constructor for Packager
+
+        Parameters
+        ----------
+        install_config : InstallConfiguration
+            The currently loaded install configuration
+        ad_drivers : list of str
+            a list of ADDrivers and Plugins to include in the bundle
+        opt_modules : list of str
+            list of optional modules to include in the bundle
+        force_arch : str
+            defaults to None. If set, will force the packager to use a certain architecture. Useful for building on multiple OS. (ex. pacakging through WSL on windows)
+        """
         self.install_config = install_config
 
         self.ad_drivers = ad_drivers
@@ -37,20 +89,53 @@ class Packager:
 
 
     def start_timer(self):
+        """ Helper function that starts the timer """
+
         self.start_time = time.time()
 
 
     def stop_timer(self):
+        """
+        Helper function that stops the timer
+
+        Returns
+        -------
+        elapsed_time : int
+            time since start_timer() was called in seconds
+        """
+
         end_time = time.time()
         return end_time - self.start_time
 
 
     def grab_folder(self, src, dest):
+        """
+        Helper function that copies folder if it exists
+
+        Parameters
+        ----------
+        src : str
+            folder to copy
+        dest : str
+            result location
+        """
+
         if os.path.exists(src):
             shutil.copytree(src, dest)
 
 
     def grab_base(self, top, readme_fp):
+        """
+        Function that copies all of the required folders from EPICS_BASE
+
+        Parameters
+        ----------
+        top : str
+            resulting location - __temp__
+        readme_fp : FILE*
+            output readme file
+        """
+
         base_path = self.install_config.base_path
         self.grab_folder(base_path + '/bin/' + self.arch,   top + '/base/bin/' + self.arch)
         self.grab_folder(base_path + '/lib/' + self.arch,   top + '/base/lib/' + self.arch)
@@ -66,6 +151,23 @@ class Packager:
 
 
     def grab_module(self, top, module_name, module_location, readme_fp, is_ad_module = False):
+        """
+        Function that grabs all of the required folders from each individual module.
+
+        Parameters
+        ----------
+        top : str
+            resulting location - __temp__
+        module_name : str
+            folder name for the module
+        module_location : str
+            path to dir of location of module
+        readme_fp : FILE*
+            output readme file
+        is_ad_module : bool
+            default false. if true search for iocs directory as well.
+        """
+
         self.grab_folder(module_location + '/' + module_name + '/opi', top + '/' + module_name +'/opi')
         self.grab_folder(module_location + '/' + module_name + '/db', top + '/' + module_name +'/db')
         self.grab_folder(module_location + '/' + module_name + '/include', top + '/' + module_name +'/include')
@@ -92,7 +194,19 @@ class Packager:
         except subprocess.CalledProcessError:
             pass
 
+
     def grab_support(self, top, readme_fp):
+        """
+        Function that copies all of the required folders from SUPPORT
+
+        Parameters
+        ----------
+        top : str
+            resulting location - __temp__
+        readme_fp : FILE*
+            output readme file
+        """
+
         support_path = self.install_config.support_path
         support_modules = ['asyn', 'autosave', 'busy', 'calc', 'iocStats', 'seq', 'sscan']
         if self.opt_modules is not None:
@@ -102,6 +216,17 @@ class Packager:
 
 
     def grab_ad(self, top, readme_fp):
+        """
+        Function that copies all of the required folders from AREA_DETECTOR
+
+        Parameters
+        ----------
+        top : str
+            resulting location - __temp__
+        readme_fp : FILE*
+            output readme file
+        """
+
         ad_path = self.install_config.ad_path
         self.grab_folder(ad_path + '/ADCore/db',        top + '/areaDetector/ADCore/db')
         self.grab_folder(ad_path + '/ADCore/ADApp/Db',        top + '/areaDetector/ADCore/ADApp/Db')
@@ -124,9 +249,21 @@ class Packager:
                 self.grab_module(top + '/areaDetector', driver, ad_path, readme_fp, is_ad_module=True)
 
 
-
-
     def create_tarball(self, filename):
+        """
+        Function responsible for creating the tarball given a filename.
+
+        Parameters
+        ----------
+        filename : str
+            name for output tarball and readme file
+        
+        Returns
+        -------
+        out : int
+            0 if success <0 if failure
+        """
+
         if os.path.exists('__temp__'):
                     shutil.rmtree('__temp__')
         os.mkdir('__temp__')
@@ -151,6 +288,15 @@ class Packager:
 
 
     def create_package(self):
+        """
+        Top level driver function. Creates output dir, generates filename, and measures time.
+
+        Returns
+        -------
+        int
+            elapsed time if success, error code otherwise
+        """
+
         if not os.path.exists('DEPLOYMENTS'):
             os.mkdir('DEPLOYMENTS')
         date_str = datetime.date.today()
