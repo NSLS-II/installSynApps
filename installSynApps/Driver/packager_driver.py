@@ -53,7 +53,7 @@ class Packager:
         function that should be called to use packager. Generates a unique package name, creates tarball, and measures time
     """
 
-    def __init__(self, install_config, ad_drivers, opt_modules, force_arch=None):
+    def __init__(self, install_config, force_arch=None):
         """
         Constructor for Packager
 
@@ -70,8 +70,8 @@ class Packager:
         """
         self.install_config = install_config
 
-        self.ad_drivers = ad_drivers
-        self.opt_modules = opt_modules
+        self.ad_drivers = None
+        self.opt_modules = None
         if force_arch is not None:
             self.arch = force_arch
             self.OS = force_arch
@@ -86,6 +86,7 @@ class Packager:
             self.arch = 'windows-x64-static'
             self.OS = self.arch
         self.start_time = 0
+        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
 
 
     def start_timer(self):
@@ -106,6 +107,25 @@ class Packager:
 
         end_time = time.time()
         return end_time - self.start_time
+
+
+    def get_drivers_to_package(self):
+        output = []
+        for module in self.install_config.get_module_list():
+            if module.rel_path.startswith('$(AREA_DETECTOR)') and module.name not in self.required_in_pacakge:
+                if module.package == 'YES':
+                    output.append(module.rel_path.split('/')[-1])
+
+        return output
+
+
+    def get_modules_to_package(self):
+        output = []
+        for module in self.install_config.get_module_list():
+            if module.rel_path.startswith('$(SUPPORT)') and module.name not in self.required_in_pacakge:
+                if module.package == 'YES':
+                    output.append(module.rel_path.split('/')[-1])
+        return output
 
 
     def grab_folder(self, src, dest):
@@ -168,25 +188,27 @@ class Packager:
             default false. if true search for iocs directory as well.
         """
 
-        self.grab_folder(module_location + '/' + module_name + '/opi', top + '/' + module_name +'/opi')
-        self.grab_folder(module_location + '/' + module_name + '/db', top + '/' + module_name +'/db')
-        self.grab_folder(module_location + '/' + module_name + '/include', top + '/' + module_name +'/include')
-        self.grab_folder(module_location + '/' + module_name + '/bin/' + self.arch, top + '/' + module_name +'/bin/' + self.arch)
-        self.grab_folder(module_location + '/' + module_name + '/lib/' + self.arch, top + '/' + module_name +'/lib/' + self.arch)
-        self.grab_folder(module_location + '/' + module_name + '/configure', top + '/' + module_name +'/configure')
-        self.grab_folder(module_location + '/' + module_name + '/iocBoot', top + '/' + module_name +'/iocBoot')
-        for dir in os.listdir(module_location + '/' + module_name):
+        target_folder = module_location + '/' + module_name
+        self.grab_folder(target_folder + '/opi',                top + '/' + module_name +'/opi')
+        self.grab_folder(target_folder + '/db',                 top + '/' + module_name +'/db')
+        self.grab_folder(target_folder + '/include',            top + '/' + module_name +'/include')
+        self.grab_folder(target_folder + '/bin/' + self.arch,   top + '/' + module_name +'/bin/' + self.arch)
+        self.grab_folder(target_folder + '/lib/' + self.arch,   top + '/' + module_name +'/lib/' + self.arch)
+        self.grab_folder(target_folder + '/configure',          top + '/' + module_name +'/configure')
+        self.grab_folder(target_folder + '/iocBoot',            top + '/' + module_name +'/iocBoot')
+        for dir in os.listdir(target_folder):
             if 'App' in dir and not dir.startswith('test'):
-                self.grab_folder(module_location + '/' + module_name + '/' + dir + '/Db', top + '/' + module_name +'/' + dir + '/Db')
-                self.grab_folder(module_location + '/' + module_name + '/' + dir + '/op', top + '/' + module_name +'/' + dir + '/op')
+                self.grab_folder(target_folder + '/' + dir + '/Db', top + '/' + module_name +'/' + dir + '/Db')
+                self.grab_folder(target_folder + '/' + dir + '/op', top + '/' + module_name +'/' + dir + '/op')
         if is_ad_module:
-            if os.path.exists(module_location + '/' + module_name + '/iocs'):
-                for dir in os.listdir(module_location + '/' + module_name + '/iocs'):
+            if os.path.exists(target_folder + '/iocs'):
+                for dir in os.listdir(target_folder + '/iocs'):
+                    ioc_folder = '/iocs/' + dir
                     if 'IOC' in dir:
-                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/bin/' + self.arch, top + '/' + module_name + '/iocs/' + dir + '/bin/' + self.arch)
-                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/lib/' + self.arch, top + '/' + module_name + '/iocs/' + dir + '/lib/' + self.arch)
-                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/dbd', top + '/' + module_name + '/iocs/' + dir + '/dbd')
-                        self.grab_folder(module_location + '/' + module_name + '/iocs/' + dir + '/iocBoot', top + '/' + module_name + '/iocs/' + dir + '/iocBoot')
+                        self.grab_folder(target_folder + ioc_folder + '/bin/' + self.arch,  top + '/' + module_name + ioc_folder + '/bin/' + self.arch)
+                        self.grab_folder(target_folder + ioc_folder + '/lib/' + self.arch,  top + '/' + module_name + ioc_folder + '/lib/' + self.arch)
+                        self.grab_folder(target_folder + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
+                        self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
 
         try:
             out = subprocess.check_output(['git', '-C', module_location + '/' + module_name, 'describe', '--tags'])
@@ -228,17 +250,17 @@ class Packager:
         """
 
         ad_path = self.install_config.ad_path
-        self.grab_folder(ad_path + '/ADCore/db',        top + '/areaDetector/ADCore/db')
-        self.grab_folder(ad_path + '/ADCore/ADApp/Db',        top + '/areaDetector/ADCore/ADApp/Db')
-        self.grab_folder(ad_path + '/ADCore/ADApp/op',        top + '/areaDetector/ADCore/ADApp/op')
-        self.grab_folder(ad_path + '/ADCore/iocBoot',   top + '/areaDetector/ADCore/iocBoot')
-        self.grab_folder(ad_path + '/ADViewers/ImageJ',        top + '/areaDetector/ADViewers/ImageJ')
-        self.grab_folder(ad_path + '/ADCore/bin/' + self.arch,        top + '/areaDetector/ADCore/bin/' + self.arch)
-        self.grab_folder(ad_path + '/ADCore/lib/' + self.arch,          top + '/areaDetector/ADCore/lib/' + self.arch)
-        self.grab_folder(ad_path + '/ADSupport/bin/' + self.arch,        top + '/areaDetector/ADSupport/bin/' + self.arch)
-        self.grab_folder(ad_path + '/ADSupport/lib/' + self.arch,          top + '/areaDetector/ADSupport/lib/' + self.arch)
+        self.grab_folder(ad_path + '/ADCore/db',                        top + '/areaDetector/ADCore/db')
+        self.grab_folder(ad_path + '/ADCore/ADApp/Db',                  top + '/areaDetector/ADCore/ADApp/Db')
+        self.grab_folder(ad_path + '/ADCore/ADApp/op',                  top + '/areaDetector/ADCore/ADApp/op')
+        self.grab_folder(ad_path + '/ADCore/iocBoot',                   top + '/areaDetector/ADCore/iocBoot')
+        self.grab_folder(ad_path + '/ADViewers/ImageJ',                 top + '/areaDetector/ADViewers/ImageJ')
+        self.grab_folder(ad_path + '/ADCore/bin/'       + self.arch,    top + '/areaDetector/ADCore/bin/'       + self.arch)
+        self.grab_folder(ad_path + '/ADCore/lib/'       + self.arch,    top + '/areaDetector/ADCore/lib/'       + self.arch)
+        self.grab_folder(ad_path + '/ADSupport/bin/'    + self.arch,    top + '/areaDetector/ADSupport/bin/'    + self.arch)
+        self.grab_folder(ad_path + '/ADSupport/lib/'    + self.arch,    top + '/areaDetector/ADSupport/lib/'    + self.arch)
         try:
-            out = subprocess.check_output(['git', '-C', ad_path + '/ADCore', 'describe', '--tags'])
+            out = subprocess.check_output(['git', '-C', ad_path + '/ADCore',    'describe', '--tags'])
             readme_fp.write('ADCore : {}'.format(out.decode("utf-8")))
             out = subprocess.check_output(['git', '-C', ad_path + '/ADSupport', 'describe', '--tags'])
             readme_fp.write('ADSupport : {}'.format(out.decode("utf-8")))
@@ -287,7 +309,15 @@ class Packager:
         return out
 
 
-    def create_package(self):
+    def create_bundle_name(self):
+        """ Helper function for creating output filename """
+
+        date_str = datetime.date.today()
+        output_filename = 'NSLS2_AD_{}_Bin_{}_{}'.format(self.install_config.get_core_version(), self.OS, date_str)
+        return output_filename
+
+
+    def create_package(self, filename):
         """
         Top level driver function. Creates output dir, generates filename, and measures time.
 
@@ -297,12 +327,14 @@ class Packager:
             elapsed time if success, error code otherwise
         """
 
+        self.ad_drivers     = self.get_drivers_to_package()
+        self.opt_modules    = self.get_modules_to_package()
+
         if not os.path.exists('DEPLOYMENTS'):
             os.mkdir('DEPLOYMENTS')
-        date_str = datetime.date.today()
-        output_filename = 'NSLS2_AD_{}_Bin_{}_{}'.format(self.install_config.get_core_version(), self.OS, date_str)
+        
         self.start_timer()
-        status = self.create_tarball(output_filename)
+        status = self.create_tarball(filename)
         elapsed = self.stop_timer()
         if status < 0:
             return status
