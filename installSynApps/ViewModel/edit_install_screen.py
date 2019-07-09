@@ -76,7 +76,7 @@ class EditConfigGUI:
         self.master = Toplevel()
         self.master.title('Edit Install Config')
         self.master.resizable(False, False)
-        sizex = 800
+        sizex = 875
         sizey = 600
         self.installModuleLines = {}
         self.individualEditButtons = {}
@@ -87,7 +87,7 @@ class EditConfigGUI:
 
         self.install_config = install_config
 
-        topFrame = Frame(self.master, relief=GROOVE, width = 50, height = 100)
+        topFrame = Frame(self.master, relief=GROOVE, width = 100, height = 100)
         topFrame.place(x=10, y= 10)
 
         self.canvas = Canvas(topFrame)
@@ -97,14 +97,17 @@ class EditConfigGUI:
         self.canvas.configure(yscrollcommand=scrollbar.set)
 
         scrollbar.pack(side='right', fill='y')
-        self.canvas.pack(side='left');
+        self.canvas.pack(side='left')
         self.canvas.create_window((0,0), window=self.viewFrame, anchor='nw')
         self.viewFrame.bind('<Configure>', self.scrollFunction)
         Label(self.viewFrame, text='    Edit Loaded Install Configuration', anchor=W, justify=LEFT).grid(row = 0, column = 0, columnspan = 1, pady = 5)
         self.applyButton = Button(self.viewFrame, text = 'Apply Changes', justify = LEFT, command=self.applyChanges).grid(row = 0, column = 3)
-        self.applyExitButton = Button(self.viewFrame, text = 'Apply and Exit', justify = LEFT, command=self.applyExit).grid(row = 0, column = 4)
-        self.splitter = Label(self.viewFrame, text='--------------------------------------------------------------------------------------------------------------------------------------')
-        self.splitter.grid(row = 1, column = 0, columnspan = 5)
+        self.applyExitButton = Button(self.viewFrame, text = 'Apply and Exit', justify = LEFT, command=self.applyExit).grid(row = 0, column = 5)
+        temp = ''
+        for i in range(0, 150):
+            temp = temp + '-'
+        self.splitter = Label(self.viewFrame, text=temp)
+        self.splitter.grid(row = 1, column = 0, columnspan = 6)
 
         Label(self.viewFrame, text='Install Location: ').grid(row=2, column = 0)
         self.installTextBox = Text(self.viewFrame, height = 1, width = 32, padx = 3, pady = 3)
@@ -137,6 +140,11 @@ class EditConfigGUI:
                 self.installModuleLines[module.name]['buildVar'].set(True)
             self.installModuleLines[module.name]['buildCheck'] = Checkbutton(self.viewFrame, text='Build', onvalue = True, offvalue = False, variable = self.installModuleLines[module.name]['buildVar'])
             self.installModuleLines[module.name]['buildCheck'].grid(row = counter, column = 4, columnspan = 1)
+            self.installModuleLines[module.name]['packageVar'] = BooleanVar()
+            if module.build == 'YES':
+                self.installModuleLines[module.name]['packageVar'].set(True)
+            self.installModuleLines[module.name]['packageCheck'] = Checkbutton(self.viewFrame, text='Package', onvalue = True, offvalue = False, variable = self.installModuleLines[module.name]['packageVar'])
+            self.installModuleLines[module.name]['packageCheck'].grid(row = counter, column = 5, columnspan = 1)
 
             counter = counter + 1
 
@@ -144,7 +152,7 @@ class EditConfigGUI:
     def scrollFunction(self, event):
         """ Function used for achieving scrolling """
         
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=750,height=575)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"), width=850,height=575)
 
 
     def applyChanges(self):
@@ -177,6 +185,10 @@ class EditConfigGUI:
                     module.build = 'YES'
                 else:
                     module.build = 'NO'
+                if self.installModuleLines[module.name]['packageVar'].get():
+                    module.package = 'YES'
+                else:
+                    module.package = 'NO'
                 module.version = self.installModuleLines[module.name]['versionTextBox'].get('1.0', END).strip()
 
             module.abs_path = self.install_config.convert_path_abs(module.rel_path)

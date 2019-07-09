@@ -237,6 +237,7 @@ class InstallSynAppsGUI:
         self.cloner         = Driver.clone_driver.CloneDriver(self.install_config)
         self.updater        = Driver.update_config_driver.UpdateConfigDriver(self.configure_path, self.install_config)
         self.builder        = Driver.build_driver.BuildDriver(self.install_config, 0)
+        self.packager       = Driver.packager_driver.Packager(self.install_config)
         self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
 
         self.recheckDeps()
@@ -304,6 +305,11 @@ class InstallSynAppsGUI:
             for module in self.install_config.get_module_list():
                 if module.build == "NO" and module.clone == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
+
+            self.writeToConfigPanel("\nModules to package:\n")
+            for module in self.install_config.get_module_list():
+                if module.package:
+                    self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
             self.writeToLog("Done.\n")
 
             if os.path.exists(self.configure_path + "/macroFiles") and os.path.exists(self.configure_path + "/injectionFiles"):
@@ -326,6 +332,7 @@ class InstallSynAppsGUI:
         self.updater.path_to_configure = self.configure_path
         self.updater.config_injector.install_config = self.install_config
         self.builder.install_config = self.install_config
+        self.packager.install_config = self.install_config
         self.autogenerator.install_config = self.install_config
 
 
@@ -658,6 +665,8 @@ class InstallSynAppsGUI:
                 self.thread = threading.Thread(target=self.injectFilesProcess)
             elif action == 'build':
                 self.thread = threading.Thread(target=self.buildConfigProcess)
+            elif action == 'package':
+                self.thread = threading.Thread(target=self.packageConfigProcess)
             else:
                 self.showErrorMessage('Start Error', 'ERROR - Illegal init process call', force_popup=True)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -816,6 +825,19 @@ class InstallSynAppsGUI:
 
         self.showMessage('Alert', 'You may wish to save a copy of this log file for later use.')
         self.writeToLog('Autorun completed.')
+
+
+    def packageConfigProcess(self):
+        """ Function that packages the specified modules into a tarball """
+
+        self.writeToLog('Starting packaging...\n')
+        output_filename = self.packager.create_bundle_name()
+        self.writeToLog('Tarring...\n')
+        output = self.packager.create_package(output_filename)
+        if output < 0:
+            self.showErrorMessage('Package Error', 'ERROR - Was unable to package areaDetector successfully. Aborting.', force_popup=True)
+        else:
+            self.writeToLog('Done. Completed in {} seconds.\n'.format(output))
 
 
 # ---------------- Start the GUI ---------------
