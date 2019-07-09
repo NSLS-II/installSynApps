@@ -453,7 +453,7 @@ class InstallSynAppsGUI:
         self.writeToLog('Loaded configure directory at {}.\n'.format(self.configure_path))
         self.parser.configure_path = self.configure_path
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
-        if len(message) > 0:
+        if message is not None:
             self.valid_install = False
             self.showWarningMessage('Warning', 'WARNING - {}.'.format(message), force_popup=True)
         else:
