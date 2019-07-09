@@ -8,4 +8,5 @@
 # Copyright (c): Brookhaven National Laboratory
 #
 # NOTE: Only uncommented lines will be injected into commonPlugin_settings.req
+__TARGET_LOC__=$(INSTALL)/tests/TestFiles/inputs/InjectTestFile_TEST
 file "NDTEST_settings.req",          P=$(P),  R=TEST1:

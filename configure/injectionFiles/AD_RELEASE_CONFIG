@@ -2,10 +2,11 @@
 #
 # Essentially, in order to compile drivers with support for external plugins, define them here
 #
-# Autho: Jakub Wlodek
+# Author: Jakub Wlodek
 # Created on: 4-Feb-2019
 # Copyright (c): Brookhaven National Laboratory
 #
+__TARGET_LOC__=$(AREA_DETECTOR)/configure/RELEASE_PRODS.local
 
 ADCOMPVISION=$(AREA_DETECTOR)/ADCompVision
 ADPLUGINBAR=$(AREA_DETECTOR)/ADPluginBar

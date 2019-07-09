@@ -47,6 +47,7 @@ class InstallModule:
         self.abs_path   = None
         self.url_type   = url_type
         self.url        = url
+        self.rel_repo = repository
         # Some download links have versions in the name, so we need to replace it with the current version number
         if "$(VERSION)" in repository:
             self.repository = repository.replace("$(VERSION)", self.version, 1)

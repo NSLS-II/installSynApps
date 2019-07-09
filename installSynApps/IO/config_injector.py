@@ -1,8 +1,8 @@
-#
-# Class responsible for injecting settings into configuration files
-#
-# Author: Jakub Wlodek
-#
+"""
+Class responsible for injecting settings into configuration files
+
+@author: Jakub Wlodek
+"""
 
 import os
 import re
@@ -14,10 +14,6 @@ class ConfigInjector:
 
     Attributes
     ----------
-    injector_file_links : Dict of str to str
-        locations of target files for specific injections
-    path_to_configure : str
-        path to installSynApps configuration directory
     install_config : InstallConfiguration
         the currently loaded install configuration
     ad_modules : List of str
@@ -25,16 +21,8 @@ class ConfigInjector:
 
     Methods
     -------
-    get_injector_files()
-        gets list of current injector files in configuration directory
-    get_macro_replace_files()
-        gets list of files with lists of macro replacements
-    get_injector_file_link(injector_file_path : str)
-        gets the target file path for a given injector file
     inject_into_file(injector_file_path : str)
         injects a given injector file into its target
-    get_macro_replace_from_file(macro_list : List, macro_file_path : str)
-        appends list of macro-value pairs to main list from file
     update_macros(macro_val_list : List, target : str)
         updates the macros in a target directory files given a list of macro-value pairs
     update_macros_file(macro_replace_list : List, target_dir : 
@@ -44,114 +32,16 @@ class ConfigInjector:
     """
 
 
-    def __init__(self, path_to_configure, install_config):
+    def __init__(self, install_config):
         """Constructor for ConfigInjector"""
 
-        self.injector_file_links = {
-            "AD_RELEASE_CONFIG"     : "$(AREA_DETECTOR)/configure/RELEASE_PRODS.local",
-            "AUTOSAVE_CONFIG"       : "$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req",
-            "MAKEFILE_CONFIG"       : "$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile",
-            "PLUGIN_CONFIG"         : "$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd",
-        }
-        self.path_to_configure = path_to_configure
-        self.injector_file_contents = {}
-        self.module_replace_list = []
-        self.initialize_addtl_config()
         self.install_config = install_config
         self.ad_modules = ["ADCORE", "AREA_DETECTOR", "ADSUPPORT"]
 
 
-    def initialize_addtl_config(self):
-        """ Function that initializes macro replacers and injector files """
-
-        self.injector_file_contents = {}
-        self.macro_replace_list = []
-        self.parse_injector_file_contents()
-        macro_file_paths = self.get_macro_replace_files()
-        for file in macro_file_paths:
-            self.macro_replace_list.extend(self.get_macro_replace_from_file(file))
 
 
-    def get_injector_files(self):
-        """
-        Function that gets list of injector files by searching configure/injectionFiles
-
-        Returns
-        -------
-        injector_files : List
-            List of injector file paths
-        """
-
-        injector_files = []
-        if os.path.exists(self.path_to_configure + '/injectionFiles') and os.path.isdir(self.path_to_configure + '/injectionFiles'):
-            for file in os.listdir(self.path_to_configure + "/injectionFiles"):
-                if os.path.isfile(self.path_to_configure + "/injectionFiles/" + file):
-                    if self.injector_file_links[file] != None:
-                        injector_files.append(self.path_to_configure + "/injectionFiles/" + file)
-        
-        return injector_files
-
-
-    def parse_injector_file_contents(self):
-        """ Function that reads injector files and gets their contents """
-
-        files = self.get_injector_files()
-        for filename in self.injector_file_links:
-            found = False
-            for file in files:
-                if file.split('/')[-1] == filename:
-                    found = True
-                    contents = ''
-                    fp = open(file, "r")
-                    line = fp.readline()
-                    while line:
-                        if not line.startswith('#') and len(line) > 0:
-                            contents = contents + line
-                        line = fp.readline()
-                    self.injector_file_contents[file.split('/')[-1]] = contents
-            if not found:
-                self.injector_file_contents[filename] = ''
-
-
-    def get_macro_replace_files(self):
-        """
-        Function that retrieves the list of macro replace files from configure/macroFiles
-
-        Returns
-        -------
-        macro_replace_files : List
-            List of macro file paths
-        """
-
-        macro_replace_files = []
-        if os.path.exists(self.path_to_configure + '/macroFiles') and os.path.isdir(self.path_to_configure + '/macroFiles'):
-            for file in os.listdir(self.path_to_configure + "/macroFiles"):
-                if os.path.isfile(self.path_to_configure + "/macroFiles/" + file):
-                    macro_replace_files.append(self.path_to_configure + "/macroFiles/" + file)
-
-        return macro_replace_files
-
-
-    def get_injector_file_link(self, injector_file_path):
-        """
-        Function that given an injector file path returns a target file
-
-        Parameters
-        ----------
-        injector_file_path : str
-            path to a given injector file
-        
-        Returns
-        -------
-        self.injector_file_links[filename] : str
-            the relative path to the target file as stored in the class's dictionary
-        """
-
-        filename = injector_file_path.split('/')[-1]
-        return self.injector_file_links[filename]
-
-
-    def inject_to_file(self, injector_file_path):
+    def inject_to_file(self, injector_file):
         """
         Function that injects contents of specified file into target
 
@@ -160,57 +50,31 @@ class ConfigInjector:
 
         Parameters
         ----------
-        injector_file_path : str
-            path to a given injector file
+        injector_file_path : InjectorFile
+            object representing injector file
         """
 
-        target_path = self.get_injector_file_link(injector_file_path)
+        target_path = injector_file.target
+        if target_path is None or len(target_path) == 0:
+            return
         target_path = self.install_config.convert_path_abs(target_path)
+        print(target_path)
         target_file = target_path.rsplit('/', 1)[-1]
         target_path_no_example = target_path.rsplit('/', 1)[0] + "/" + target_file[8:]
-        if (not os.path.exists(target_path) and not os.path.exists(target_path_no_example)) or not os.path.exists(injector_file_path):
+        if (not os.path.exists(target_path) and not os.path.exists(target_path_no_example)):
             return
         if target_file.startswith("EXAMPLE_"):
             if os.path.exists(target_path):
                 os.rename(target_path, target_path_no_example)
             target_path = target_path_no_example
+        print(target_path)
         target_fp = open(target_path, "a")
         target_fp.write("\n# ------------The following was auto-generated by installSynApps-------\n\n")
-        if self.injector_file_contents[injector_file_path.split('/')[-1]] is not None:
-            target_fp.write(self.injector_file_contents[injector_file_path.split('/')[-1]])
+        if injector_file.contents is not None:
+            target_fp.write(injector_file.contents)
         target_fp.write("\n# --------------------------Auto-generated end----------------------\n")
         target_fp.close()
 
-
-    def get_macro_replace_from_file(self, macro_file_path):
-        """
-        Function that adds to a list of macro-value pairs as read from a configurtion file
-
-        Parameters
-        ----------
-        macro_list : List
-            list containting macro-value pairs to append
-        macro_file_path : str
-            path to config file with new macro settings
-        
-        Return
-        ------
-        output : List of Pairs
-            List of Macro value pairs read from file
-        """
-
-        output = []
-        if os.path.exists(macro_file_path) and os.path.isfile(macro_file_path):
-            macro_fp = open(macro_file_path, "r")
-            line = macro_fp.readline()
-            while line:
-                line = line.strip()
-                if not line.startswith('#') and '=' in line:
-                    output.append(line.strip().split('='))
-
-                line = macro_fp.readline()
-            macro_fp.close()
-        return output
 
 
     def update_macros_dir(self, macro_replace_list, target_dir):

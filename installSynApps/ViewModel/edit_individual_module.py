@@ -237,6 +237,7 @@ class EditSingleModuleGUI:
                 module.build = build_str
 
         self.root.updateAllRefs(self.install_config)
+        self.root.updateConfigPanel()
         self.root.showMessage('Info', 'Upated module: {}'.format(name))
 
 

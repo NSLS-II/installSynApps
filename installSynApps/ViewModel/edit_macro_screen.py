@@ -53,7 +53,7 @@ class EditMacroGUI:
         Applies changes and exits the window
     """
 
-    def __init__(self, root, config_injector):
+    def __init__(self, root, install_config):
         """
         Constructor for the EditMacroGUI class
         """
@@ -71,7 +71,7 @@ class EditMacroGUI:
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
 
-        self.config_injector = config_injector
+        self.install_config = install_config
 
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
@@ -94,7 +94,7 @@ class EditMacroGUI:
 
         self.editPanel.delete('1.0', END)
         self.editPanel.insert(INSERT, '# Below are currently loaded macros.\n# Please keep new macros in the format MACRO=VALUE.\n\n')
-        for pair in self.config_injector.macro_replace_list:
+        for pair in self.install_config.build_flags:
             self.editPanel.insert(INSERT, '{}={}\n'.format(pair[0], pair[1]))
         
         self.editPanel.see(END)
@@ -114,7 +114,7 @@ class EditMacroGUI:
                 pair = line.strip().split('=')
                 new_list.append(pair)
 
-        self.config_injector.macro_replace_list = new_list
+        self.install_config.build_flags = new_list
         self.root.writeToLog('Applied updated macro replace list.\n')
 
 

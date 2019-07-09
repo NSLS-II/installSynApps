@@ -8,6 +8,7 @@
 # Copyright (c): Brookhaven National Laboratory
 #
 # NOTE: Only uncommented lines will be injected into commonPlugin_settings.req
+__TARGET_LOC__=$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req
 
 file "NDPva_settings.req",          P=$(P),  R=Pva1:
 

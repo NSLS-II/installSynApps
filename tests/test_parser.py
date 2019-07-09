@@ -20,7 +20,7 @@ from installSynApps.IO import config_parser as Parser
 
 
 # Test install 
-install_config = IC.InstallConfiguration('/epics/test', 'tests/TestConfigs/basic')
+install_config = IC.InstallConfiguration('/home/jwlodek/Documents/epics/utils/installSynApps', 'tests/TestConfigs/basic')
 base_module = IM.InstallModule('EPICS_BASE', 'R7.0.2.2', '$(INSTALL)/base', 'GIT_URL', 'https://github.com/dummyurl/', 'base', 'YES', 'YES')
 support_module = IM.InstallModule('SUPPORT', 'R6-0', '$(INSTALL)/support', 'GIT_URL', 'https://github.com/dummyurl/', 'support', 'YES', 'YES')
 ad_module = IM.InstallModule('AREA_DETECTOR', 'R3-6', '$(SUPPORT)/areaDetector', 'GIT_URL', 'https://github.com/dummyurl/', 'ad', 'YES', 'YES')
@@ -60,3 +60,16 @@ def test_num_modules():
 def test_modules():
     for i in range(0, len(install_config.modules)):
         assert Helper.compare_mod(install_config.modules[i], parsed_config.modules[i])
+
+
+def test_injector_files():
+    print(parsed_config.injector_files[2].name)
+    assert len(parsed_config.injector_files) == 4
+    assert parsed_config.injector_files[2].name == 'AD_RELEASE_CONFIG'
+    assert parsed_config.injector_files[2].target == '$(AREA_DETECTOR)/configure/RELEASE_PRODS.local'
+
+
+def test_macro_files():
+    assert len(parsed_config.build_flags) == 3
+    assert parsed_config.build_flags[0][0] == 'MACRO_A'
+    assert parsed_config.build_flags[0][1] == 'YES'

@@ -35,17 +35,10 @@ import subprocess
 from sys import platform
 
 # installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.IO.config_parser as Parser
-import installSynApps.Driver.clone_driver as Cloner
-import installSynApps.Driver.update_config_driver as Updater
-import installSynApps.Driver.build_driver as Builder
-import installSynApps.IO.script_generator as Autogenerator
-import installSynApps.ViewModel.edit_install_screen as EditInstall
-import installSynApps.ViewModel.edit_injector_screen as EditInjectors
-import installSynApps.ViewModel.edit_macro_screen as EditMacros
-import installSynApps.ViewModel.add_module_screen as AddModule
-import installSynApps.ViewModel.edit_individual_module as EditIndividual
+import installSynApps.DataModel as DataModel
+import installSynApps.IO as IO
+import installSynApps.Driver as Driver
+import installSynApps.ViewModel as ViewModel
 
 
 class InstallSynAppsGUI:
@@ -146,7 +139,7 @@ class InstallSynAppsGUI:
         editmenu.add_command(label='Edit Individual Module',    command=lambda : self.openEditWindow('edit_single_mod'))
         editmenu.add_command(label='Edit Injection Files',      command=lambda : self.openEditWindow('edit_injectors'))
         editmenu.add_command(label='Edit Build Flags',          command=lambda : self.openEditWindow('edit_build_flags'))
-        editmenu.add_command(label='Edit Core Count',           command=self.editCoreCount)
+        editmenu.add_command(label='Edit Make Core Count',           command=self.editCoreCount)
         editmenu.add_checkbutton(label='Toggle Popups',         onvalue=True, offvalue=False, variable=self.showPopups)
         editmenu.add_checkbutton(label='Toggle Single Core',    onvalue=True, offvalue=False, variable=self.singleCore)
         self.singleCore.trace('w', self.setSingleCore)
@@ -225,11 +218,11 @@ class InstallSynAppsGUI:
         self.deps_found = True
 
         # installSynApps options, initialzie + read default configure files
-        self.parser = Parser.ConfigParser(self.configure_path)
+        self.parser = IO.config_parser.ConfigParser(self.configure_path)
 
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
         self.install_loaded = False
-        if len(message) > 0:
+        if message is not None:
             self.valid_install = False
             self.showWarningMessage('Warning', 'Illegal Install Config: {}'.format(message), force_popup=True)
         else:
@@ -240,10 +233,11 @@ class InstallSynAppsGUI:
         self.loadingIconThread = threading.Thread()
 
         # installSynApps drivers
-        self.cloner         = Cloner.CloneDriver(self.install_config)
-        self.updater        = Updater.UpdateConfigDriver(self.configure_path, self.install_config)
-        self.builder        = Builder.BuildDriver(self.install_config, 0)
-        self.autogenerator  = Autogenerator.ScriptGenerator(self.install_config)
+        self.writer         = IO.config_writer.ConfigWriter(self.install_config)
+        self.cloner         = Driver.clone_driver.CloneDriver(self.install_config)
+        self.updater        = Driver.update_config_driver.UpdateConfigDriver(self.configure_path, self.install_config)
+        self.builder        = Driver.build_driver.BuildDriver(self.install_config, 0)
+        self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
 
         self.recheckDeps()
 
@@ -317,9 +311,8 @@ class InstallSynAppsGUI:
                 for mfile in os.listdir(self.configure_path + "/macroFiles"):
                     self.writeToConfigPanel(mfile + "\n")
                 self.writeToConfigPanel("\nFile injections will be performed on the following:\n")
-                for ifile in os.listdir(self.configure_path + "/injectionFiles"):
-                    link = self.updater.config_injector.get_injector_file_link(self.configure_path + "/injectionFiles/" + ifile)
-                    self.writeToConfigPanel("{} -> {}\n".format(ifile, link))
+                for ifile in self.install_config.injector_files:
+                    self.writeToConfigPanel("{} -> {}\n".format(ifile.name, ifile.target))
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
@@ -332,8 +325,6 @@ class InstallSynAppsGUI:
         self.updater.install_config = self.install_config
         self.updater.path_to_configure = self.configure_path
         self.updater.config_injector.install_config = self.install_config
-        self.updater.config_injector.path_to_configure = self.configure_path
-        self.updater.config_injector.initialize_addtl_config()
         self.builder.install_config = self.install_config
         self.autogenerator.install_config = self.install_config
 
@@ -462,7 +453,7 @@ class InstallSynAppsGUI:
         self.writeToLog('Loaded configure directory at {}.\n'.format(self.configure_path))
         self.parser.configure_path = self.configure_path
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
-        if len(message) > 0:
+        if message is not None:
             self.valid_install = False
             self.showWarningMessage('Warning', 'WARNING - {}.'.format(message), force_popup=True)
         else:
@@ -496,41 +487,19 @@ class InstallSynAppsGUI:
             dirpath = filedialog.asksaveasfilename(initialdir = '.')
             self.writeToLog('Creating save directory...\n')
         else:
+            ans = messagebox.askyesno('Confirm', 'Do you wish to overwrite existing install config with new changes?')
+            if ans is None:
+                return
+            elif not ans:
+                return
             dirpath = force_loc
             shutil.rmtree(dirpath)
-        os.mkdir(dirpath)
-        os.mkdir(dirpath + "/injectionFiles")
-        os.mkdir(dirpath + "/macroFiles")
-        for file in self.updater.config_injector.injector_file_contents:
-            new_fp = open(dirpath + "/injectionFiles/" + file, 'w')
-            new_fp.write('# Saved by InstallSynAppsGUI on {}\n\n'.format(datetime.datetime.now()))
-            new_fp.write(self.updater.config_injector.injector_file_contents[file])
-            new_fp.close()
 
-        new_build_flag = open(dirpath + "/macroFiles/BUILD_FLAG_CONFIG", 'w')
-        new_build_flag.write('# Saved by InstallSynAppsGUI on {}\n\n'.format(datetime.datetime.now()))
-        for macro_pair in self.updater.config_injector.macro_replace_list:
-            new_build_flag.write('{}={}\n'.format(macro_pair[0], macro_pair[1]))
-        new_build_flag.close()
-
-        self.writeToLog('Saved optional config files, moving to INSTALL_CONFIG...\n')
-
-        new_install_config = open(dirpath + "/INSTALL_CONFIG", "w+")
-        new_install_config.write('#\n# INSTALL_CONFIG file saved by InstallSynAppsGUI on {}\n#\n\n'.format(datetime.datetime.now())) 
-        new_install_config.write("INSTALL={}\n\n\n".format(self.install_config.install_location))
-
-        new_install_config.write('#MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE\n')
-        new_install_config.write('#-----------------------------------------------------------------------------------------------------------------------------------\n')
-
-        current_url = ""
-        for module in self.install_config.get_module_list():
-            if module.url != current_url:
-                new_install_config.write("\n{}={}\n\n".format(module.url_type, module.url))
-                current_url = module.url
-            new_install_config.write("{:<16} {:<20} {:<40} {:<24} {:<16} {}\n".format(module.name, module.version, module.rel_path, module.repository, module.clone, module.build))
-
-        new_install_config.close()
-        self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
+        wrote, message = self.writer.write_install_config(filepath=dirpath)
+        if not wrote:
+            self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
+        else:
+            self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
 
 
     def saveLog(self, saveDir = None):
@@ -570,15 +539,15 @@ class InstallSynAppsGUI:
             return
 
         if edit_window_str == 'edit_config':
-            window = EditInstall.EditConfigGUI(self, self.install_config)
+            window = ViewModel.edit_install_screen.EditConfigGUI(self, self.install_config)
         elif edit_window_str == 'add_module':
-            window = AddModule.AddModuleGUI(self, self.install_config)
+            window = ViewModel.add_module_screen.AddModuleGUI(self, self.install_config)
         elif edit_window_str == 'edit_single_mod':
-            window = EditIndividual.EditSingleModuleGUI(self, self.install_config)
+            window = ViewModel.edit_individual_module.EditSingleModuleGUI(self, self.install_config)
         elif edit_window_str == 'edit_injectors':
-            window = EditInjectors.EditInjectorGUI(self, self.updater.config_injector)
+            window = ViewModel.edit_injector_screen.EditInjectorGUI(self, self.install_config)
         elif edit_window_str == 'edit_build_flags':
-            window = EditMacros.EditMacroGUI(self, self.updater.config_injector)
+            window = ViewModel.edit_macro_screen.EditMacroGUI(self, self.install_config)
         else:
             self.showErrorMessage('Open Error', 'ERROR - Illegal Edit Window selection')
 
@@ -594,6 +563,9 @@ class InstallSynAppsGUI:
             return
 
         cores = simpledialog.askinteger('Set Core Count', 'Please enter a core count, or 0 to use all cores', parent = self.master)
+        if cores is None:
+            self.writeToLog('Operation Cancelled.\n')
+            return
         if cores < 0 or cores > 16:
             self.showErrorMessage('Core Count Error', 'ERROR - You have entered an illegal core count, try again.', force_popup=True)
         current_count = self.builder.threads
