@@ -35,6 +35,7 @@ class ConfigParser:
         """ Constructor for ConfigParser """
 
         self.configure_path = configure_path
+        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
 
 
     def check_valid_config_path(self):
@@ -77,8 +78,14 @@ class ConfigParser:
         repository  = module_components[3]
         clone       = module_components[4]
         build       = module_components[5]
+        if name in self.required_in_pacakge:
+            package = "YES"
+        elif len(module_components) == 7:
+            package = module_components[6]
+        else:
+            package = "NO"
         # create object from line and return it
-        install_module = IM.InstallModule(name, version, rel_path, current_url_type, current_url, repository, clone, build)
+        install_module = IM.InstallModule(name, version, rel_path, current_url_type, current_url, repository, clone, build, package)
         return install_module
 
 

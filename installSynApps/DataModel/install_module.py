@@ -38,7 +38,7 @@ class InstallModule:
     """
 
 
-    def __init__(self, name, version, rel_path, url_type, url, repository, clone, build):
+    def __init__(self, name, version, rel_path, url_type, url, repository, clone, build, package):
         """Constructor for the InstallModule class"""
 
         self.name       = name
@@ -55,6 +55,7 @@ class InstallModule:
             self.repository = repository
         self.clone      = clone
         self.build      = build
+        self.package    = package
 
 
     def print_info(self, fp = None):
