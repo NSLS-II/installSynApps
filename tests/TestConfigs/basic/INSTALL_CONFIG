@@ -9,7 +9,7 @@
 
 # Top level install location for the build
 
-INSTALL=/home/jwlodek/Documents/epics/utils/installSynApps
+INSTALL=tests/TestFiles
 
 
 #-- MODULES --
