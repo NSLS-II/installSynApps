@@ -65,8 +65,9 @@ def test_modules():
 def test_injector_files():
     print(parsed_config.injector_files[2].name)
     assert len(parsed_config.injector_files) == 4
-    assert parsed_config.injector_files[2].name == 'AD_RELEASE_CONFIG'
-    assert parsed_config.injector_files[2].target == '$(AREA_DETECTOR)/configure/RELEASE_PRODS.local'
+    for injector in parsed_config.injector_files:
+        if injector.name == 'AD_RELEASE_CONFIG':
+            assert parsed_config.injector_files[2].target == '$(AREA_DETECTOR)/configure/RELEASE_PRODS.local'
 
 
 def test_macro_files():
