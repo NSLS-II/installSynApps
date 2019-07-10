@@ -11,5 +11,5 @@ python:
 
 install: pip install -r requirements_dev.txt
 
-script pytest
+script: pytest
 
