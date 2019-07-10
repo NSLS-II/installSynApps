@@ -223,6 +223,15 @@ class InstallSynAppsGUI:
         self.valid_install = False
         self.deps_found = True
 
+        self.metacontroller = ViewModel.meta_pref_control.MetaDataController()
+        if 'configure_path' in self.metacontroller.metadata.keys():
+            self.configure_path = self.metacontroller.metadata['configure_path']
+            self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
+
+        self.metacontroller.metadata['isa_version'] = __version__
+        self.metacontroller.metadata['platform'] = platform
+        self.metacontroller.metadata['last_used'] = '{}'.format(datetime.datetime.now())
+
         # installSynApps options, initialzie + read default configure files
         self.parser = IO.config_parser.ConfigParser(self.configure_path)
 
@@ -244,6 +253,10 @@ class InstallSynAppsGUI:
         self.updater        = Driver.update_config_driver.UpdateConfigDriver(self.configure_path, self.install_config)
         self.builder        = Driver.build_driver.BuildDriver(self.install_config, 0)
         self.packager       = Driver.packager_driver.Packager(self.install_config)
+        if 'package_location' in self.metacontroller.metadata.keys():
+            self.packager.output_location = self.metacontroller.metadata['package_location']
+            self.writeToLog('Loaded package output location: {}\n'.format(self.packager.output_location))
+
         self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
 
         self.recheckDeps()
@@ -363,6 +376,7 @@ class InstallSynAppsGUI:
             self.showWarningMessage('Warning', 'Qutting while process is running may result in invalid installation!', force_popup=True)
         if messagebox.askokcancel('Quit', 'Do you want to quit?'):
             self.master.destroy()
+        self.metacontroller.save_metadata()
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
 
@@ -466,6 +480,7 @@ class InstallSynAppsGUI:
             return
         self.writeToLog('Loaded configure directory at {}.\n'.format(self.configure_path))
         self.parser.configure_path = self.configure_path
+        self.metacontroller.metadata['configure_path'] = self.configure_path
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
         if message is not None:
             self.valid_install = False
@@ -549,6 +564,7 @@ class InstallSynAppsGUI:
         else:
             if os.path.exists(package_output):
                 self.packager.output_location = package_output
+                self.metacontroller.metadata['package_location'] = output_location
 
 
 #---------------------------- Editing Functions --------------------------------

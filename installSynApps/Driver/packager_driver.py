@@ -316,7 +316,7 @@ class Packager:
         date_str = datetime.date.today()
         output_filename = 'NSLS2_AD_{}_Bin_{}_{}'.format(self.install_config.get_core_version(), self.OS, date_str)
         temp = output_filename
-        counter = 0
+        counter = 1
         while os.path.exists(self.output_location + '/' + temp + '.tgz'):
             temp = output_filename
             temp = temp + '_({})'.format(counter)
