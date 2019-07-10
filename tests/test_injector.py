@@ -26,7 +26,9 @@ def test_inject_into_file():
     testFile = 'tests/TestFiles/outputs/InjectExpectedFile'
     inputFile = 'tests/TestFiles/inputs/InjectTestFile'
     shutil.copy(inputFile, inputFile + '_TEST')
-    config_injector.inject_to_file(install_config.injector_files[3])
+    for injector in install_config.injector_files:
+        if injector.name == 'AUTOSAVE_CONFIG':
+            config_injector.inject_to_file(injector)
     temp = open(inputFile + '_TEST', 'r')
     expected = open(testFile, 'r')
     assert Helper.compare_files(temp, expected)
