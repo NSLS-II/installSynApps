@@ -35,7 +35,7 @@ class ConfigParser:
         """ Constructor for ConfigParser """
 
         self.configure_path = configure_path
-        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
+        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
 
 
     def check_valid_config_path(self):
@@ -170,6 +170,22 @@ class ConfigParser:
         return None, 'Configure Path not found'
 
 
+    def generate_default_injector_files(self, install_config):
+        """
+        Function that creates some new base default injector files
+
+        Parameters
+        ----------
+        install_config : InstallConfiguration
+            currently loaded install configuration into which injector files will be added
+        """
+
+        install_config.add_injector_file('AD_RELEASE_CONFIG', '', '$(AREA_DETECTOR)/configure/RELEASE_PRODS.local')
+        install_config.add_injector_file('AUTOSAVE_CONFIG', '', '$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req')
+        install_config.add_injector_file('MAKEFILE_CONFIG', '', '$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile')
+        install_config.add_injector_file('PLUGIN_CONFIG', '', '$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd')
+
+
     def read_injector_files(self, install_config):
         """
         Function that reads the injector files and adds them to install config
@@ -181,6 +197,9 @@ class ConfigParser:
         """
 
         if install_config is None:
+            return
+        elif not os.path.exists(self.configure_path + '/injectionFiles'):
+            self.generate_default_injector_files(install_config)
             return
         for file in os.listdir(self.configure_path + '/injectionFiles'):
             if os.path.isfile(self.configure_path + '/injectionFiles/' + file):
@@ -229,6 +248,8 @@ class ConfigParser:
         """
 
         if install_config is None:
+            return
+        elif not os.path.exists(self.configure_path + '/macroFiles'):
             return
         for file in os.listdir(self.configure_path + '/macroFiles'):
             if os.path.isfile(self.configure_path + '/macroFiles/' + file):

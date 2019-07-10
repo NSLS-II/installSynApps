@@ -9,3 +9,5 @@ reset.sh
 Deb*_*/
 __temp__/
 DEPLOYMENTS/
+addtlConfDirs/*Test/
+.pytest_cache/

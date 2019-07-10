@@ -53,7 +53,7 @@ class Packager:
         function that should be called to use packager. Generates a unique package name, creates tarball, and measures time
     """
 
-    def __init__(self, install_config, force_arch=None):
+    def __init__(self, install_config, output_location='DEPLOYMENTS', force_arch=None):
         """
         Constructor for Packager
 
@@ -69,6 +69,7 @@ class Packager:
             defaults to None. If set, will force the packager to use a certain architecture. Useful for building on multiple OS. (ex. pacakging through WSL on windows)
         """
         self.install_config = install_config
+        self.output_location = output_location
 
         self.ad_drivers = None
         self.opt_modules = None
@@ -86,7 +87,7 @@ class Packager:
             self.arch = 'windows-x64-static'
             self.OS = self.arch
         self.start_time = 0
-        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
+        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
 
 
     def start_timer(self):
@@ -232,7 +233,7 @@ class Packager:
         support_path = self.install_config.support_path
         support_modules = ['asyn', 'autosave', 'busy', 'calc', 'iocStats', 'seq', 'sscan']
         if self.opt_modules is not None:
-            support_modules = support_modules.extend(self.opt_modules)
+            support_modules.extend(self.opt_modules)
         for module in support_modules:
             self.grab_module(top, module, support_path, readme_fp)
 
@@ -289,7 +290,7 @@ class Packager:
         if os.path.exists('__temp__'):
                     shutil.rmtree('__temp__')
         os.mkdir('__temp__')
-        readme_fp = open('DEPLOYMENTS/README_{}.txt'.format(filename), 'w')
+        readme_fp = open(self.output_location + '/README_{}.txt'.format(filename), 'w')
         readme_fp.write('{}\n\n'.format(filename))
         readme_fp.write('Versions used in this deployment:\n')
         readme_fp.write('[folder name] : [git tag]\n\n')
@@ -299,12 +300,12 @@ class Packager:
         self.grab_ad(       '__temp__', readme_fp)
 
         readme_fp.close()
-        shutil.copy('DEPLOYMENTS/README_{}.txt'.format(filename), '__temp__/README_{}.txt'.format(filename))
+        shutil.copy(self.output_location + '/README_{}.txt'.format(filename), '__temp__/README_{}.txt'.format(filename))
 
         out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', '__temp__', '.'])
         if out < 0:
             return out
-        os.rename(filename + '.tgz', 'DEPLOYMENTS/' + filename + '.tgz')
+        os.rename(filename + '.tgz', self.output_location + '/' + filename + '.tgz')
         shutil.rmtree('__temp__')
         return out
 
@@ -314,6 +315,13 @@ class Packager:
 
         date_str = datetime.date.today()
         output_filename = 'NSLS2_AD_{}_Bin_{}_{}'.format(self.install_config.get_core_version(), self.OS, date_str)
+        temp = output_filename
+        counter = 0
+        while os.path.exists(self.output_location + '/' + temp + '.tgz'):
+            temp = output_filename
+            temp = temp + '_({})'.format(counter)
+            counter = counter + 1
+        output_filename = temp
         return output_filename
 
 
@@ -330,8 +338,11 @@ class Packager:
         self.ad_drivers     = self.get_drivers_to_package()
         self.opt_modules    = self.get_modules_to_package()
 
-        if not os.path.exists('DEPLOYMENTS'):
-            os.mkdir('DEPLOYMENTS')
+        if not os.path.exists(self.output_location):
+            try:
+                os.mkdir(self.output_location)
+            except OSError:
+                return -1
         
         self.start_timer()
         status = self.create_tarball(filename)
@@ -339,5 +350,4 @@ class Packager:
         if status < 0:
             return status
         else:
-            print('Done. Tarring took {} seconds.'.format(elapsed))
             return elapsed

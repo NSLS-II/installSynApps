@@ -84,4 +84,5 @@ class InstallModule:
         out = out + "Install Location Abs: {}\n".format(self.abs_path)
         out = out + "Install Location Rel: {}\n".format(self.rel_path)
         out = out + "Repository: {}{} w/ Type: {}\n".format(self.url, self.repository, self.url_type)
+        out = out + "Clone: {}, Build: {}, Package: {}\n".format(self.clone, self.build, self.package)
         return out

@@ -87,12 +87,12 @@ class EditConfigGUI:
 
         self.install_config = install_config
 
-        topFrame = Frame(self.master, relief=GROOVE, width = 100, height = 100)
+        topFrame = Frame(self.master, width = 100, height = 100)
         topFrame.place(x=10, y= 10)
 
         self.canvas = Canvas(topFrame)
 
-        self.viewFrame = Frame(self.canvas, relief=GROOVE)
+        self.viewFrame = Frame(self.canvas)
         scrollbar = Scrollbar(topFrame, orient='vertical', command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=scrollbar.set)
 
@@ -141,7 +141,7 @@ class EditConfigGUI:
             self.installModuleLines[module.name]['buildCheck'] = Checkbutton(self.viewFrame, text='Build', onvalue = True, offvalue = False, variable = self.installModuleLines[module.name]['buildVar'])
             self.installModuleLines[module.name]['buildCheck'].grid(row = counter, column = 4, columnspan = 1)
             self.installModuleLines[module.name]['packageVar'] = BooleanVar()
-            if module.build == 'YES':
+            if module.package == 'YES':
                 self.installModuleLines[module.name]['packageVar'].set(True)
             self.installModuleLines[module.name]['packageCheck'] = Checkbutton(self.viewFrame, text='Package', onvalue = True, offvalue = False, variable = self.installModuleLines[module.name]['packageVar'])
             self.installModuleLines[module.name]['packageCheck'].grid(row = counter, column = 5, columnspan = 1)

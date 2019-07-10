@@ -162,6 +162,12 @@ class InstallSynAppsGUI:
         buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Build', menu=buildmenu)
 
+        # Package Menu
+        packagemenu = Menu(menubar, tearoff=0)
+        packagemenu.add_command(label='Select Package Destination', command=self.selectPackageDestination)
+        packagemenu.add_command(label='Package Modules',            command=lambda : self.initBuildProcess('package'))
+        menubar.add_cascade(label='Package', menu=packagemenu)
+
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
@@ -185,7 +191,7 @@ class InstallSynAppsGUI:
         self.injectButton   = Button(frame, font=self.smallFont, text='Inject Files',   command=lambda : self.initBuildProcess('inject'),   height='3', width='20')
         self.buildButton    = Button(frame, font=self.smallFont, text='Build Modules',  command=lambda : self.initBuildProcess('build'),    height='3', width='20')
         self.autorunButton  = Button(frame, font=self.smallFont, text='Autorun',        command=lambda : self.initBuildProcess('autorun'),  height='3', width='20')
-        self.helpButton     = Button(frame, font=self.smallFont, text='Help',           command=self.loadHelp,                              height='3', width='20')
+        self.packageButton  = Button(frame, font=self.smallFont, text='Package',        command=lambda : self.initBuildProcess('package'),  height='3', width='20')
         self.saveLog        = Button(frame, font=self.smallFont, text='Save Log',       command=self.saveLog,                               height='3', width='20')
 
         self.loadButton.grid(   row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
@@ -194,7 +200,7 @@ class InstallSynAppsGUI:
         self.injectButton.grid( row = 2, column = 1, padx = 15, pady = 15, columnspan = 1)
         self.buildButton.grid(  row = 3, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.autorunButton.grid(row = 3, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.helpButton.grid(   row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.packageButton.grid(row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.saveLog.grid(      row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
 
 
@@ -308,7 +314,7 @@ class InstallSynAppsGUI:
 
             self.writeToConfigPanel("\nModules to package:\n")
             for module in self.install_config.get_module_list():
-                if module.package:
+                if module.package == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
             self.writeToLog("Done.\n")
 
@@ -327,6 +333,7 @@ class InstallSynAppsGUI:
         """ Function that updates all references to install config and configure path """
 
         self.install_config = install_config
+        self.writer.install_config = self.install_config
         self.cloner.install_config = self.install_config
         self.updater.install_config = self.install_config
         self.updater.path_to_configure = self.configure_path
@@ -415,7 +422,7 @@ class InstallSynAppsGUI:
             self.configure_path = 'resources'
             self.parser.configure_path = self.configure_path
             loaded_install_config, message = self.parser.parse_install_config(config_filename='NEW_CONFIG', force_location=temp, allow_illegal=True)
-            if len(message) > 0:
+            if message is not None:
                 self.valid_install = False
             else:
                 self.valid_install = True
@@ -531,6 +538,17 @@ class InstallSynAppsGUI:
         log_file = open(location + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
         log_file.write(self.log.get('1.0', END))
         log_file.close()
+
+
+    def selectPackageDestination(self):
+        """ Function that asks the user to select an output destination for the created tarball """
+
+        package_output = filedialog.askdirectory(initialdir = '.', title = 'Select output package directory', mustexist = True)
+        if package_output is None:
+            self.writeToLog('Operation Cancelled.\n')
+        else:
+            if os.path.exists(package_output):
+                self.packager.output_location = package_output
 
 
 #---------------------------- Editing Functions --------------------------------
@@ -700,7 +718,7 @@ class InstallSynAppsGUI:
 
                     self.writeToLog('Checking out version {}\n'.format(module.version))
                     self.cloner.checkout_module(module)
-            self.writeToLog("Cleaning up clone directories")
+            self.writeToLog('Cleaning up clone directories\n')
             self.cloner.cleanup_modules()
             self.showMessage('Success', 'Finished Cloning process')
         else:
@@ -837,6 +855,8 @@ class InstallSynAppsGUI:
         if output < 0:
             self.showErrorMessage('Package Error', 'ERROR - Was unable to package areaDetector successfully. Aborting.', force_popup=True)
         else:
+            self.writeToLog('Package saved to {}\n'.format(self.packager.output_location))
+            self.writeToLog('Bundle Name: {}\n'.format(output_filename))
             self.writeToLog('Done. Completed in {} seconds.\n'.format(output))
 
 
