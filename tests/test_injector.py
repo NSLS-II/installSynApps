@@ -17,7 +17,7 @@ import installSynApps.IO.config_parser as Parser
 import installSynApps.IO.config_injector as Injector
 
 parser = Parser.ConfigParser('tests/TestConfigs/basic')
-install_config, message = parser.parse_install_config()
+install_config, message = parser.parse_install_config(force_location='.', allow_illegal=True)
 
 config_injector = Injector.ConfigInjector(install_config)
 

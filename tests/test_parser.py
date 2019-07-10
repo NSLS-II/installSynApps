@@ -20,7 +20,7 @@ from installSynApps.IO import config_parser as Parser
 
 
 # Test install 
-install_config = IC.InstallConfiguration('/home/jwlodek/Documents/epics/utils/installSynApps', 'tests/TestConfigs/basic')
+install_config = IC.InstallConfiguration('tests/TestFiles', 'tests/TestConfigs/basic')
 base_module = IM.InstallModule('EPICS_BASE', 'R7.0.2.2', '$(INSTALL)/base', 'GIT_URL', 'https://github.com/dummyurl/', 'base', 'YES', 'YES')
 support_module = IM.InstallModule('SUPPORT', 'R6-0', '$(INSTALL)/support', 'GIT_URL', 'https://github.com/dummyurl/', 'support', 'YES', 'YES')
 ad_module = IM.InstallModule('AREA_DETECTOR', 'R3-6', '$(SUPPORT)/areaDetector', 'GIT_URL', 'https://github.com/dummyurl/', 'ad', 'YES', 'YES')
@@ -44,7 +44,7 @@ def test_no_permission():
 
 
 def test_not_exist():
-    parsed_into_dummy, error = parser.parse_install_config(force_location='/home/jwlodek/dummy/test')
+    parsed_into_dummy, error = parser.parse_install_config(force_location='/dummy/test')
     assert parsed_into_dummy is None
     assert error == 'Install filepath not valid'
 
