@@ -1,4 +1,6 @@
-# Saved by installSynApps on 2019-07-08 10:07:59.868556
+# Saved by installSynApps on 2019-07-10 09:58:01.043161
 __TARGET_LOC__=$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req
 
+
 file "NDPva_settings.req",          P=$(P),  R=Pva1:
+

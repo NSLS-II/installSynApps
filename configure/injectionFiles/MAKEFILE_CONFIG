@@ -2,39 +2,6 @@
 # not included by default with areaDetector/ADCore
 __TARGET_LOC__=$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile
 
-ifdef ADPLUGINBAR
-  $(DBD_NAME)_DBD += NDPluginBar.dbd
-  PROD_LIBS	  += NDPluginBar
-  ifdef OPENCV_LIB
-    opencv_core_DIR +=$(OPENCV_LIB)
-    PROD_LIBS       += opencv_core opencv_imgproc opencv_highgui zbar
-  else
-    PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui zbar
-  endif
-endif
-
-ifdef ADCOMPVISION
-  $(DBD_NAME)_DBD  += NDPluginCV.dbd
-  PROD_LIBS     += NDPluginCV
-  ifdef OPENCV_LIB
-    opencv_core_DIR += $(OPENCV_LIB)
-    PROD_LIBS       += opencv_core opencv_imgproc opencv_highgui
-  else
-    PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui
-  endif 
-endif
-
-ifdef ADPLUGINEDGE
-  $(DBD_NAME)_DBD  += NDPluginEdge.dbd
-  PROD_LIBS         += NDPluginEdge
-  ifdef OPENCV_LIB
-    opencv_core_DIR += $(OPENCV_LIB)
-    PROD_LIBS       += opencv_core opencv_imgproc
-  else
-    PROD_SYS_LIBS   += opencv_core opencv_imgproc
-  endif
-endif
-
 
 ifdef ADPLUGINDMTX
   $(DBD_NAME)_DBD += NDPluginDmtx.dbd
