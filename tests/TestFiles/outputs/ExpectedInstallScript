@@ -4,13 +4,19 @@
 
 EPICS_BASE=tests/TestFiles/inputs/base
 SUPPORT=tests/TestFiles/inputs/support
+MODBUS=tests/TestFiles/inputs/support/MODBUS
 AREA_DETECTOR=tests/TestFiles/inputs/support/areaDetector
+ADCORE=tests/TestFiles/inputs/support/areaDetector/ADCore
 DUMMY=tests/TestFiles/inputs/support/areaDetector/dummy
 cd $EPICS_BASE
 make -sj
 cd $SUPPORT
 make -sj
+cd $MODBUS
+make -sj
 cd $AREA_DETECTOR
+make -sj
+cd $ADCORE
 make -sj
 cd $DUMMY
 make -sj

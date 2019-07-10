@@ -7,7 +7,7 @@ Class responsible for packaging compiled binaries based on install config
 import os
 import shutil
 from sys import platform
-import platform as p
+import distro
 import datetime
 import time
 import subprocess
@@ -77,7 +77,7 @@ class Packager:
             self.arch = force_arch
             self.OS = force_arch
         elif platform == 'linux':
-            v = p.linux_distribution()
+            v = distro.linux_distribution(full_distribution_name=False)
             if len(v[0]) > 0 and len(v[1]) > 0:
                 self.OS = '{}_{}'.format(v[0], v[1])
             else:
@@ -111,6 +111,15 @@ class Packager:
 
 
     def get_drivers_to_package(self):
+        """
+        Function that gets list of ADDrivers/ADPlugins to package
+
+        Returns
+        -------
+        list of str
+            list of folder names of areaDetctor drivers to package
+        """
+
         output = []
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith('$(AREA_DETECTOR)') and module.name not in self.required_in_pacakge:
@@ -121,6 +130,15 @@ class Packager:
 
 
     def get_modules_to_package(self):
+        """
+        Function that gets list of support modules to package
+
+        Returns
+        -------
+        list of str
+            list of folder names of support modules to package
+        """
+
         output = []
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith('$(SUPPORT)') and module.name not in self.required_in_pacakge:

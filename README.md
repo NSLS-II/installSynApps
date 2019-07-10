@@ -9,6 +9,21 @@ Corresponding author: Kazimierz Gofron
 
 This development is based on bash EPICS distribution scripts developed primarly for building on the UNIX/Linux environment, and prior work related to synApps packaging which is utilized by installSynApps is currently hosted at https://github.com/EPICS-synApps
 
+### Installation
+
+installSynApps depends `python3`, and is tested with python 3.4+. In addition, installSynApps depends on the python3 modules `tkinter` and `distro`. To install these, first clone this repository, and then install using pip:
+```
+git clone https://github.com/epicsNSLS2-deploy/installSynApps
+cd installSynApps
+sudo pip install -r requirements.txt
+```
+In addition, several external tools are used by installSynApps that must also be installed and in the system path. This can be done with:
+```
+sudo apt install gcc g++ make git wget tar perl
+```
+on linux, while on windows each of these should be installed from the appropriate websites.
+
+
 ### Usage
 
 There are two recommended usage procedures for the module, through the use of `installCLI.py` and `installGUI.py`. The first will perform all operations through the terminal, while the other will display a GUI written in Tkinter. 
@@ -29,7 +44,7 @@ OR
 ```
 python installCLI.py
 ```
-**Note that python 3.* is required for this script to run**
+**Note that python 3.4+ is required for this script to run**
 
 For information on the available options, run with the `-h` flag. After running the file, simply follow the instructions as they guide you through the build process.
 
@@ -68,6 +83,6 @@ BUILD_FLAG_CONFIG   | Allows for manually setting Area Detector build flags ex. 
 
 ### External Configure
 
-It is possible to use different `configure` directories when using `installSynApps`. To do so, it is required that there is an `INSTALL_CONFIG` file within the selected directory. Additionally, the `fixedRELEASEFiles` directory should be copied as well. The remaining two directories are optional, though a warning will be displayed on load if they are missing.
+It is possible to use different `configure` directories when using `installSynApps`. To do so, it is required that there is an `INSTALL_CONFIG` file within the selected directory. The remaining two directories are optional, though a warning will be displayed on load if they are missing. The simplest way to create new configuration directories is to use the GUI, and selecting `File -> New`, and `File -> Save As` after editing
 
 **For information regarding the usage of the Legacy scripts of installSynApps, please check the LEGACY.md file in this repo**
