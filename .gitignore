@@ -12,3 +12,4 @@ DEPLOYMENTS/
 addtlConfDirs/*Test/
 .pytest_cache/
 .metadata/
+build/
