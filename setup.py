@@ -6,14 +6,14 @@ with open('requirements.txt') as reqf:
 
 setuptools.setup(
     name='installSynApps',
-    version='R2-0',
+    version='R2-1',
     cmdclass='',
     author='jakubwlodek',
     author_email=None,
     license='BSD (3-clause)',
     url='https://github.com/epicsNSLS2-deploy/installSynApps',
     packages=setuptools.find_packages(),
-    python_requires='>=3.2',
+    python_requires='>=3.4',
     install_requirements=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",

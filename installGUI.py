@@ -8,11 +8,7 @@ to clone, update, and build the EPICS and synApps software stack.
 
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
-__license__     = "GPL"
-__version__     = "R2-0"
-__maintainer__  = "Jakub Wlodek"
-__status__      = "Production"
+__version__     = "R2-1"
 
 
 # Tkinter imports
@@ -150,6 +146,7 @@ class InstallSynAppsGUI:
         debugmenu.add_command(label='Print Loaded Config Info', command=self.printLoadedConfigInfo)
         debugmenu.add_command(label='Clear Log',                command=self.resetLog)
         debugmenu.add_command(label='Recheck Dependancies',     command=self.recheckDeps)
+        debugmenu.add_command(label='Print path information',   command=self.printPathInfo)
         menubar.add_cascade(label='Debug', menu=debugmenu)
 
         # Build Menu
@@ -564,7 +561,7 @@ class InstallSynAppsGUI:
         else:
             if os.path.exists(package_output):
                 self.packager.output_location = package_output
-                self.metacontroller.metadata['package_location'] = output_location
+                self.metacontroller.metadata['package_location'] = self.packager.output_location
 
 
 #---------------------------- Editing Functions --------------------------------
@@ -669,6 +666,15 @@ class InstallSynAppsGUI:
         self.writeToLog('When dependency install is enabled, installSynApps will attempt\nto run a dependency script')
         self.writeToLog('in the configure directory,\ncalled dependencyInstall.sh on Linux, and dependencyInstall.bat\non win32.')
         self.writeToLog('To add a script, simply write a shell/batch script,\nand place it in the configure directory.\n')
+
+
+    def printPathInfo(self):
+        """ Function that prints a series of paths that are currently loaded. """
+
+        self.writeToLog('-----------------------------------------\n')
+        self.writeToLog('Install Location: {}\n'.format(self.install_config.install_location))
+        self.writeToLog('Install config directory: {}\n'.format(self.configure_path))
+        self.writeToLog('Package output path: {}\n'.format(self.packager.output_location))
 
 #--------------------------------- Build Process Functions ------------------------------------------#
 #                                                                                                    #
