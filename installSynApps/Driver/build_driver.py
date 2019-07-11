@@ -3,9 +3,6 @@ Class responsible for driving the build process of installSynApps
 """
 
 __author__   = 'Jakub Wlodek'
-__version__  = 'R2-0'
-__date__     = '15-Jun-2019'
-
 
 import os
 import subprocess
@@ -58,6 +55,15 @@ class BuildDriver:
 
 
     def check_dependencies_in_path(self):
+        """
+        Function meant to check if required packages are located in the system path.
+
+        Returns
+        -------
+        bool, str
+            True and empty string if success, False and name of missing package if error
+        """
+
         status = True
         message = ''
         current = 'make'

@@ -72,6 +72,9 @@ class ConfigParser:
         line = re.sub('\t', ' ', line)
         line = re.sub(' +', ' ', line)
         module_components = line.split(' ')
+        # If a line is read that isn't in the correct format
+        if len(module_components) < 6:
+            return None
         name        = module_components[0]
         version     = module_components[1]
         rel_path    = module_components[2]
@@ -120,9 +123,8 @@ class ConfigParser:
             if install_file == None:
                 return None
             install_config = None
-            current_url = ""
-            current_url_type = ""
-            epics_arch = ""
+            current_url = "dummy_url.com"
+            current_url_type = "GIT_URL"
             install_loc = ""
             message = None
 
@@ -159,11 +161,14 @@ class ConfigParser:
                     else:
                         # Parse individual module line
                         install_module = self.parse_line_to_module(line, current_url, current_url_type)
-                        install_config.add_module(install_module)
+                        if install_module is not None and install_config is not None:
+                            install_config.add_module(install_module)
                 line = install_file.readline()
             
             install_file.close()
             # Read injectors and build flags
+            if install_config is None:
+                return None, 'Could not find INSTALL defined in given path'
             self.read_injector_files(install_config)
             self.read_build_flags(install_config)
             return install_config , message

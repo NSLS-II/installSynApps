@@ -1,8 +1,8 @@
 """
 Class responsible for injecting settings into configuration files
-
-@author: Jakub Wlodek
 """
+
+__author__      = "Jakub Wlodek"
 
 import os
 import re

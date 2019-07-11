@@ -2,6 +2,8 @@
 Class that is responsible for writing an Install Configuration
 """
 
+__author__      = "Jakub Wlodek"
+
 import datetime
 import os
 import errno

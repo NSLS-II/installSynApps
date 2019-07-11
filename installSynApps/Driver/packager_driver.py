@@ -2,6 +2,7 @@
 Class responsible for packaging compiled binaries based on install config
 """
 
+__author__      = "Jakub Wlodek"
 
 # imports
 import os
@@ -76,7 +77,7 @@ class Packager:
         if force_arch is not None:
             self.arch = force_arch
             self.OS = force_arch
-        elif platform == 'linux':
+        elif platform.startswith('linux'):
             v = distro.linux_distribution(full_distribution_name=False)
             if len(v[0]) > 0 and len(v[1]) > 0:
                 self.OS = '{}_{}'.format(v[0], v[1])
