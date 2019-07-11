@@ -2,6 +2,8 @@
 Class that handles installSynApps settings and metadata
 """
 
+__author__      = "Jakub Wlodek"
+
 import os
 import json
 

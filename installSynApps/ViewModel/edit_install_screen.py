@@ -76,7 +76,7 @@ class EditConfigGUI:
         self.master = Toplevel()
         self.master.title('Edit Install Config')
         self.master.resizable(False, False)
-        sizex = 875
+        sizex = 860
         sizey = 600
         self.installModuleLines = {}
         self.individualEditButtons = {}
@@ -152,7 +152,7 @@ class EditConfigGUI:
     def scrollFunction(self, event):
         """ Function used for achieving scrolling """
         
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"), width=850,height=575)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"), width=825,height=575)
 
 
     def applyChanges(self):
