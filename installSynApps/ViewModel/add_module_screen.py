@@ -84,7 +84,10 @@ class AddModuleGUI:
         self.clone_check.set(False)
 
         self.build_check = BooleanVar()
-        self.clone_check.set(False)
+        self.build_check.set(False)
+        
+        self.package_check = BooleanVar()
+        self.package_check.set(False)
 
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
@@ -118,11 +121,13 @@ class AddModuleGUI:
         self.repository_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.repository_box.grid(row = 6, column = 1, columnspan = 2)
 
-        self.clone_build_label = Label(self.viewFrame, text = 'Clone - Build:').grid(row = 7, column = 0, padx = 5, pady = 5)
-        self.clone_button = Checkbutton(self.viewFrame, text= 'Clone', onvalue=True, offvalue=False, variable = self.clone_check)
-        self.build_button = Checkbutton(self.viewFrame, text= 'Build', onvalue=True, offvalue=False, variable = self.build_check)
-        self.clone_button.grid(row = 7, column = 1, padx = 3, pady = 3)
-        self.build_button.grid(row = 7, column = 2, padx = 3, pady = 3)
+        #self.clone_build_label = Label(self.viewFrame, text = 'Clone - Build:').grid(row = 7, column = 0, padx = 5, pady = 5)
+        self.clone_button   = Checkbutton(self.viewFrame, text= 'Clone',    onvalue=True, offvalue=False, variable = self.clone_check)
+        self.build_button   = Checkbutton(self.viewFrame, text= 'Build',    onvalue=True, offvalue=False, variable = self.build_check)
+        self.package_button = Checkbutton(self.viewFrame, text= 'Package',  onvalue=True, offvalue=False, variable = self.package_check)
+        self.clone_button.grid(     row = 7, column = 0, padx = 3, pady = 3)
+        self.build_button.grid(     row = 7, column = 1, padx = 3, pady = 3)
+        self.package_button.grid(   row = 7, column = 2, padx = 3, pady = 3)
 
         self.master.mainloop()
 
@@ -139,6 +144,7 @@ class AddModuleGUI:
         self.repository_box.delete('1.0', END)
         self.clone_check.set(False)
         self.build_check.set(False)
+        self.package_check.set(False)
         self.url_type_var.set('GIT_URL')
 
 
@@ -157,8 +163,10 @@ class AddModuleGUI:
         repo = self.repository_box.get('1.0', END).strip()
         clone = self.clone_check.get()
         build = self.build_check.get()
+        package = self.package_check.get()
         clone_str = 'NO'
         build_str = 'NO'
+        package_str = 'NO'
 
         if len(name) == 0:
             self.root.showErrorMessage('Add Module Error', 'ERROR - Please enter a valid name.', force_popup = True)
@@ -193,7 +201,9 @@ class AddModuleGUI:
             clone_str = 'YES'
         if build:
             build_str = 'YES'
-        new_module = Module.InstallModule(name, version, rel_path, url_type, url, repo, clone_str, build_str)
+        if pakcage:
+            package_str = 'YES'
+        new_module = Module.InstallModule(name, version, rel_path, url_type, url, repo, clone_str, build_str, package_str)
         self.install_config.add_module(new_module)
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
@@ -202,7 +212,6 @@ class AddModuleGUI:
 
     def exitWindow(self):
         """ exits from the window """
-
 
         self.master.destroy()
 
