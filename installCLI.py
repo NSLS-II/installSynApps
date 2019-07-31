@@ -29,7 +29,6 @@ def parse_user_input():
     parser.add_argument('-t', '--threads', help = 'Define a limit on the number of threads that make is allowed to use')
     parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
     arguments = vars(parser.parse_args())
-    print(arguments)
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
 
@@ -156,7 +155,7 @@ else:
         if len(unsuccessful) > 0:
             for module in unsuccessful:
                 print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
-                if module.name == "EPICS_BASE" or module.name == "SUPPORT" or module.name == "ADSUPPORT" or module.name == "ADCORE":
+                if module.name == "EPICS_BASE" or module.rel_path.startswith("$(SUPPORT)") or module.name == "ADSUPPORT" or module.name == "ADCORE":
                     print("Critical clone error... abort.")
                     exit()
             print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")

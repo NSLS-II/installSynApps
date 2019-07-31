@@ -202,8 +202,9 @@ class InstallSynAppsGUI:
 
 
         # Log and loading label
-        self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
-        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '1')
+        #self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
+        self.logButton      = Button(frame, text='Clear Log', font=self.smallFont, height='1', command=self.resetLog).grid(row = 0, column = 7, pady = 0, columnspan = 1)
+        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor=W, font=self.smallFont, height = '1')
         self.loadingLabel.grid(row = 0, column = 2, pady = 0, columnspan = 2)
 
         # config panel
@@ -327,14 +328,6 @@ class InstallSynAppsGUI:
                 if module.package == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
             self.writeToLog("Done.\n")
-
-            if os.path.exists(self.configure_path + "/macroFiles") and os.path.exists(self.configure_path + "/injectionFiles"):
-                self.writeToConfigPanel("\nAdditional build flags will be taken from:\n")
-                for mfile in os.listdir(self.configure_path + "/macroFiles"):
-                    self.writeToConfigPanel(mfile + "\n")
-                self.writeToConfigPanel("\nFile injections will be performed on the following:\n")
-                for ifile in self.install_config.injector_files:
-                    self.writeToConfigPanel("{} -> {}\n".format(ifile.name, ifile.target))
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
@@ -525,6 +518,9 @@ class InstallSynAppsGUI:
         if not wrote:
             self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
         else:
+            self.configure_path = dirpath
+            self.updateAllRefs(self.install_config)
+            self.metacontroller.metadata['configure_path'] = self.configure_path
             self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
 
 
@@ -543,7 +539,7 @@ class InstallSynAppsGUI:
             location = filedialog.askdirectory(initialdir = '.')
             if len(location) == 0:
                 return
-        if saveDir is not None and not os.path.exists(saveDir):
+        if location is not None and not os.path.exists(location):
             self.showErrorMessage('Save Error', 'ERROR - Save directory does not exist')
             return
         time = datetime.datetime.now()
@@ -562,6 +558,9 @@ class InstallSynAppsGUI:
             if os.path.exists(package_output):
                 self.packager.output_location = package_output
                 self.metacontroller.metadata['package_location'] = self.packager.output_location
+                self.writeToLog('New package output location set to: {}\n'.format(package_output))
+            else:
+                self.showErrorMessage('Path Error', 'ERROR - Output path does not exist.')
 
 
 #---------------------------- Editing Functions --------------------------------
