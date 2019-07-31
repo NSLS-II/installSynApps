@@ -483,6 +483,8 @@ class InstallSynAppsGUI:
             self.showErrorMessage('Load error', 'Error loading install config... {}'.format(message), force_popup=True)
         self.updateAllRefs(self.install_config)
         self.install_loaded = True
+        if self.configure_path == 'configure':
+            self.install_loaded = False
 
 
     def saveConfig(self):
@@ -504,6 +506,9 @@ class InstallSynAppsGUI:
         
         if force_loc is None:
             dirpath = filedialog.asksaveasfilename(initialdir = '.')
+            if len(dirpath) < 1:
+                self.writeToLog('Operation Cancelled.\n')
+                return
             self.writeToLog('Creating save directory...\n')
         else:
             ans = messagebox.askyesno('Confirm', 'Do you wish to overwrite existing install config with new changes?')
@@ -519,6 +524,7 @@ class InstallSynAppsGUI:
             self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
         else:
             self.configure_path = dirpath
+            self.install_loaded = True
             self.updateAllRefs(self.install_config)
             self.metacontroller.metadata['configure_path'] = self.configure_path
             self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
@@ -863,7 +869,7 @@ class InstallSynAppsGUI:
                         self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
 
         self.showMessage('Alert', 'You may wish to save a copy of this log file for later use.')
-        self.writeToLog('Autorun completed.')
+        self.writeToLog('Autorun completed.\n')
 
 
     def packageConfigProcess(self):
