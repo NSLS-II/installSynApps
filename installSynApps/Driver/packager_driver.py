@@ -8,10 +8,13 @@ __author__      = "Jakub Wlodek"
 import os
 import shutil
 from sys import platform
-import distro
 import datetime
 import time
 import subprocess
+
+# External package used to identify linux distribution version. Note that this adds external
+# dependancy, but it is required because the platform.linuxdistro() is being deprecated
+import distro
 
 # Only depends on install config
 import installSynApps.DataModel.install_config as IC

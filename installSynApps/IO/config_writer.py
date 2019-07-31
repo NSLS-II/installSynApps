@@ -69,12 +69,12 @@ class ConfigWriter:
         Parameters
         ----------
         filepath : str
-            defaults to addtlConfDirs/config$DATE. The into which to save the install configuration
+            defaults to addtlConfDirs/config$DATE. The filename into which to save the install configuration
 
         Returns
         -------
         bool, str
-            True , None if successful, False, error message if failure.
+            (True , None) if successful, (False, error message) if failure.
         """
 
         # Check if path exists, create it if it doesn't
