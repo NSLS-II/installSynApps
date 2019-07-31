@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/jwlodek/installSynApps.svg?branch=master)](https://travis-ci.org/jwlodek/installSynApps)
 
-A python3 module meant for cloning and building EPICS, synApps, and areaDetector with one command.
+A python3 module meant for cloning, building, and packaging EPICS, synApps, and areaDetector with one command.
 
 Author: Jakub Wlodek  
 Corresponding author: Kazimierz Gofron
@@ -11,7 +11,11 @@ This development is based on bash EPICS distribution scripts developed primarly 
 
 ### Installation
 
-installSynApps depends `python3`, and is tested with python 3.4+. In addition, installSynApps depends on the python3 modules `tkinter` and `distro`. To install these, first clone this repository, and then install using pip:
+installSynApps depends `python3`, and is tested with python 3.4+. To install python3 on linux run:
+```
+sudo apt install python3 python3-tk
+```
+In addition, installSynApps depends on the python3 module `distro`. To install it, first clone this repository, and then install using pip:
 ```
 git clone https://github.com/epicsNSLS2-deploy/installSynApps
 cd installSynApps
@@ -21,7 +25,7 @@ In addition, several external tools are used by installSynApps that must also be
 ```
 sudo apt install gcc g++ make git wget tar perl
 ```
-on linux, while on windows each of these should be installed from the appropriate websites.
+on linux, while on windows each of these should be installed from the appropriate websites. To ensure that they are in the system path, type each module into a terminal and see if it displays usage information. If not, and you see an error along the lines of `make command not found`, then the module is not in the system path.
 
 
 ### Usage
@@ -46,7 +50,7 @@ python installCLI.py
 ```
 **Note that python 3.4+ is required for this script to run**
 
-For information on the available options, run with the `-h` flag. After running the file, simply follow the instructions as they guide you through the build process.
+For information on the available optional flags, run with the `-h` flag. After running the file, simply follow the instructions as they guide you through the build process.
 
 ### installGUI
 
@@ -54,7 +58,7 @@ The GUI requires Tkinter to be installed for operation. Tkinter is a standard mo
 
 Similar to `installCLI.py`, to use the GUI, simply run it with python3. You will then see the option for each individual operation, along with an autorun that will perform them all sequentially. You may also load another configuration directory, provided that it follows the same file format as the given default configure directory.
 
-The GUI version also allowes finer control of install configurations. In the open window, select the `Edit` menu, then choose an edit option. From there, a window will open allowing you to edit any portion of the install process. You may also save the install configuration with it's edits by selecting the File -> Save As option. When you select File -> Save, the currently loaded config will overwrite whereever it was previously saved.
+The GUI version also allows finer control of install configurations. In the open window, select the `Edit` menu, then choose an edit option. From there, a window will open allowing you to edit any portion of the install process. You may also save the install configuration with its edits by selecting the File -> Save As option. When you select File -> Save, the currently loaded config will overwrite whereever it was previously saved.
 
 In addition, the GUI keeps a log of the operations completed, which can be saved to an arbitrary location. Note that if a process is running (as indicated by the animated process status message), you will be unable to run another process.
 
@@ -67,6 +71,8 @@ The installSynApps module requires the following to be in the environment PATH i
 * make
 * wget
 * tar
+* perl
+* A C/C++ compiler (gcc + g++ on linux, MSCV + MSVC++ on windows)
 
 If these packages are available, then the script should be able to run through the entirety of the build process.
 
