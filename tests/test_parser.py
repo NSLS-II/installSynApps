@@ -4,12 +4,6 @@ Unit test file for config parser
 
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
-__license__     = "GPL"
-__version__     = "R2-0"
-__maintainer__  = "Jakub Wlodek"
-__status__      = "Production"
-
 
 import pytest
 import tests.helper_test_funcs as Helper
@@ -21,15 +15,18 @@ from installSynApps.IO import config_parser as Parser
 
 # Test install 
 install_config = IC.InstallConfiguration('tests/TestFiles', 'tests/TestConfigs/basic')
-base_module = IM.InstallModule('EPICS_BASE', 'R7.0.2.2', '$(INSTALL)/base', 'GIT_URL', 'https://github.com/dummyurl/', 'base', 'YES', 'YES')
-support_module = IM.InstallModule('SUPPORT', 'R6-0', '$(INSTALL)/support', 'GIT_URL', 'https://github.com/dummyurl/', 'support', 'YES', 'YES')
-ad_module = IM.InstallModule('AREA_DETECTOR', 'R3-6', '$(SUPPORT)/areaDetector', 'GIT_URL', 'https://github.com/dummyurl/', 'ad', 'YES', 'YES')
-
-test_module = IM.InstallModule('DUMMY', 'R1-0', '$(AREA_DETECTOR)/dummy', 'GIT_URL', 'https://github.com/dummyurl/', 'dummy', 'YES', 'YES')
+base_module = IM.InstallModule('EPICS_BASE', 'R7.0.2.2', '$(INSTALL)/base', 'GIT_URL', 'https://github.com/dummyurl/', 'base', 'YES', 'YES', 'YES')
+support_module = IM.InstallModule('SUPPORT', 'R6-0', '$(INSTALL)/support', 'GIT_URL', 'https://github.com/dummyurl/', 'support', 'YES', 'YES', 'NO')
+modbus_module = IM.InstallModule('MODBUS', 'master', '$(SUPPORT)/MODBUS', 'GIT_URL', 'https://github.com/dummyurl/', 'bus', 'YES', 'YES', 'YES')
+ad_module = IM.InstallModule('AREA_DETECTOR', 'R3-6', '$(SUPPORT)/areaDetector', 'GIT_URL', 'https://github.com/dummyurl/', 'ad', 'YES', 'YES', 'NO')
+core_module = IM.InstallModule('ADCORE', 'R3-6', '$(AREA_DETECTOR)/ADCore', 'GIT_URL', 'https://github.com/dummyurl/', 'ad', 'YES', 'YES', 'YES')
+test_module = IM.InstallModule('DUMMY', 'R1-0', '$(AREA_DETECTOR)/dummy', 'GIT_URL', 'https://github.com/dummyurl/', 'dummy', 'YES', 'YES', 'YES')
 
 install_config.add_module(base_module)
 install_config.add_module(support_module)
+install_config.add_module(modbus_module)
 install_config.add_module(ad_module)
+install_config.add_module(core_module)
 install_config.add_module(test_module)
 
 parser = Parser.ConfigParser('tests/TestConfigs/basic')

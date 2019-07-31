@@ -2,6 +2,8 @@
 Class that is responsible for writing an Install Configuration
 """
 
+__author__      = "Jakub Wlodek"
+
 import datetime
 import os
 import errno
@@ -67,12 +69,12 @@ class ConfigWriter:
         Parameters
         ----------
         filepath : str
-            defaults to addtlConfDirs/config$DATE. The into which to save the install configuration
+            defaults to addtlConfDirs/config$DATE. The filename into which to save the install configuration
 
         Returns
         -------
         bool, str
-            True , None if successful, False, error message if failure.
+            (True , None) if successful, (False, error message) if failure.
         """
 
         # Check if path exists, create it if it doesn't
@@ -101,15 +103,15 @@ class ConfigWriter:
         new_install_config.write('#\n# INSTALL_CONFIG file saved by installSynApps on {}\n#\n\n'.format(datetime.datetime.now())) 
         new_install_config.write("INSTALL={}\n\n\n".format(self.install_config.install_location))
 
-        new_install_config.write('#MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE\n')
-        new_install_config.write('#-----------------------------------------------------------------------------------------------------------------------------------\n')
+        new_install_config.write('#MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE    PACKAGE_MODULE\n')
+        new_install_config.write('#--------------------------------------------------------------------------------------------------------------------------------------------------\n')
 
         current_url = ""
         for module in self.install_config.get_module_list():
             if module.url != current_url:
                 new_install_config.write("\n{}={}\n\n".format(module.url_type, module.url))
                 current_url = module.url
-            new_install_config.write("{:<16} {:<20} {:<40} {:<24} {:<16} {}\n".format(module.name, module.version, module.rel_path, module.rel_repo, module.clone, module.build))
+            new_install_config.write("{:<16} {:<20} {:<40} {:<24} {:<16} {:<16} {}\n".format(module.name, module.version, module.rel_path, module.rel_repo, module.clone, module.build, module.package))
 
         new_install_config.close()
         return True, None

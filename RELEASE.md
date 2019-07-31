@@ -2,6 +2,27 @@
 
 <!--RELEASE START-->
 
+## R2-1 (???-August-2019)
+
+* Features Added
+    * Integrated Packager - Can now create AD binary bundles directly from installSynApps
+    * Metadata - Settings are now saved accross uses, so you don't need to keep loading configs
+    * Core count regulation - Regulate maximum core count used by installSynApps
+        * Useful for lower power devices
+    * ConfigWriter - dedicated module for saving install configurations
+    * installCLI automation - installCLI can now run fully automated without any user input
+        * Can Clone, Update, Compile, and Package with one command
+    * TravisCI automated testing added
+
+* Bug Fixes
+    * Removed unneccessary print statements in installCLI
+    * Fixed issue where editing the configuration would not refresh any modules aside from builder
+    * Expanded error checking - should fail more gracefully
+
+* Future Plans
+    * Add support for custom build scripts for each module
+    * Add improved support for custom dependency scripts
+
 ## R2-0 (10-July-2019)
 
 * Features Added
