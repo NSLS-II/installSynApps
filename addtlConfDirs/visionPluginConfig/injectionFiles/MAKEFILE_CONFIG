@@ -1,7 +1,16 @@
-# This file will contain code to insert into the commonDriverMakefile to link libraries for any external plugins
-# not included by default with areaDetector/ADCore
+# Saved by installSynApps on 2019-07-30 13:53:27.788499
 __TARGET_LOC__=$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile
 
+ifdef ADPLUGINDMTX
+  $(DBD_NAME)_DBD += NDPluginDmtx.dbd
+  PROD_LIBS	  += NDPluginDmtx
+  ifdef DMTX_LIB
+    dmtx_DIR +=$(DMTX_LIB)
+    PROD_LIBS       += dmtx
+  else
+    PROD_SYS_LIBS   += dmtx
+  endif
+endif
 ifeq ($(WITH_BOOST),YES)
   ifeq ($(BOOST_EXTERNAL),NO)
     PROD_SYS_LIBS += boost_system

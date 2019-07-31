@@ -69,11 +69,11 @@ STD                 R3-5        $(SUPPORT)/std                              std 
 VAC                 R1-7        $(SUPPORT)/vac                              vac                             NO              NO              NO
 VME                 R2-9        $(SUPPORT)/vme                              vme                             NO              NO              NO
 YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yokogawa_DAS                    NO              NO              NO
-XSPRESS3            master      $(SUPPORT)/xspress3                         xspress3                        YES             NO              NO
+XSPRESS3            master      $(SUPPORT)/xspress3                         xspress3                        YES             NO              YES
 XXX                 master      $(SUPPORT)/xxx                              xxx                             NO              NO              NO
 
 # Currently no support for auto-building quadem
-QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES             NO              NO
+QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES             NO              YES
 
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
@@ -116,14 +116,14 @@ ADCORE              R3-6        $(AREA_DETECTOR)/ADCore                     ADCo
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    YES             YES             NO
-ADPLUGINBAR         R2-1        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES             YES             NO
-ADPLUGINDMTX        master      $(AREA_DETECTOR)/ADPluginDmtx               ADPluginDmtx                    YES             YES             NO
+ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    NO              NO              NO
+ADPLUGINBAR         R2-1        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     NO              NO              NO
+ADPLUGINDMTX        master      $(AREA_DETECTOR)/ADPluginDmtx               ADPluginDmtx                    NO              NO              NO
 
 
 GIT_URL=https://github.com/areaDetector/
 
-ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    YES             YES             NO
+ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    NO             NO             NO
 
 
 ######################################
@@ -136,7 +136,7 @@ ADUVC               R1-2        $(AREA_DETECTOR)/ADUVC                      ADUV
 ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                NO              NO              NO
 ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO              NO
 ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        NO              NO              NO
-ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES             NO
+ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES             YES
 ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO              NO
 
 
@@ -152,7 +152,7 @@ ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVi
 ADGENICAM           master      $(AREA_DETECTOR)/ADGenICam                  ADGenICam                       NO              NO              NO
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO              NO
 ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO              NO
-ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             NO              NO
+ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             YES             YES
 ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPICam                         NO              NO              NO
 ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         NO              NO              NO
 ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO              NO              NO
@@ -162,7 +162,7 @@ ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVi
 ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO              NO              NO
 ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO              NO              NO
 FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO              NO
-ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           NO              NO              NO
+ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           YES             YES             YES
 ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO              NO
 ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO              NO
 ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO              NO
