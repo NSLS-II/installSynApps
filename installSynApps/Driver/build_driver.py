@@ -3,9 +3,6 @@ Class responsible for driving the build process of installSynApps
 """
 
 __author__   = 'Jakub Wlodek'
-__version__  = 'R2-0'
-__date__     = '15-Jun-2019'
-
 
 import os
 import subprocess
@@ -20,9 +17,19 @@ class BuildDriver:
     ----------
     install_config : InstallConfiguration
         currently loaded install configuration
+    threads : str
+        number of threads to use
+    one_thread : bool
+        toggle to use single thread
+    make_flag : str
+        make flag to use for compilation (-s, -sj, -sjNUM_THREADS)
 
     Methods
     -------
+    create_make_flags()
+        Function that creates the flags used by make depending on the thread config passed in
+    check_dependencies_in_path()
+        Function meant to check if required packages are located in the system path
     acquire_dependencies(dependency_script_path : str)
         function that calls script for acquiring dependency libraries and build environment
     build_base()
@@ -33,6 +40,12 @@ class BuildDriver:
         function that call make on ADSupport, then ADCore, then all AD modules
     build_all()
         function that calls all build functions sequentially
+    build_ad_support()
+        Function that builds only ad support
+    build_ad_core()
+        Function that builds only ad core
+    build_ad_module()
+        Function that builds an individual ad module
     """
 
 
@@ -58,18 +71,29 @@ class BuildDriver:
 
 
     def check_dependencies_in_path(self):
+        """
+        Function meant to check if required packages are located in the system path.
+
+        Returns
+        -------
+        bool, str
+            True and empty string if success, False and name of missing package if error
+        """
+
         status = True
         message = ''
         current = 'make'
         FNULL = open(os.devnull, 'w')
         try:
-            subprocess.call(['make'], stdout=FNULL, stderr=FNULL)
+            subprocess.call(['make', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'wget'
-            subprocess.call(['wget'], stdout=FNULL, stderr=FNULL)
+            subprocess.call(['wget', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'git'
-            subprocess.call(['git'], stdout=FNULL, stderr=FNULL)
+            subprocess.call(['git', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'tar'
-            subprocess.call(['tar'], stdout=FNULL, stderr=FNULL)
+            subprocess.call(['tar', '--version'], stdout=FNULL, stderr=FNULL)
+            current = 'perl'
+            subprocess.call(['perl', '--version'], stdout=FNULL, stderr=FNULL)
         except FileNotFoundError:
             status = False
             message = current

@@ -38,7 +38,7 @@ class InstallModule:
     """
 
 
-    def __init__(self, name, version, rel_path, url_type, url, repository, clone, build):
+    def __init__(self, name, version, rel_path, url_type, url, repository, clone, build, package):
         """Constructor for the InstallModule class"""
 
         self.name       = name
@@ -55,6 +55,7 @@ class InstallModule:
             self.repository = repository
         self.clone      = clone
         self.build      = build
+        self.package    = package
 
 
     def print_info(self, fp = None):
@@ -83,4 +84,5 @@ class InstallModule:
         out = out + "Install Location Abs: {}\n".format(self.abs_path)
         out = out + "Install Location Rel: {}\n".format(self.rel_path)
         out = out + "Repository: {}{} w/ Type: {}\n".format(self.url, self.repository, self.url_type)
+        out = out + "Clone: {}, Build: {}, Package: {}\n".format(self.clone, self.build, self.package)
         return out

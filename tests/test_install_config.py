@@ -4,11 +4,6 @@ Unit test file for config injector
 
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
-__license__     = "GPL"
-__version__     = "R2-0"
-__maintainer__  = "Jakub Wlodek"
-__status__      = "Production"
 
 
 # unit test include
@@ -21,11 +16,12 @@ import installSynApps.DataModel.install_module as InstallModule
 
 # Test install 
 install_config = InstallConfig.InstallConfiguration('/epics/test', 'configure')
-base_module = InstallModule.InstallModule('EPICS_BASE', 'R7.0.2.2', '$(INSTALL)/base', 'GIT_URL', 'https://github.com/dummyurl/test/', 'base', 'YES', 'YES')
-support_module = InstallModule.InstallModule('SUPPORT', 'R6-0', '$(INSTALL)/support', 'GIT_URL', 'https://github.com/dummyurl/test/', 'support', 'YES', 'YES')
-ad_module = InstallModule.InstallModule('AREA_DETECTOR', 'R3-6', '$(SUPPORT)/areaDetector', 'GIT_URL', 'https://github.com/dummyurl/test/', 'ad', 'YES', 'YES')
+base_module = InstallModule.InstallModule('EPICS_BASE', 'R7.0.2.2', '$(INSTALL)/base', 'GIT_URL', 'https://github.com/dummyurl/test/', 'base', 'YES', 'YES', 'YES')
+support_module = InstallModule.InstallModule('SUPPORT', 'R6-0', '$(INSTALL)/support', 'GIT_URL', 'https://github.com/dummyurl/test/', 'support', 'YES', 'YES', 'NO')
+ad_module = InstallModule.InstallModule('AREA_DETECTOR', 'R3-6', '$(SUPPORT)/areaDetector', 'GIT_URL', 'https://github.com/dummyurl/test/', 'ad', 'YES', 'YES', 'NO')
+core_module = InstallModule.InstallModule('ADCORE', 'R3-6', '$(AREA_DETECTOR)/ADCore', 'GIT_URL', 'https://github.com/dummyurl/test/', 'ad', 'YES', 'YES', 'YES')
 
-test_module = InstallModule.InstallModule('DUMMY', 'R1-0', '$(AREA_DETECTOR)/dummy', 'GIT_URL', 'https://github.com/dummyurl/test/', 'dummy', 'YES', 'YES')
+test_module = InstallModule.InstallModule('DUMMY', 'R1-0', '$(AREA_DETECTOR)/dummy', 'GIT_URL', 'https://github.com/dummyurl/test/', 'dummy', 'YES', 'YES', 'YES')
 
 
 def reset():
@@ -63,4 +59,10 @@ def test_convert_path():
     install_config.add_module(support_module)
     install_config.add_module(ad_module)
     assert install_config.convert_path_abs(test_module.rel_path) == '/epics/test/support/areaDetector/dummy'
+    reset()
+
+
+def test_get_core_version():
+    install_config.add_module(core_module)
+    assert install_config.get_core_version() == 'R3-6'
     reset()

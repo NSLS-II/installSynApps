@@ -3,12 +3,6 @@ Class for a window that allows editing of a single module
 """
 
 __author__      = "Jakub Wlodek"
-__copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
-__license__     = "GPL"
-__version__     = "R2-0"
-__maintainer__  = "Jakub Wlodek"
-__status__      = "Production"
 
 
 import os
@@ -102,7 +96,10 @@ class EditSingleModuleGUI:
         self.clone_check.set(False)
 
         self.build_check = BooleanVar()
-        self.clone_check.set(False)
+        self.build_check.set(False)
+
+        self.package_check = BooleanVar()
+        self.package_check.set(False)
 
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
@@ -116,10 +113,6 @@ class EditSingleModuleGUI:
         self.module_dropdown = ttk.Combobox(self.viewFrame, textvariable=self.edit_name_var, values=self.legal_names)
         self.module_dropdown.grid(row = 1, column = 1)
         self.edit_name_var.trace('w', self.reloadPanelWrapper)
-
-        self.name_label = Label(self.viewFrame, text='Name:').grid(row =3, column = 0, padx = 5, pady = 5)
-        self.name_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
-        self.name_box.grid(row = 3, column = 1, columnspan = 2)
 
         self.version_label = Label(self.viewFrame, text='Version:').grid(row =3, column = 0, padx = 5, pady = 5)
         self.version_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
@@ -141,11 +134,13 @@ class EditSingleModuleGUI:
         self.repository_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.repository_box.grid(row = 7, column = 1, columnspan = 2)
 
-        self.clone_build_label = Label(self.viewFrame, text = 'Clone - Build:').grid(row = 8, column = 0, padx = 5, pady = 5)
-        self.clone_button = Checkbutton(self.viewFrame, text= 'Clone', onvalue=True, offvalue=False, variable = self.clone_check)
-        self.build_button = Checkbutton(self.viewFrame, text= 'Build', onvalue=True, offvalue=False, variable = self.build_check)
-        self.clone_button.grid(row = 8, column = 1, padx = 3, pady = 3)
-        self.build_button.grid(row = 8, column = 2, padx = 3, pady = 3)
+        #self.clone_build_label = Label(self.viewFrame, text = 'Clone - Build - Package:').grid(row = 8, column = 0, padx = 5, pady = 5)
+        self.clone_button   = Checkbutton(self.viewFrame, text= 'Clone',    onvalue=True, offvalue=False, variable = self.clone_check)
+        self.build_button   = Checkbutton(self.viewFrame, text= 'Build',    onvalue=True, offvalue=False, variable = self.build_check)
+        self.package_button = Checkbutton(self.viewFrame, text= 'Package',  onvalue=True, offvalue=False, variable = self.package_check)
+        self.clone_button.grid(row = 8, column = 0, padx = 3, pady = 3)
+        self.build_button.grid(row = 8, column = 1, padx = 3, pady = 3)
+        self.package_button.grid(row = 8, column = 2, padx = 3, pady = 3)
 
         self.master.mainloop()
 
@@ -177,17 +172,23 @@ class EditSingleModuleGUI:
                 self.repository_box.insert(INSERT, module.repository)
                 clone_bool = False
                 build_bool = False
+                package_bool = False
                 if module.clone == 'YES':
                     clone_bool = True
                 if module.build == 'YES':
                     build_bool = True
+                if module.package == 'YES':
+                    package_bool = True
                 self.clone_check.set(clone_bool)
                 self.build_check.set(build_bool)
+                self.package_check.set(package_bool)
 
 
     def applyChanges(self):
         """
-
+        Function that reads all of the inputted information and edits the module
+        parameters based on these inputs. Then refreshes the data model to account for the
+        new changes.
         """
 
         name = self.name_box.get('1.0', END).strip()
@@ -198,12 +199,16 @@ class EditSingleModuleGUI:
         repo = self.repository_box.get('1.0', END).strip()
         clone = self.clone_check.get()
         build = self.build_check.get()
+        package = self.package_check.get()
         clone_str = 'NO'
         build_str = 'NO'
+        package_str = 'NO'
         if clone:
             clone_str = 'YES'
         if build:
             build_str = 'YES'
+        if package:
+            package_str = 'YES'
 
         if len(name) == 0:
             self.root.showErrorMessage('Edit Module Error', 'ERROR - Please enter a valid name.', force_popup = True)
@@ -235,6 +240,7 @@ class EditSingleModuleGUI:
                 module.repository = repo
                 module.clone = clone_str
                 module.build = build_str
+                module.package = package_str
 
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()

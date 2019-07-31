@@ -28,6 +28,17 @@ class ConfigParser:
         parses module line into an InstllModule object
     parse_install_config(config_filename=INSTALL_CONFIG)
         main top level function that parses install config file
+    generate_default_injector_files(install_config : InstallConfiguration)
+        Function that creates some new base default injector files
+    read_injector_files(install_config : InstallConfiguration)
+        Function that reads the injector files and adds them to install config
+    parse_injector_files(injector_file_name : str, install_config : InstallConfiguration)
+        Function that parses an injector file and adds it to the install_config
+    read_build_flags(install_config : InstallConfiguration)
+        Function that reads the build flag files and adds them to install config
+    pause_macro_file(macro_file_name : str, install_config : InstallConfiguration)
+        Function that parses each individual build flag file into macro-value pairs,
+        and appends them to the list stored in the loaded install configuration
     """
 
 
@@ -35,6 +46,9 @@ class ConfigParser:
         """ Constructor for ConfigParser """
 
         self.configure_path = configure_path
+
+        # These modules must be included in an areaDetector binary bundle for the IOC to be able to run
+        self.required_in_package = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
 
 
     def check_valid_config_path(self):
@@ -50,7 +64,7 @@ class ConfigParser:
 
     def parse_line_to_module(self, line, current_url, current_url_type):
         """
-        Function that parses a line in the INSTALL_CONFIG file to and InstallModule object
+        Function that parses a line in the INSTALL_CONFIG file to an InstallModule object
 
         Parameters
         ----------
@@ -71,14 +85,26 @@ class ConfigParser:
         line = re.sub('\t', ' ', line)
         line = re.sub(' +', ' ', line)
         module_components = line.split(' ')
+        # If a line is read that isn't in the correct format return None
+        if len(module_components) < 6:
+            return None
+        # line will be in format:
+        # NAME   VERSION   RELATIVE_PATH   REPOSITORY   CLONE   BUILD   PACKAGE
         name        = module_components[0]
         version     = module_components[1]
         rel_path    = module_components[2]
         repository  = module_components[3]
         clone       = module_components[4]
         build       = module_components[5]
+        if name in self.required_in_package:
+            package = "YES"
+        # Add length check for compatibility with older configure directories - default package to NO
+        elif len(module_components) == 7:
+            package = module_components[6]
+        else:
+            package = "NO"
         # create object from line and return it
-        install_module = IM.InstallModule(name, version, rel_path, current_url_type, current_url, repository, clone, build)
+        install_module = IM.InstallModule(name, version, rel_path, current_url_type, current_url, repository, clone, build, package)
         return install_module
 
 
@@ -106,16 +132,15 @@ class ConfigParser:
 
         # Check if exists
         if os.path.exists(self.configure_path + "/" + config_filename):
-            # open the configure path
+            # open the configure file
             install_file = open(self.configure_path + "/" + config_filename, "r")
 
             # variables
             if install_file == None:
-                return None
+                return None, "Couldn't open install file"
             install_config = None
-            current_url = ""
-            current_url_type = ""
-            epics_arch = ""
+            current_url = "dummy_url.com"
+            current_url_type = "GIT_URL"
             install_loc = ""
             message = None
 
@@ -127,6 +152,8 @@ class ConfigParser:
                     if line.startswith("INSTALL="):
                         if force_location is None:
                             install_loc = line.split('=')[-1]
+                            if install_loc.endswith('/'):
+                                install_loc = install_loc[:-1]
                         else:
                             install_loc = force_location
                         # create install config object
@@ -148,19 +175,42 @@ class ConfigParser:
                     # URL definition lines
                     elif line.startswith("GIT_URL") or line.startswith("WGET_URL"):
                         current_url = line.split('=')[1]
+                        if not current_url.endswith('/'):
+                            current_url = current_url + '/'
                         current_url_type = line.split('=')[0]
                     else:
                         # Parse individual module line
                         install_module = self.parse_line_to_module(line, current_url, current_url_type)
-                        install_config.add_module(install_module)
+                        if install_module is not None and install_config is not None:
+                            install_config.add_module(install_module)
                 line = install_file.readline()
             
             install_file.close()
             # Read injectors and build flags
+            if install_config is None:
+                return None, 'Could not find INSTALL defined in given path'
             self.read_injector_files(install_config)
             self.read_build_flags(install_config)
             return install_config , message
-        return None, 'Configure Path not found'
+        else:
+            # Configure file not found
+            return None, 'Configure Path not found'
+
+
+    def generate_default_injector_files(self, install_config):
+        """
+        Function that creates some new base default injector files
+
+        Parameters
+        ----------
+        install_config : InstallConfiguration
+            currently loaded install configuration into which injector files will be added
+        """
+
+        install_config.add_injector_file('AD_RELEASE_CONFIG',   '', '$(AREA_DETECTOR)/configure/RELEASE_PRODS.local')
+        install_config.add_injector_file('AUTOSAVE_CONFIG',     '', '$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req')
+        install_config.add_injector_file('MAKEFILE_CONFIG',     '', '$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile')
+        install_config.add_injector_file('PLUGIN_CONFIG',       '', '$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd')
 
 
     def read_injector_files(self, install_config):
@@ -175,9 +225,16 @@ class ConfigParser:
 
         if install_config is None:
             return
+        elif not os.path.exists(self.configure_path + '/injectionFiles'):
+            self.generate_default_injector_files(install_config)
+            return
+        num_found = 0
         for file in os.listdir(self.configure_path + '/injectionFiles'):
             if os.path.isfile(self.configure_path + '/injectionFiles/' + file):
                 self.parse_injector_file(file, install_config)
+                num_found = num_found + 1
+        if num_found == 0:
+            self.generate_default_injector_files(install_config)
 
 
     def parse_injector_file(self, injector_file_name, install_config):
@@ -222,6 +279,8 @@ class ConfigParser:
         """
 
         if install_config is None:
+            return
+        elif not os.path.exists(self.configure_path + '/macroFiles'):
             return
         for file in os.listdir(self.configure_path + '/macroFiles'):
             if os.path.isfile(self.configure_path + '/macroFiles/' + file):

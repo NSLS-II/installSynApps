@@ -8,11 +8,7 @@ to clone, update, and build the EPICS and synApps software stack.
 
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__credits__     = ["Jakub Wlodek", "Kazimierz Gofron"]
-__license__     = "GPL"
-__version__     = "R2-0"
-__maintainer__  = "Jakub Wlodek"
-__status__      = "Production"
+__version__     = "R2-1"
 
 
 # Tkinter imports
@@ -150,6 +146,7 @@ class InstallSynAppsGUI:
         debugmenu.add_command(label='Print Loaded Config Info', command=self.printLoadedConfigInfo)
         debugmenu.add_command(label='Clear Log',                command=self.resetLog)
         debugmenu.add_command(label='Recheck Dependancies',     command=self.recheckDeps)
+        debugmenu.add_command(label='Print path information',   command=self.printPathInfo)
         menubar.add_cascade(label='Debug', menu=debugmenu)
 
         # Build Menu
@@ -161,6 +158,12 @@ class InstallSynAppsGUI:
         buildmenu.add_command(label='Build Modules',        command=lambda : self.initBuildProcess('build'))
         buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Build', menu=buildmenu)
+
+        # Package Menu
+        packagemenu = Menu(menubar, tearoff=0)
+        packagemenu.add_command(label='Select Package Destination', command=self.selectPackageDestination)
+        packagemenu.add_command(label='Package Modules',            command=lambda : self.initBuildProcess('package'))
+        menubar.add_cascade(label='Package', menu=packagemenu)
 
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
@@ -185,7 +188,7 @@ class InstallSynAppsGUI:
         self.injectButton   = Button(frame, font=self.smallFont, text='Inject Files',   command=lambda : self.initBuildProcess('inject'),   height='3', width='20')
         self.buildButton    = Button(frame, font=self.smallFont, text='Build Modules',  command=lambda : self.initBuildProcess('build'),    height='3', width='20')
         self.autorunButton  = Button(frame, font=self.smallFont, text='Autorun',        command=lambda : self.initBuildProcess('autorun'),  height='3', width='20')
-        self.helpButton     = Button(frame, font=self.smallFont, text='Help',           command=self.loadHelp,                              height='3', width='20')
+        self.packageButton  = Button(frame, font=self.smallFont, text='Package',        command=lambda : self.initBuildProcess('package'),  height='3', width='20')
         self.saveLog        = Button(frame, font=self.smallFont, text='Save Log',       command=self.saveLog,                               height='3', width='20')
 
         self.loadButton.grid(   row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
@@ -194,13 +197,14 @@ class InstallSynAppsGUI:
         self.injectButton.grid( row = 2, column = 1, padx = 15, pady = 15, columnspan = 1)
         self.buildButton.grid(  row = 3, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.autorunButton.grid(row = 3, column = 1, padx = 15, pady = 15, columnspan = 1)
-        self.helpButton.grid(   row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
+        self.packageButton.grid(row = 4, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.saveLog.grid(      row = 4, column = 1, padx = 15, pady = 15, columnspan = 1)
 
 
         # Log and loading label
-        self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
-        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor = W, font = self.smallFont, height = '1')
+        #self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
+        self.logButton      = Button(frame, text='Clear Log', font=self.smallFont, height='1', command=self.resetLog).grid(row = 0, column = 7, pady = 0, columnspan = 1)
+        self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor=W, font=self.smallFont, height = '1')
         self.loadingLabel.grid(row = 0, column = 2, pady = 0, columnspan = 2)
 
         # config panel
@@ -216,6 +220,15 @@ class InstallSynAppsGUI:
         self.configure_path = 'configure'
         self.valid_install = False
         self.deps_found = True
+
+        self.metacontroller = ViewModel.meta_pref_control.MetaDataController()
+        if 'configure_path' in self.metacontroller.metadata.keys():
+            self.configure_path = self.metacontroller.metadata['configure_path']
+            self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
+
+        self.metacontroller.metadata['isa_version'] = __version__
+        self.metacontroller.metadata['platform'] = platform
+        self.metacontroller.metadata['last_used'] = '{}'.format(datetime.datetime.now())
 
         # installSynApps options, initialzie + read default configure files
         self.parser = IO.config_parser.ConfigParser(self.configure_path)
@@ -237,6 +250,11 @@ class InstallSynAppsGUI:
         self.cloner         = Driver.clone_driver.CloneDriver(self.install_config)
         self.updater        = Driver.update_config_driver.UpdateConfigDriver(self.configure_path, self.install_config)
         self.builder        = Driver.build_driver.BuildDriver(self.install_config, 0)
+        self.packager       = Driver.packager_driver.Packager(self.install_config)
+        if 'package_location' in self.metacontroller.metadata.keys():
+            self.packager.output_location = self.metacontroller.metadata['package_location']
+            self.writeToLog('Loaded package output location: {}\n'.format(self.packager.output_location))
+
         self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
 
         self.recheckDeps()
@@ -304,15 +322,12 @@ class InstallSynAppsGUI:
             for module in self.install_config.get_module_list():
                 if module.build == "NO" and module.clone == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
-            self.writeToLog("Done.\n")
 
-            if os.path.exists(self.configure_path + "/macroFiles") and os.path.exists(self.configure_path + "/injectionFiles"):
-                self.writeToConfigPanel("\nAdditional build flags will be taken from:\n")
-                for mfile in os.listdir(self.configure_path + "/macroFiles"):
-                    self.writeToConfigPanel(mfile + "\n")
-                self.writeToConfigPanel("\nFile injections will be performed on the following:\n")
-                for ifile in self.install_config.injector_files:
-                    self.writeToConfigPanel("{} -> {}\n".format(ifile.name, ifile.target))
+            self.writeToConfigPanel("\nModules to package:\n")
+            for module in self.install_config.get_module_list():
+                if module.package == "YES":
+                    self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
+            self.writeToLog("Done.\n")
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
@@ -321,11 +336,13 @@ class InstallSynAppsGUI:
         """ Function that updates all references to install config and configure path """
 
         self.install_config = install_config
+        self.writer.install_config = self.install_config
         self.cloner.install_config = self.install_config
         self.updater.install_config = self.install_config
         self.updater.path_to_configure = self.configure_path
         self.updater.config_injector.install_config = self.install_config
         self.builder.install_config = self.install_config
+        self.packager.install_config = self.install_config
         self.autogenerator.install_config = self.install_config
 
 
@@ -349,6 +366,7 @@ class InstallSynAppsGUI:
             self.showWarningMessage('Warning', 'Qutting while process is running may result in invalid installation!', force_popup=True)
         if messagebox.askokcancel('Quit', 'Do you want to quit?'):
             self.master.destroy()
+        self.metacontroller.save_metadata()
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
 
@@ -408,7 +426,7 @@ class InstallSynAppsGUI:
             self.configure_path = 'resources'
             self.parser.configure_path = self.configure_path
             loaded_install_config, message = self.parser.parse_install_config(config_filename='NEW_CONFIG', force_location=temp, allow_illegal=True)
-            if len(message) > 0:
+            if message is not None:
                 self.valid_install = False
             else:
                 self.valid_install = True
@@ -452,6 +470,7 @@ class InstallSynAppsGUI:
             return
         self.writeToLog('Loaded configure directory at {}.\n'.format(self.configure_path))
         self.parser.configure_path = self.configure_path
+        self.metacontroller.metadata['configure_path'] = self.configure_path
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
         if message is not None:
             self.valid_install = False
@@ -464,6 +483,8 @@ class InstallSynAppsGUI:
             self.showErrorMessage('Load error', 'Error loading install config... {}'.format(message), force_popup=True)
         self.updateAllRefs(self.install_config)
         self.install_loaded = True
+        if self.configure_path == 'configure':
+            self.install_loaded = False
 
 
     def saveConfig(self):
@@ -485,6 +506,9 @@ class InstallSynAppsGUI:
         
         if force_loc is None:
             dirpath = filedialog.asksaveasfilename(initialdir = '.')
+            if len(dirpath) < 1:
+                self.writeToLog('Operation Cancelled.\n')
+                return
             self.writeToLog('Creating save directory...\n')
         else:
             ans = messagebox.askyesno('Confirm', 'Do you wish to overwrite existing install config with new changes?')
@@ -499,6 +523,10 @@ class InstallSynAppsGUI:
         if not wrote:
             self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
         else:
+            self.configure_path = dirpath
+            self.install_loaded = True
+            self.updateAllRefs(self.install_config)
+            self.metacontroller.metadata['configure_path'] = self.configure_path
             self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
 
 
@@ -517,13 +545,28 @@ class InstallSynAppsGUI:
             location = filedialog.askdirectory(initialdir = '.')
             if len(location) == 0:
                 return
-        if saveDir is not None and not os.path.exists(saveDir):
+        if location is not None and not os.path.exists(location):
             self.showErrorMessage('Save Error', 'ERROR - Save directory does not exist')
             return
         time = datetime.datetime.now()
         log_file = open(location + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
         log_file.write(self.log.get('1.0', END))
         log_file.close()
+
+
+    def selectPackageDestination(self):
+        """ Function that asks the user to select an output destination for the created tarball """
+
+        package_output = filedialog.askdirectory(initialdir = '.', title = 'Select output package directory', mustexist = True)
+        if package_output is None:
+            self.writeToLog('Operation Cancelled.\n')
+        else:
+            if os.path.exists(package_output):
+                self.packager.output_location = package_output
+                self.metacontroller.metadata['package_location'] = self.packager.output_location
+                self.writeToLog('New package output location set to: {}\n'.format(package_output))
+            else:
+                self.showErrorMessage('Path Error', 'ERROR - Output path does not exist.')
 
 
 #---------------------------- Editing Functions --------------------------------
@@ -629,6 +672,15 @@ class InstallSynAppsGUI:
         self.writeToLog('in the configure directory,\ncalled dependencyInstall.sh on Linux, and dependencyInstall.bat\non win32.')
         self.writeToLog('To add a script, simply write a shell/batch script,\nand place it in the configure directory.\n')
 
+
+    def printPathInfo(self):
+        """ Function that prints a series of paths that are currently loaded. """
+
+        self.writeToLog('-----------------------------------------\n')
+        self.writeToLog('Install Location: {}\n'.format(self.install_config.install_location))
+        self.writeToLog('Install config directory: {}\n'.format(self.configure_path))
+        self.writeToLog('Package output path: {}\n'.format(self.packager.output_location))
+
 #--------------------------------- Build Process Functions ------------------------------------------#
 #                                                                                                    #
 # Note that each of the build process functions has a wrapper that quickly returns, after starting   #
@@ -658,6 +710,8 @@ class InstallSynAppsGUI:
                 self.thread = threading.Thread(target=self.injectFilesProcess)
             elif action == 'build':
                 self.thread = threading.Thread(target=self.buildConfigProcess)
+            elif action == 'package':
+                self.thread = threading.Thread(target=self.packageConfigProcess)
             else:
                 self.showErrorMessage('Start Error', 'ERROR - Illegal init process call', force_popup=True)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -691,7 +745,7 @@ class InstallSynAppsGUI:
 
                     self.writeToLog('Checking out version {}\n'.format(module.version))
                     self.cloner.checkout_module(module)
-            self.writeToLog("Cleaning up clone directories")
+            self.writeToLog('Cleaning up clone directories\n')
             self.cloner.cleanup_modules()
             self.showMessage('Success', 'Finished Cloning process')
         else:
@@ -815,7 +869,22 @@ class InstallSynAppsGUI:
                         self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
 
         self.showMessage('Alert', 'You may wish to save a copy of this log file for later use.')
-        self.writeToLog('Autorun completed.')
+        self.writeToLog('Autorun completed.\n')
+
+
+    def packageConfigProcess(self):
+        """ Function that packages the specified modules into a tarball """
+
+        self.writeToLog('Starting packaging...\n')
+        output_filename = self.packager.create_bundle_name()
+        self.writeToLog('Tarring...\n')
+        output = self.packager.create_package(output_filename)
+        if output < 0:
+            self.showErrorMessage('Package Error', 'ERROR - Was unable to package areaDetector successfully. Aborting.', force_popup=True)
+        else:
+            self.writeToLog('Package saved to {}\n'.format(self.packager.output_location))
+            self.writeToLog('Bundle Name: {}\n'.format(output_filename))
+            self.writeToLog('Done. Completed in {} seconds.\n'.format(output))
 
 
 # ---------------- Start the GUI ---------------

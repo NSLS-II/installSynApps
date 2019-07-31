@@ -5,7 +5,9 @@ The following modules were installed with the following version numbers:
 
 EPICS_BASE -> R7.0.2.2
 SUPPORT -> R6-0
+MODBUS -> master
 AREA_DETECTOR -> R3-6
+ADCORE -> R3-6
 DUMMY -> R1-0
 -------------------------------------------------------
 The following modules were cloned with the given versions but not auto-built
