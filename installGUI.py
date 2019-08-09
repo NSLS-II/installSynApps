@@ -166,6 +166,12 @@ class InstallSynAppsGUI:
         packagemenu.add_command(label='Package Modules',            command=lambda : self.initBuildProcess('package'))
         menubar.add_cascade(label='Package', menu=packagemenu)
 
+        # InitIOCs Menu
+        iocmenu = Menu(menubar, tearoff=0)
+        iocmenu.add_command(label='Get initIOCs', command=self.getInitIOCs)
+        iocmenu.add_command(label='Launch initIOCs', command=self.launchInitIOCs)
+        menubar.add_cascade(label='IOCs', menu=iocmenu)
+
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
@@ -231,8 +237,8 @@ class InstallSynAppsGUI:
             self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
 
         self.metacontroller.metadata['isa_version'] = __version__
-        self.metacontroller.metadata['platform'] = platform
-        self.metacontroller.metadata['last_used'] = '{}'.format(datetime.datetime.now())
+        self.metacontroller.metadata['platform']    = platform
+        self.metacontroller.metadata['last_used']   = '{}'.format(datetime.datetime.now())
 
         # installSynApps options, initialzie + read default configure files
         self.parser = IO.config_parser.ConfigParser(self.configure_path)
@@ -293,7 +299,7 @@ class InstallSynAppsGUI:
         """ Function that initializes log text """
 
         text = "+-----------------------------------------------------------------\n"
-        text = text + "+ installSynApps, version: {}                                  +\n".format(__version__)
+        text = text + "+ installSynApps, version: {:<38}+\n".format(__version__)
         text = text +"+ Author: Jakub Wlodek                                           +\n"
         text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
         text = text +"+ This software comes with NO warranty!                          +\n"
@@ -356,10 +362,13 @@ class InstallSynAppsGUI:
         self.writeToLog('Checking for installed dependancies...\n')
         inPath, missing = self.builder.check_dependencies_in_path()
         if not inPath:
-            #self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
+            self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
             self.deps_found = False
         else:
             self.deps_found = True
+        if not self.packager.found_distro:
+            self.writeToLog('Distro python package not found.\nTarball names will be generic and not distribution specific.\n')
+            self.writeToLog('To install distro, use pip: pip install distro\n')
         self.writeToLog('Done.\n')
 
 
@@ -578,6 +587,26 @@ class InstallSynAppsGUI:
                 self.writeToLog('New package output location set to: {}\n'.format(package_output))
             else:
                 self.showErrorMessage('Path Error', 'ERROR - Output path does not exist.')
+
+
+    def getInitIOCs(self):
+        """ Function that gets initIOCs from github. """
+
+        self.writeToLog('Fetching the initIOC script...\n')
+        out = subprocess.Popen(['git', 'clone', 'https://github.com/epicsNSLS2-deploy/initIOC'])
+        self.writeToLog('Done.\n')
+
+
+    def launchInitIOCs(self):
+        """ Function that launches the GUI version of initIOCs """
+
+        if os.path.exists('./initIOC/initIOCs.py'):
+            current = os.getcwd()
+            os.chdir('initIOC')
+            p = subprocess.Popen(['./initIOCs.py', '-g'])
+            os.chdir(current)
+        else:
+            self.showErrorMessage('Error', 'ERROR - Could not find initIOCs. Run the Get initIOCs command first.')
 
 
 #---------------------------- Editing Functions --------------------------------
@@ -848,11 +877,18 @@ class InstallSynAppsGUI:
             return status
         for module in self.install_config.get_module_list():
             if module.build == 'YES':
-                status, was_ad = self.builder.build_ad_module(module)
-                if was_ad and status == 0:
-                    self.writeToLog("Built AD module {}\n".format(module.name))
-                elif was_ad and status != 0:
-                    self.writeToLog("Failed to build AD module {}\n".format(module.name))
+                # Process any custom builds now
+                if module.custom_build_script_path is not None:
+                    self.writeToLog('Detected custom build script for module {}\n'.format(module.name))
+                    out = self.builder.build_via_custom_script(module)
+                    self.writeToLog('Custom build script for {} exited with code {}\n'.format(module.name, out))
+                else:
+                    # Also build any areaDetector plugins/drivers
+                    status, was_ad = self.builder.build_ad_module(module)
+                    if was_ad and status == 0:
+                        self.writeToLog("Built AD module {}\n".format(module.name))
+                    elif was_ad and status != 0:
+                        self.writeToLog("Failed to build AD module {}\n".format(module.name))
         self.writeToLog('Done.\n')
         self.writeToLog('Autogenerating install/uninstall scripts...\n')
         self.autogenerator.initialize_dir()
