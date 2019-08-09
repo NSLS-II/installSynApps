@@ -14,7 +14,12 @@ import subprocess
 
 # External package used to identify linux distribution version. Note that this adds external
 # dependancy, but it is required because the platform.linuxdistro() is being deprecated
-import distro
+WITH_DISTRO=True
+try:
+    import distro
+except ImportError:
+    # user does not have distro installed, so generic name will be used.
+    WITH_DISTRO=False
 
 # Only depends on install config
 import installSynApps.DataModel.install_config as IC
@@ -81,10 +86,15 @@ class Packager:
             self.arch = force_arch
             self.OS = force_arch
         elif platform.startswith('linux'):
-            v = distro.linux_distribution(full_distribution_name=False)
-            if len(v[0]) > 0 and len(v[1]) > 0:
-                self.OS = '{}_{}'.format(v[0], v[1])
+            if WITH_DISTRO:
+                self.found_distro = True
+                v = distro.linux_distribution(full_distribution_name=False)
+                if len(v[0]) > 0 and len(v[1]) > 0:
+                    self.OS = '{}_{}'.format(v[0], v[1])
+                else:
+                    self.OS = 'linux-x86_64'
             else:
+                self.found_distro = False
                 self.OS = 'linux-x86_64'
             self.arch = 'linux-x86_64'
         elif platform == 'win32':
