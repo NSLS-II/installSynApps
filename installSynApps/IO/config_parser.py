@@ -7,6 +7,7 @@
 
 import os
 import re
+from sys import platform
 import installSynApps.DataModel.install_config as IC
 import installSynApps.DataModel.install_module as IM
 
@@ -156,6 +157,8 @@ class ConfigParser:
                                 install_loc = install_loc[:-1]
                         else:
                             install_loc = force_location
+                        if install_loc.startswith('/') and platform == 'win32':
+                            install_loc = 'C:' + install_loc
                         # create install config object
                         install_config = IC.InstallConfiguration(install_loc, self.configure_path)
                         # Error checking

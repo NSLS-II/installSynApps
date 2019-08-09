@@ -36,7 +36,7 @@ STREAM              2.8.9       $(SUPPORT)/stream                           Stre
 
 GIT_URL=https://github.com/epics-modules/
 
-ASYN                R4-35       $(SUPPORT)/asyn                             asyn                            YES             YES
+ASYN                R4-36       $(SUPPORT)/asyn                             asyn                            YES             YES
 AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES
 ALIVE               R1-1-0      $(SUPPORT)/alive                            alive                           NO              NO
 BUSY                R1-7        $(SUPPORT)/busy                             busy                            YES             YES
@@ -104,9 +104,9 @@ GALIL               V3-6        $(SUPPORT)/galil                            Gali
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR       R3-6        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
+AREA_DETECTOR       R3-7        $(SUPPORT)/areaDetector                     areaDetector                    YES             YES
 ADSUPPORT           R1-8        $(AREA_DETECTOR)/ADSupport                  ADSupport                       YES             YES
-ADCORE              R3-6        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
+ADCORE              R3-7        $(AREA_DETECTOR)/ADCore                     ADCore                          YES             YES
 
 
 ######################################
