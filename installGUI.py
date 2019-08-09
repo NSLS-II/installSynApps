@@ -133,6 +133,7 @@ class InstallSynAppsGUI:
         editmenu.add_command(label='Edit Config',               command=lambda : self.openEditWindow('edit_config'))
         editmenu.add_command(label='Add New Module',            command=lambda : self.openEditWindow('add_module'))
         editmenu.add_command(label='Edit Individual Module',    command=lambda : self.openEditWindow('edit_single_mod'))
+        editmenu.add_command(label='Edit Custom Build Scripts', command=lambda : self.openEditWindow('add_custom_build_script'))
         editmenu.add_command(label='Edit Injection Files',      command=lambda : self.openEditWindow('edit_injectors'))
         editmenu.add_command(label='Edit Build Flags',          command=lambda : self.openEditWindow('edit_build_flags'))
         editmenu.add_command(label='Edit Make Core Count',           command=self.editCoreCount)
@@ -168,7 +169,7 @@ class InstallSynAppsGUI:
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
-        helpmenu.add_command(label='Dependency Script Help',    command=self.depScriptHelp)
+        helpmenu.add_command(label='Custom Build Script Help',  command=self.depScriptHelp)
         helpmenu.add_command(label='Online Documentation',      command=self.openOnlineDocs)
         helpmenu.add_command(label='About',                     command=self.showAbout)
         menubar.add_cascade(label='Help', menu=helpmenu)
@@ -220,10 +221,13 @@ class InstallSynAppsGUI:
         self.configure_path = 'configure'
         self.valid_install = False
         self.deps_found = True
+        self.install_loaded = False
 
         self.metacontroller = ViewModel.meta_pref_control.MetaDataController()
         if 'configure_path' in self.metacontroller.metadata.keys():
             self.configure_path = self.metacontroller.metadata['configure_path']
+            if self.configure_path != 'configure':
+                self.install_loaded = True
             self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
 
         self.metacontroller.metadata['isa_version'] = __version__
@@ -234,7 +238,7 @@ class InstallSynAppsGUI:
         self.parser = IO.config_parser.ConfigParser(self.configure_path)
 
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
-        self.install_loaded = False
+
         if message is not None:
             self.valid_install = False
             self.showWarningMessage('Warning', 'Illegal Install Config: {}'.format(message), force_popup=True)
@@ -517,12 +521,19 @@ class InstallSynAppsGUI:
             elif not ans:
                 return
             dirpath = force_loc
-            shutil.rmtree(dirpath)
+            shutil.rmtree(os.path.join(dirpath, 'injectionFiles'))
+            shutil.rmtree(os.path.join(dirpath, 'macroFiles'))
+            os.remove(os.path.join(dirpath, 'INSTALL_CONFIG'))
 
         wrote, message = self.writer.write_install_config(filepath=dirpath)
         if not wrote:
             self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
         else:
+            if self.install_loaded:
+                try:
+                    shutil.copytree(self.configure_path + '/customBuildScripts', dirpath + '/customBuildScripts')
+                except:
+                    pass
             self.configure_path = dirpath
             self.install_loaded = True
             self.updateAllRefs(self.install_config)
@@ -591,6 +602,8 @@ class InstallSynAppsGUI:
             window = ViewModel.edit_injector_screen.EditInjectorGUI(self, self.install_config)
         elif edit_window_str == 'edit_build_flags':
             window = ViewModel.edit_macro_screen.EditMacroGUI(self, self.install_config)
+        elif edit_window_str == 'add_custom_build_script':
+            window = ViewModel.add_custom_build_screen.AddCustomBuildScriptGUI(self, self.install_config)
         else:
             self.showErrorMessage('Open Error', 'ERROR - Illegal Edit Window selection')
 
@@ -668,9 +681,12 @@ class InstallSynAppsGUI:
     def depScriptHelp(self):
         """ Function that displays help message for adding dependancy script """
 
-        self.writeToLog('When dependency install is enabled, installSynApps will attempt\nto run a dependency script')
-        self.writeToLog('in the configure directory,\ncalled dependencyInstall.sh on Linux, and dependencyInstall.bat\non win32.')
-        self.writeToLog('To add a script, simply write a shell/batch script,\nand place it in the configure directory.\n')
+        self.writeToLog('Use the Edit -> Edit Custom Build Scripts menu to add/remove\n')
+        self.writeToLog('custom build scripts for each module. On windows they will be saved as\n')
+        self.writeToLog('.bat files, on linux as .sh files, and they will be run from the module\n')
+        self.writeToLog('root directory. If no custom script is found, the module will just be\n')
+        self.writeToLog('built with make. If you have a sudo call in your script, note that you\n')
+        self.writeToLog('will need to enter it in the terminal to proceed.\n')
 
 
     def printPathInfo(self):

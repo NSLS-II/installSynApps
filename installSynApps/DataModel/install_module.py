@@ -56,6 +56,7 @@ class InstallModule:
         self.clone      = clone
         self.build      = build
         self.package    = package
+        self.custom_build_script_path = None
 
 
     def print_info(self, fp = None):

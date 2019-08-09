@@ -194,6 +194,7 @@ class ConfigParser:
                 return None, 'Could not find INSTALL defined in given path'
             self.read_injector_files(install_config)
             self.read_build_flags(install_config)
+            self.parse_custom_build_scripts(install_config)
             return install_config , message
         else:
             # Configure file not found
@@ -314,3 +315,14 @@ class ConfigParser:
                     macros.append(line.split('='))
 
         install_config.add_macros(macros)
+
+
+    def parse_custom_build_scripts(self, install_config):
+        """ Function that checks if there is a custom build script written for each module in the install config """
+
+        build_script_folder = os.path.join(self.configure_path, 'customBuildScripts')
+        if os.path.exists(build_script_folder):
+            for module in install_config.get_module_list():
+                for file in os.listdir(build_script_folder):
+                    if file.startswith(module.name):
+                        module.custom_build_script_path = os.path.join(build_script_folder, file)

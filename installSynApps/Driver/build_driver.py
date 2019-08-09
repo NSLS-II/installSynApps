@@ -6,6 +6,7 @@ __author__   = 'Jakub Wlodek'
 
 import os
 import subprocess
+from sys import platform
 import installSynApps.DataModel.install_config as IC
 
 
@@ -148,11 +149,21 @@ class BuildDriver:
             return out_core, []
 
         for module in self.install_config.get_module_list():
-            if module.rel_path.startswith("$(AREA_DETECTOR)") and module.build == "YES":
+            if module.rel_path.startswith("$(AREA_DETECTOR)") and module.build == "YES" and module.custom_build_script_path is None:
                 if module.name != "ADCORE" and module.name != "ADSUPPORT":
                     out_mod = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
                     if out_mod != 0:
                         failed_builds.append(module)
+            elif module.custom_build_script_path is not None:
+                current = os.getcwd()
+                os.chdir(module.abs_path)
+                if platform == 'win32':
+                    out_mod = subprocess.call([module.custom_build_script_path])
+                else:
+                    out_mod = subprocess.call(['bash', module.custom_build_script_path])
+                os.chdir(current)
+                if out_mod != 0:
+                    failed_builds.append(module)
 
         return 0, failed_builds
 
@@ -180,9 +191,18 @@ class BuildDriver:
     def build_ad_module(self, module):
         """ Function that builds only ad modules """
 
-        if module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT':
+        if module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT' and module.custom_build_script_path is None:
             out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
             return out, True
+        elif module.custom_build_script_path is not None:
+            current = os.getcwd()
+            os.chdir(module.abs_path)
+            if platform == 'win32':
+                out_mod = subprocess.call([module.custom_build_script_path])
+            else:
+                out_mod = subprocess.call(['bash', module.custom_build_script_path])
+            os.chdir(current)
+            return out_mod, True
         else:
             return 0, False
 
