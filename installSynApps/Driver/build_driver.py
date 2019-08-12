@@ -71,7 +71,7 @@ class BuildDriver:
             self.make_flag = '-sj{}'.format(self.threads)
 
 
-    def check_dependencies_in_path(self):
+    def check_dependencies_in_path(self, allow_partial=False):
         """
         Function meant to check if required packages are located in the system path.
 
@@ -85,29 +85,34 @@ class BuildDriver:
         message = ''
         current = 'make'
         FNULL = open(os.devnull, 'w')
+
         try:
             subprocess.call(['make', '--version'], stdout=FNULL, stderr=FNULL)
+            current = 'perl'
+            subprocess.call(['perl', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'wget'
             subprocess.call(['wget', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'git'
             subprocess.call(['git', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'tar'
             subprocess.call(['tar', '--version'], stdout=FNULL, stderr=FNULL)
-            current = 'perl'
-            subprocess.call(['perl', '--version'], stdout=FNULL, stderr=FNULL)
         except FileNotFoundError:
-            status = False
+            if not allow_partial:
+                status = False
             message = current
 
         FNULL.close()
         return status, message
 
 
-    def acquire_dependecies(self, dependency_script_path, with_gui = False):
+    def acquire_dependecies(self, dependency_script_path):
         """ Method that runs dependency install shell script """
 
         if os.path.exists(dependency_script_path) and os.path.isfile(dependency_script_path):
-            subprocess.call(dependency_script_path, shell=True)
+            if dependency_script_path.endswith('.bat'):
+                subprocess.call([dependency_script_path])
+            else:
+                subprocess.call(['bash', dependency_script_path])
 
 
     def build_base(self):

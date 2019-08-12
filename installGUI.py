@@ -136,7 +136,7 @@ class InstallSynAppsGUI:
         editmenu.add_command(label='Edit Custom Build Scripts', command=lambda : self.openEditWindow('add_custom_build_script'))
         editmenu.add_command(label='Edit Injection Files',      command=lambda : self.openEditWindow('edit_injectors'))
         editmenu.add_command(label='Edit Build Flags',          command=lambda : self.openEditWindow('edit_build_flags'))
-        editmenu.add_command(label='Edit Make Core Count',           command=self.editCoreCount)
+        editmenu.add_command(label='Edit Make Core Count',      command=self.editCoreCount)
         editmenu.add_checkbutton(label='Toggle Popups',         onvalue=True, offvalue=False, variable=self.showPopups)
         editmenu.add_checkbutton(label='Toggle Single Core',    onvalue=True, offvalue=False, variable=self.singleCore)
         self.singleCore.trace('w', self.setSingleCore)
@@ -152,12 +152,13 @@ class InstallSynAppsGUI:
 
         # Build Menu
         buildmenu = Menu(menubar, tearoff=0)
-        buildmenu.add_command(label='Edit Dependency Script',   command=lambda : self.openEditWindow('edit_dependency_script'))
         buildmenu.add_command(label='Autorun',                  command=lambda : self.initBuildProcess('autorun'))
+        buildmenu.add_command(label='Run Dependency Script',    command=lambda : self.initBuildProcess('install-dependencies'))
         buildmenu.add_command(label='Clone Modules',            command=lambda : self.initBuildProcess('clone'))
         buildmenu.add_command(label='Update Config Files',      command=lambda : self.initBuildProcess('update'))
         buildmenu.add_command(label='Inject into Files',        command=lambda : self.initBuildProcess('inject'))
         buildmenu.add_command(label='Build Modules',            command=lambda : self.initBuildProcess('build'))
+        buildmenu.add_command(label='Edit Dependency Script',   command=lambda : self.openEditWindow('edit_dependency_script'))
         buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Build', menu=buildmenu)
 
@@ -177,6 +178,7 @@ class InstallSynAppsGUI:
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
+        helpmenu.add_command(label='Required dependencies',     command=self.printDependencies)
         helpmenu.add_command(label='installSynApps on Github',  command=lambda : webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps", new=2))
         helpmenu.add_command(label='Report an issue',           command=lambda : webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps/issues", new=2))
         helpmenu.add_command(label='Custom Build Script Help',  command=self.depScriptHelp)
@@ -373,10 +375,13 @@ class InstallSynAppsGUI:
         """ Wrapper function for checking for installed dependancies """
 
         self.writeToLog('Checking for installed dependancies...\n')
-        inPath, missing = self.builder.check_dependencies_in_path()
+        inPath, missing = self.builder.check_dependencies_in_path(allow_partial=True)
         if not inPath:
             self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
             self.deps_found = False
+        elif inPath and len(missing) > 0:
+            self.showWarningMessage('Warning', 'WARNING - {} not found in system path. Make sure to add it in dependency script'.format(missing))
+            self.deps_found = True
         else:
             self.deps_found = True
         if not self.packager.found_distro:
@@ -701,6 +706,16 @@ class InstallSynAppsGUI:
         self.showMessage("Help", helpMessage)
 
 
+    def printDependencies(self):
+        """ Prints some information regarding required dependencies for installSynApps """
+
+        self.writeToLog('Dependencies required for installSynApps:')
+        self.writeToLog('For cloning: git, wget, and tar')
+        self.writeToLog('For building: make, perl, and either gcc/g++ on linux, or MSCV/MSVC++ on win32')
+        self.writeToLog('For packaging: tar, python module distro')
+        self.writeToLog('All dependencies must be in system path during build time.')
+
+
     def showAbout(self):
         """ Simple function that shows about message """
 
@@ -756,6 +771,8 @@ class InstallSynAppsGUI:
         elif not self.thread.is_alive():
             if action == 'autorun':
                 self.thread = threading.Thread(target=self.autorunProcess)
+            elif action == 'install-dependencies':
+                self.thread = threading.Thread(target=self.installDependenciesProcess)
             elif action == 'clone':
                 self.thread = threading.Thread(target=self.cloneConfigProcess)
             elif action == 'update':
@@ -775,6 +792,23 @@ class InstallSynAppsGUI:
             self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+    def installDependenciesProcess(self):
+        """ Function that calls a dependency script if required """
+
+        self.writeToLog('Running dependency script...\n')
+        if platform == 'win32':
+            if os.path.exists(self.configure_path + '/dependencyInstall.bat'):
+                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.bat')
+            else:
+                self.writeToLog('No dependency script found.\n')
+        else:
+            if os.path.exists(self.configure_path + '/dependencyInstall.sh'):
+                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.sh')
+            else:
+                self.writeToLog('No dependency script found.\n')
+        self.writeToLog('Done.\n')
 
 
     def cloneConfigProcess(self):
@@ -847,22 +881,6 @@ class InstallSynAppsGUI:
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning build process...\n')
-        if not platform == "win32" and self.installDep.get():
-            self.writeToLog('Running dependency script...\n')
-            if os.path.exists(self.configure_path + '/dependencyInstall.sh'):
-                self.writeToLog('Please enter your sudo password into the terminal...\n')
-                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.sh')
-                self.writeToLog('Dependencies have been installed.\n')
-            else:
-                self.writeToLog('No dependency script found.\n')
-        elif platform == "win32" and self.installDep.get():
-            if os.path.exists(self.configure_path + '/dependencyInstall.bat'):
-                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.bat')
-                self.writeToLog('Dependencies have been installed.\n')
-            else:
-                self.writeToLog('No dependency script found.\n')
-        else:
-            self.writeToLog("Auto install dependencies toggled off.\n")
         self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
         status = self.builder.build_base()
         if status < 0:
@@ -914,7 +932,12 @@ class InstallSynAppsGUI:
     def autorunProcess(self):
         """ Function that performs all other processes sequentially """
 
-        self.showMessage('Start Autorun', 'Start Autorun - Clone -> Checkout -> Update -> Build -> Generate')
+        self.showMessage('Start Autorun', 'Start Autorun - Deps -> Clone -> Checkout -> Update -> Build -> Generate')
+        if self.installDep.get():
+            self.installDependenciesProcess()
+        else:
+            self.writeToLog("Auto install dependencies toggled off.\n")
+
         current_status = self.cloneConfigProcess()
         if current_status < 0:
             self.showErrorMessage('Clone Error', 'ERROR - Cloning error occurred, aborting...')
