@@ -47,7 +47,7 @@ class EditInjectorGUI:
 
     def __init__(self, root, install_config):
         """
-        Constructor for the EditInjectoGUI class
+        Constructor for the EditInjectorGUI class
         """
 
         self.root = root
@@ -76,15 +76,16 @@ class EditInjectorGUI:
         self.currentEditVar.set(self.injectorList[0])
 
         self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, *self.injectorList)
-        self.dropdown.grid(row = 0, column = 0, columnspan = 2, padx = 5, pady = 5)
+        self.dropdown.config(width=20)
+        self.dropdown.grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
         self.currentEditVar.trace('w', self.updateEditPanel)
 
-        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges).grid(row = 0, column = 3, columnspan = 1)
-        self.applyExitButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyExit).grid(row = 0, column = 4, columnspan = 1)
-        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel).grid(row = 0, column = 5, columnspan = 1)
+        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=10).grid(row = 0, column = 1, columnspan = 1)
+        self.applyExitButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyExit, width=10).grid(row = 0, column = 2, columnspan = 1)
+        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 3, columnspan = 1)
 
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 37, width = 100)
-        self.editPanel.grid(row = 1, column = 0, columnspan = 6)
+        self.editPanel.grid(row = 1, column = 0, columnspan = 4)
 
         self.updateEditPanel()
 

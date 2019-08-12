@@ -70,9 +70,9 @@ class EditMacroGUI:
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
-        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.applyButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyChangesExit).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
-        self.refreshButton = Button(self.viewFrame, text='Reload', command = self.initEditPanel).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
+        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=12).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
+        self.applyButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyChangesExit, width=12).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
+        self.refreshButton = Button(self.viewFrame, text='Reload', command = self.initEditPanel, width=12).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 20, width = 55)
         self.editPanel.grid(row = 1, column = 0, columnspan = 3)
 

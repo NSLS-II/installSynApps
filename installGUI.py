@@ -152,11 +152,12 @@ class InstallSynAppsGUI:
 
         # Build Menu
         buildmenu = Menu(menubar, tearoff=0)
-        buildmenu.add_command(label='Autorun',              command=lambda : self.initBuildProcess('autorun'))
-        buildmenu.add_command(label='Clone Modules',        command=lambda : self.initBuildProcess('clone'))
-        buildmenu.add_command(label='Update Config Files',  command=lambda : self.initBuildProcess('update'))
-        buildmenu.add_command(label='Inject into Files',    command=lambda : self.initBuildProcess('inject'))
-        buildmenu.add_command(label='Build Modules',        command=lambda : self.initBuildProcess('build'))
+        buildmenu.add_command(label='Edit Dependency Script',   command=lambda : self.openEditWindow('edit_dependency_script'))
+        buildmenu.add_command(label='Autorun',                  command=lambda : self.initBuildProcess('autorun'))
+        buildmenu.add_command(label='Clone Modules',            command=lambda : self.initBuildProcess('clone'))
+        buildmenu.add_command(label='Update Config Files',      command=lambda : self.initBuildProcess('update'))
+        buildmenu.add_command(label='Inject into Files',        command=lambda : self.initBuildProcess('inject'))
+        buildmenu.add_command(label='Build Modules',            command=lambda : self.initBuildProcess('build'))
         buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Build', menu=buildmenu)
 
@@ -176,8 +177,10 @@ class InstallSynAppsGUI:
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
+        helpmenu.add_command(label='installSynApps on Github',  command=lambda : webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps", new=2))
+        helpmenu.add_command(label='Report an issue',           command=lambda : webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps/issues", new=2))
         helpmenu.add_command(label='Custom Build Script Help',  command=self.depScriptHelp)
-        helpmenu.add_command(label='Online Documentation',      command=self.openOnlineDocs)
+        helpmenu.add_command(label='Online Documentation',      command=lambda : webbrowser.open("https://epicsNSLS2-deploy.github.io/installSynApps", new=2))
         helpmenu.add_command(label='About',                     command=self.showAbout)
         menubar.add_cascade(label='Help', menu=helpmenu)
 
@@ -645,6 +648,8 @@ class InstallSynAppsGUI:
             window = ViewModel.edit_macro_screen.EditMacroGUI(self, self.install_config)
         elif edit_window_str == 'add_custom_build_script':
             window = ViewModel.add_custom_build_screen.AddCustomBuildScriptGUI(self, self.install_config)
+        elif edit_window_str == 'edit_dependency_script':
+            window = ViewModel.edit_dependency_script.EditDependencyScriptGUI(self, self.install_config)
         else:
             self.showErrorMessage('Open Error', 'ERROR - Illegal Edit Window selection')
 
@@ -683,14 +688,6 @@ class InstallSynAppsGUI:
 
 #--------------------------------- Help/Documentation Functions -----------------------------
 
-
-    def openOnlineDocs(self):
-        """ Function that uses the webbrowser python module to open up the installSynApps online docs """
-
-        webbrowser.open("https://epicsNSLS2-deploy.github.io/installSynApps", new=2)
-
-
-
     def loadHelp(self):
         """ Simple function that displays a help message """
 
@@ -723,10 +720,10 @@ class InstallSynAppsGUI:
         """ Function that displays help message for adding dependancy script """
 
         self.writeToLog('Use the Edit -> Edit Custom Build Scripts menu to add/remove\n')
-        self.writeToLog('custom build scripts for each module. On windows they will be saved as\n')
-        self.writeToLog('.bat files, on linux as .sh files, and they will be run from the module\n')
-        self.writeToLog('root directory. If no custom script is found, the module will just be\n')
-        self.writeToLog('built with make. If you have a sudo call in your script, note that you\n')
+        self.writeToLog('custom build scripts for each module.\nOn windows they will be saved as')
+        self.writeToLog('.bat files, on linux as .sh files,\nand they will be run from the module')
+        self.writeToLog(' root directory.\nIf no custom script is found, the module will just be\n')
+        self.writeToLog('built with make. If you have a sudo call in your script,\nnote that you')
         self.writeToLog('will need to enter it in the terminal to proceed.\n')
 
 

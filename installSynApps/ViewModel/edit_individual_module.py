@@ -104,9 +104,9 @@ class EditSingleModuleGUI:
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
-        self.applyButton = Button(self.viewFrame, text='Save Changes', command = self.applyChanges).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.exitWindowButton = Button(self.viewFrame, text='Return', command = self.exitWindow).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
-        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
+        self.applyButton = Button(self.viewFrame, text='Save Changes', command = self.applyChanges, width=10).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
+        self.exitWindowButton = Button(self.viewFrame, text='Return', command = self.exitWindow, width=10).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
+        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
 
         self.title_label = Label(self.viewFrame, text='Edit individual module:').grid(row = 1, column = 0, columnspan = 1, padx = 5, pady = 5)
         #self.module_dropdown = OptionMenu(self.viewFrame, self.edit_name_var, *self.legal_names)

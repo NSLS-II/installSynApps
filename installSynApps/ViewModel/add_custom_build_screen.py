@@ -40,18 +40,11 @@ class AddCustomBuildScriptGUI:
         button that runs the apply method
     editPanel : ScrolledText
         Panel for editing the loaded injector file.
-    
-    Methods
-    -------
-    updateEditPanel(*args)
-        updates the main edit panel based on current selection
-    applyChanges()
-        Applies changes to the loaded config
     """
 
     def __init__(self, root, install_config):
         """
-        Constructor for the EditInjectoGUI class
+        Constructor for the AddCustomBuildScriptGUI class
         """
 
         self.root = root
@@ -147,8 +140,8 @@ class AddCustomBuildScriptGUI:
 
     def applyChanges(self):
         """
-        Method that reads the edit panel, and sets the injector contents to whatever the user
-        wrote. Note that there are no checks to see if the injection will be valid.
+        Method that reads the edit panel, and writes a custom build script with $MODULE_NAME as the name
+        and an OS appropriate extension
         """
 
         temp = self.editPanel.get('1.0', END).splitlines()
