@@ -98,6 +98,8 @@ class Packager:
                 self.OS = 'linux-x86_64'
             self.arch = 'linux-x86_64'
         elif platform == 'win32':
+            # when we are using windows, we don't care if distro is installed, so just assume it is true
+            self.found_distro = True
             self.arch = 'windows-x64-static'
             self.OS = self.arch
         self.start_time = 0

@@ -622,7 +622,10 @@ class InstallSynAppsGUI:
             self.writeToLog('Launching initIOC GUI...\n')
             current = os.getcwd()
             os.chdir('initIOC')
-            p = subprocess.Popen(['./initIOCs.py', '-g'])
+            if platform == 'win32':
+                p = subprocess.Popen(['py', 'initIOCs.py', '-g'])
+            else:
+                p = subprocess.Popen(['./initIOCs.py', '-g'])
             os.chdir(current)
             self.writeToLog('Done.\n')
         else:
