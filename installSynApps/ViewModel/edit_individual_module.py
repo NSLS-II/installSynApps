@@ -156,7 +156,6 @@ class EditSingleModuleGUI:
         reloads Panel to defaults
         """
 
-        self.name_box.delete('1.0', END)
         self.version_box.delete('1.0', END)
         self.rel_path_box.delete('1.0', END)
         self.url_box.delete('1.0', END)
@@ -164,7 +163,6 @@ class EditSingleModuleGUI:
 
         for module in self.install_config.get_module_list():
             if module.name == self.edit_name_var.get():
-                self.name_box.insert(INSERT, module.name)
                 self.version_box.insert(INSERT, module.version)
                 self.rel_path_box.insert(INSERT, module.rel_path)
                 self.url_type_var.set(module.url_type)
@@ -191,7 +189,6 @@ class EditSingleModuleGUI:
         new changes.
         """
 
-        name = self.name_box.get('1.0', END).strip()
         version = self.version_box.get('1.0', END).strip()
         rel_path = self.rel_path_box.get('1.0', END).strip()
         url_type = self.url_type_var.get()
@@ -209,12 +206,6 @@ class EditSingleModuleGUI:
             build_str = 'YES'
         if package:
             package_str = 'YES'
-
-        if len(name) == 0:
-            self.root.showErrorMessage('Edit Module Error', 'ERROR - Please enter a valid name.', force_popup = True)
-            return
-
-        name = name.upper()
 
         if len(version) == 0:
             version = 'master'

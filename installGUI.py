@@ -164,6 +164,7 @@ class InstallSynAppsGUI:
         packagemenu = Menu(menubar, tearoff=0)
         packagemenu.add_command(label='Select Package Destination', command=self.selectPackageDestination)
         packagemenu.add_command(label='Package Modules',            command=lambda : self.initBuildProcess('package'))
+        packagemenu.add_command(label='Copy and Unpack',            command=lambda : self.initBuildProcess('moveunpack'))
         menubar.add_cascade(label='Package', menu=packagemenu)
 
         # InitIOCs Menu
@@ -264,6 +265,9 @@ class InstallSynAppsGUI:
         if 'package_location' in self.metacontroller.metadata.keys():
             self.packager.output_location = self.metacontroller.metadata['package_location']
             self.writeToLog('Loaded package output location: {}\n'.format(self.packager.output_location))
+        self.package_output_filename = None
+        if 'package_output_filename' in self.metacontroller.metadata.keys():
+            self.package_output_filename = self.metacontroller.metadata['package_output_filename']
 
         self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
 
@@ -322,21 +326,27 @@ class InstallSynAppsGUI:
         self.configPanel.delete('1.0', END)
         self.writeToLog("Writing Install Configuration to info panel...\n")
         if self.install_config is not None:
-            self.writeToConfigPanel("# Currently Loaded Install Configuration:\n\n")
+            self.writeToConfigPanel("Currently Loaded Install Configuration:\n\n")
             self.writeToConfigPanel("Install Location: {}\n\n".format(self.install_config.install_location))
-            self.writeToConfigPanel("Modules to auto-build:\n")
+            self.writeToConfigPanel("Modules to auto-build:\n-------------------------------\n")
             for module in self.install_config.get_module_list():
                 if module.build == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\tVersion: {}\n".format(module.name, module.version))
-            self.writeToConfigPanel("\nModules to clone but not build:\n")
+            self.writeToConfigPanel("\nModules with detected custom build scripts:\n----------------------------\n")
+            for module in self.install_config.get_module_list():
+                if module.custom_build_script_path is not None:
+                    self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
+
+            self.writeToConfigPanel("\nModules to clone but not build:\n----------------------------\n")
             for module in self.install_config.get_module_list():
                 if module.build == "NO" and module.clone == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
 
-            self.writeToConfigPanel("\nModules to package:\n")
+            self.writeToConfigPanel("\nModules to package:\n-----------------------------\n")
             for module in self.install_config.get_module_list():
                 if module.package == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
+
             self.writeToLog("Done.\n")
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
@@ -577,8 +587,8 @@ class InstallSynAppsGUI:
     def selectPackageDestination(self):
         """ Function that asks the user to select an output destination for the created tarball """
 
-        package_output = filedialog.askdirectory(initialdir = '.', title = 'Select output package directory', mustexist = True)
-        if package_output is None:
+        package_output = filedialog.askdirectory(initialdir = '.', title = 'Select output package directory')
+        if len(package_output) < 1:
             self.writeToLog('Operation Cancelled.\n')
         else:
             if os.path.exists(package_output):
@@ -601,10 +611,12 @@ class InstallSynAppsGUI:
         """ Function that launches the GUI version of initIOCs """
 
         if os.path.exists('./initIOC/initIOCs.py'):
+            self.writeToLog('Launching initIOC GUI...\n')
             current = os.getcwd()
             os.chdir('initIOC')
             p = subprocess.Popen(['./initIOCs.py', '-g'])
             os.chdir(current)
+            self.writeToLog('Done.\n')
         else:
             self.showErrorMessage('Error', 'ERROR - Could not find initIOCs. Run the Get initIOCs command first.')
 
@@ -757,6 +769,8 @@ class InstallSynAppsGUI:
                 self.thread = threading.Thread(target=self.buildConfigProcess)
             elif action == 'package':
                 self.thread = threading.Thread(target=self.packageConfigProcess)
+            elif action == 'moveunpack':
+                self.thread = threading.Thread(target=self.copyAndUnpackProcess)
             else:
                 self.showErrorMessage('Start Error', 'ERROR - Illegal init process call', force_popup=True)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -928,15 +942,42 @@ class InstallSynAppsGUI:
         """ Function that packages the specified modules into a tarball """
 
         self.writeToLog('Starting packaging...\n')
-        output_filename = self.packager.create_bundle_name()
+        self.package_output_filename = self.packager.create_bundle_name()
         self.writeToLog('Tarring...\n')
-        output = self.packager.create_package(output_filename)
+        output = self.packager.create_package(self.package_output_filename)
+        self.package_output_filename = self.package_output_filename + '.tgz'
+        self.metacontroller.metadata['package_output_filename'] = self.package_output_filename
         if output < 0:
             self.showErrorMessage('Package Error', 'ERROR - Was unable to package areaDetector successfully. Aborting.', force_popup=True)
         else:
             self.writeToLog('Package saved to {}\n'.format(self.packager.output_location))
-            self.writeToLog('Bundle Name: {}\n'.format(output_filename))
+            self.writeToLog('Bundle Name: {}\n'.format(self.package_output_filename))
             self.writeToLog('Done. Completed in {} seconds.\n'.format(output))
+
+
+
+    def copyAndUnpackProcess(self):
+        """ Function that allows user to move their packaged tarball and unpack it. """
+
+        self.writeToLog('Starting move + unpack operation...\n')
+        if self.package_output_filename is None:
+            self.showErrorMessage('Error', 'ERROR - No tarball package has yet been created.')
+        elif not os.path.exists(self.packager.output_location + '/' + self.package_output_filename):
+            self.showErrorMessage('Error', 'ERROR - tarball was generated but could not be found. Possibly moved.')
+        else:
+            target = filedialog.askdirectory(initialdir='.')
+            if target is None:
+                self.writeToLog('Operation cancelled.\n')
+            else:
+                self.writeToLog('Moving and unpacking to: {}\n'.format(target))
+                shutil.move(os.path.join(self.packager.output_location, self.package_output_filename), os.path.join(target, self.package_output_filename))
+                current = os.getcwd()
+                os.chdir(target)
+                subprocess.call(['tar', '-xzf', self.package_output_filename])
+                os.remove(self.package_output_filename)
+                os.chdir(current)
+                self.writeToLog('Done.')
+        
 
 
 # ---------------- Start the GUI ---------------
