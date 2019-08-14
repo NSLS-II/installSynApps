@@ -175,6 +175,7 @@ class InstallSynAppsGUI:
         packagemenu.add_command(label='Select Package Destination', command=self.selectPackageDestination)
         packagemenu.add_command(label='Package Modules',            command=lambda : self.initBuildProcess('package'))
         packagemenu.add_command(label='Copy and Unpack',            command=lambda : self.initBuildProcess('moveunpack'))
+        packagemenu.add_command(label='Set Output Pacakge Name',    command=self.setOutputPackageName)
         menubar.add_cascade(label='Package', menu=packagemenu)
 
         # InitIOCs Menu
@@ -693,6 +694,18 @@ class InstallSynAppsGUI:
                 self.writeToLog('New package output location set to: {}\n'.format(package_output))
             else:
                 self.showErrorMessage('Path Error', 'ERROR - Output path does not exist.')
+
+
+    def setOutputPackageName(self):
+        """ Function that sets the output package name """
+
+        self.writeToLog('Setting output package name...\n')
+        package_name = simpledialog.askstring('Enter an output name', 'Output Package Name - typically OS/Distro.')
+        if package_name is not None and len(package_name) > 0:
+            self.packager.OS = package_name
+            self.writeToLog('Done.\n')
+        else:
+            self.writeToLog('Operation Cancelled.\n')
 
 
     def getInitIOCs(self):
