@@ -134,7 +134,7 @@ GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
 ADUVC               R1-2        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES             NO              YES
 ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                NO              NO              NO
-ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO              NO
+#ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO              NO
 ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        NO              NO              NO
 ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES             YES
 ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO              NO
@@ -142,6 +142,7 @@ ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPe
 
 GIT_URL=https://github.com/areaDetector/
 
+ADGENICAM           R1-0        $(AREA_DETECTOR)/ADGenICam                  ADGenICam                       YES             YES             YES
 ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES             YES
 ADSIMDETECTOR       R2-9        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES             YES
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES             YES
@@ -149,7 +150,6 @@ ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMe
 ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO              NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO              NO
 ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO              NO
-ADGENICAM           master      $(AREA_DETECTOR)/ADGenICam                  ADGenICam                       NO              NO              NO
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO              NO
 ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO              NO
 ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             YES             YES
@@ -180,6 +180,8 @@ ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSB
 FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO              NO
 ADRIXSCAM           master      $(AREA_DETECTOR)/ADRIXSCam                  ADRIXSCam                       NO              NO              NO
 ADVIEWERS           master      $(AREA_DETECTOR)/ADViewers                  ADViewers                       NO              NO              NO
+ADSPINNAKER         R2-0        $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO              NO
+ADFIREWIREWIN       master      $(AREA_DETECTOR)/ADFireWireWin              ADFireWireWin                   NO              NO              NO
 
 
 ####################################################

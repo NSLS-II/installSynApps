@@ -20,6 +20,13 @@ from tkinter import simpledialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
+# pygithub for github autosync tags integration.
+WITH_PYGITHUB=True
+try:
+    from github import Github
+except ImportError:
+    WITH_PYGITHUB=False
+
 # Some python utility libs
 import os
 import time
@@ -125,6 +132,7 @@ class InstallSynAppsGUI:
         filemenu.add_command(label='Open',      command=self.loadConfig)
         filemenu.add_command(label='Save',      command=self.saveConfig)
         filemenu.add_command(label='Save As',   command=self.saveConfigAs)
+        filemenu.add_command(label='Sync Tags', command=self.syncTags)
         filemenu.add_command(label='Exit',      command=self.close_cleanup)
         menubar.add_cascade(label='File', menu=filemenu)
 
@@ -399,6 +407,7 @@ class InstallSynAppsGUI:
             self.master.destroy()
         self.metacontroller.save_metadata()
 
+
 # -------------------------- Functions for writing/displaying information ----------------------------------
 
 
@@ -439,8 +448,87 @@ class InstallSynAppsGUI:
         self.writeToLog(text + '\n')
 
 
-# ----------------------- Loading/saving Functions -----------------------------
+# ----------------------- Version Sync Functions -----------------------------
 
+
+
+    def syncTags(self):
+        """ Function that automatically updates all of the github tags for the install configuration git modules """
+
+        global WITH_PYGITHUB
+        if not WITH_PYGITHUB:
+            self.showErrorMessage('Error', 'ERROR - PyGithub not found. Install with pip install pygithub, and restart', force_popup=True)
+        else:
+            user = simpledialog.askstring('Please enter your github username.', 'Username')
+            if user is None or len(user) == 0:
+                return
+            passwd = simpledialog.askstring('Please enter your github password.', 'Password', show='*')
+            if passwd is None or len(passwd) == 0:
+                return
+            if user is not None and passwd is not None:
+                if not self.thread.is_alive():
+                    self.thread = threading.Thread(target=lambda : self.syncTagsProcess(user, passwd))
+                    self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+                    self.thread.start()
+                    self.loadingIconThread.start()
+                else:
+                    self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
+
+
+    def syncTagsProcess(self, user, passwd):
+        """
+        Function meant to synchronize tags for each github based module.
+    
+        Parameters
+        ----------
+        user : str
+            github username
+        passwd : str
+            github password
+        """
+    
+        try:
+            self.showMessage('Syncing...', 'Please wait while tags are synced - this may take a while...', force_popup=True)
+            g = Github(user, passwd)
+            for module in self.install_config.get_module_list():
+                if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master':
+                    account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
+                    repo = g.get_repo(account_repo)
+                    if repo is not None:
+                        tags = repo.get_tags()
+                        if tags.totalCount > 0 and module.name != 'EPICS_BASE':
+                            tag_found = False
+                            for tag in tags:
+                                #print('{} - {}'.format(account_repo, tag))
+                                if tag.name.startswith('R') and tag.name[1].isdigit():
+                                    if tag.name == module.version:
+                                        tag_found = True
+                                        break
+                                    self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
+                                    module.version = tag.name
+                                    tag_found = True
+                                    break
+                            if not tag_found:
+                                for tag in tags:
+                                    if tag.name[0].isdigit() and tag.name != module.version:
+                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
+                                        module.version = tags[0].name
+                                        break
+                                    elif tag.name[0].isdigit():
+                                        break
+                        elif module.name == 'EPICS_BASE':
+                            for tag in tags:
+                                if tag.name.startswith('R7'):
+                                    if tag.name != module.version:
+                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
+                                        module.version = tag.name
+                                        break
+            self.updateAllRefs(self.install_config)
+            self.updateConfigPanel()
+        except:
+            self.showErrorMessage('Error', 'ERROR - Invalid Github credentials.', force_popup=True)
+
+# ----------------------- Loading/saving Functions -----------------------------
 
     def newConfig(self):
         """
