@@ -74,8 +74,8 @@ elif message is not None:
     loc_ok = False
 else:
     if not yes:
-        new_loc = input('Install location {} OK. Do you wish to choose a different location? (y/n) > '.format(install_config.install_location))
-        if new_loc == 'y':
+        new_loc = input('Install location {} OK. Do you wish to continue with this location? (y/n) > '.format(install_config.install_location))
+        if new_loc == 'n':
             loc = input('Please enter a new install_location > ')
             install_config.install_location = loc.strip()
             for module in install_config.get_module_list():
@@ -117,9 +117,14 @@ cloner      = Driver.clone_driver.CloneDriver(install_config)
 updater     = Driver.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
 builder     = Driver.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
 packager    = Driver.packager_driver.Packager(install_config)
-if not packager.found_distro:
+if not packager.found_distro and platform != 'win32':
     print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
-    print("Note that the output tarball will use the generic 'linux-x86_64' name.")
+    print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
+    if not yes:
+        custom_output = input('Would you like to manually input a name to replace the generic one? (y/n) > ')
+        if custom_output == 'y':
+            custom_os = input('Please enter a suitable output package name: > ')
+            packager.OS = custom_os
 autogenerator = IO.script_generator.ScriptGenerator(install_config)
 
 
