@@ -81,8 +81,6 @@ class ConfigWriter:
         if not os.path.exists(filepath):
             try:
                 os.mkdir(filepath)
-                os.mkdir(filepath + "/injectionFiles")
-                os.mkdir(filepath + "/macroFiles")
             except OSError as err:
                 if err.errno == errno.EACCES:
                     return False, 'Permission Error!'
@@ -94,6 +92,11 @@ class ConfigWriter:
                     return False, 'Read Only File System!'
                 else:
                     return False, 'Unknown Error'
+        try:
+            os.mkdir(filepath + "/injectionFiles")
+            os.mkdir(filepath + "/macroFiles")
+        except:
+            pass
 
         self.write_injector_files(filepath)
 

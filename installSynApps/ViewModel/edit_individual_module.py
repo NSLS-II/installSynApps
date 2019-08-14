@@ -104,9 +104,9 @@ class EditSingleModuleGUI:
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
-        self.applyButton = Button(self.viewFrame, text='Save Changes', command = self.applyChanges).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.exitWindowButton = Button(self.viewFrame, text='Return', command = self.exitWindow).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
-        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
+        self.applyButton = Button(self.viewFrame, text='Save Changes', command = self.applyChanges, width=10).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
+        self.exitWindowButton = Button(self.viewFrame, text='Return', command = self.exitWindow, width=10).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
+        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
 
         self.title_label = Label(self.viewFrame, text='Edit individual module:').grid(row = 1, column = 0, columnspan = 1, padx = 5, pady = 5)
         #self.module_dropdown = OptionMenu(self.viewFrame, self.edit_name_var, *self.legal_names)
@@ -156,7 +156,6 @@ class EditSingleModuleGUI:
         reloads Panel to defaults
         """
 
-        self.name_box.delete('1.0', END)
         self.version_box.delete('1.0', END)
         self.rel_path_box.delete('1.0', END)
         self.url_box.delete('1.0', END)
@@ -164,7 +163,6 @@ class EditSingleModuleGUI:
 
         for module in self.install_config.get_module_list():
             if module.name == self.edit_name_var.get():
-                self.name_box.insert(INSERT, module.name)
                 self.version_box.insert(INSERT, module.version)
                 self.rel_path_box.insert(INSERT, module.rel_path)
                 self.url_type_var.set(module.url_type)
@@ -191,7 +189,6 @@ class EditSingleModuleGUI:
         new changes.
         """
 
-        name = self.name_box.get('1.0', END).strip()
         version = self.version_box.get('1.0', END).strip()
         rel_path = self.rel_path_box.get('1.0', END).strip()
         url_type = self.url_type_var.get()
@@ -209,12 +206,6 @@ class EditSingleModuleGUI:
             build_str = 'YES'
         if package:
             package_str = 'YES'
-
-        if len(name) == 0:
-            self.root.showErrorMessage('Edit Module Error', 'ERROR - Please enter a valid name.', force_popup = True)
-            return
-
-        name = name.upper()
 
         if len(version) == 0:
             version = 'master'
@@ -244,7 +235,7 @@ class EditSingleModuleGUI:
 
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
-        self.root.showMessage('Info', 'Upated module: {}'.format(name))
+        self.root.showMessage('Info', 'Upated module: {}'.format(self.edit_name_var.get()))
 
 
     def exitWindow(self):

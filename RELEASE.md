@@ -2,7 +2,7 @@
 
 <!--RELEASE START-->
 
-## R2-1 (???-August-2019)
+## R2-1 (09-August-2019)
 
 * Features Added
     * Integrated Packager - Can now create AD binary bundles directly from installSynApps

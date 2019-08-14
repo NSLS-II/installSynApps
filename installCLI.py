@@ -117,6 +117,9 @@ cloner      = Driver.clone_driver.CloneDriver(install_config)
 updater     = Driver.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
 builder     = Driver.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
 packager    = Driver.packager_driver.Packager(install_config)
+if not packager.found_distro:
+    print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
+    print("Note that the output tarball will use the generic 'linux-x86_64' name.")
 autogenerator = IO.script_generator.ScriptGenerator(install_config)
 
 
