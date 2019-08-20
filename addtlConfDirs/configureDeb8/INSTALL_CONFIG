@@ -29,7 +29,7 @@ ASYN             R4-36                $(SUPPORT)/asyn                          a
 AUTOSAVE         R5-10                $(SUPPORT)/autosave                      autosave                 YES              YES              YES
 ALIVE            R1-1-1               $(SUPPORT)/alive                         alive                    NO               NO               NO
 BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES              YES
-CALC             R5-4-2               $(SUPPORT)/calc                          calc                     YES              YES              YES
+CALC             R3-7-3               $(SUPPORT)/calc                          calc                     YES              YES              YES
 CAMAC            R2-7                 $(SUPPORT)/camac                         camac                    YES              YES              NO
 CAPUTRECORDER    R3-1                 $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES              NO
 DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  YES              YES              NO
