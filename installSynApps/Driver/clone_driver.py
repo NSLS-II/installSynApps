@@ -86,7 +86,7 @@ class CloneDriver:
                         ret = subprocess.call(["wget", "-P", module.abs_path, module.url + module.repository])
 
                     if (module.repository.endswith(".tar.gz") or module.repository.endswith(".tgz")) and ret == 0:
-                        ret = subprocess.call(["tar", "-xvzf", module.abs_path + "/" + module.repository, "-C", module.abs_path, "--strip-components=1"])
+                        ret = subprocess.call(["tar", "-xzf", module.abs_path + "/" + module.repository, "-C", module.abs_path, "--strip-components=1"])
                     elif module.repository.endswith(".zip") and ret == 0:
                         ret = subprocess.call(["unzip", module.abs_path + "/" + module.repository, "-C", module.abs_path])
                 

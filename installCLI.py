@@ -38,6 +38,7 @@ def parse_user_input():
 # ----------------- Run the script ------------------------
 
 path_to_configure, args = parse_user_input()
+path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
 single_thread   = args['singlethread']
 dep             = args['dependency']

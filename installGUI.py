@@ -244,6 +244,7 @@ class InstallSynAppsGUI:
 
         # default configure path
         self.configure_path = 'configure'
+        self.configure_path = os.path.abspath(self.configure_path)
         self.valid_install = False
         self.deps_found = True
         self.install_loaded = False

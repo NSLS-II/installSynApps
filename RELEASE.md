@@ -2,7 +2,7 @@
 
 <!--RELEASE START-->
 
-## R2-2 (???-August-2019
+## R2-2 (???-September-2019)
 
 * Features Added
     * Integration with the github api via PyGithub to allow for version sync
