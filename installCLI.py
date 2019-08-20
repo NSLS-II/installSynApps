@@ -221,7 +221,11 @@ else:
             exit()
         elif len(failed_list) > 0:
             for admodule in failed_list:
-                print("AD Module {} failed to build".format(admodule.name))
+                print("AD Module {} failed to build, will not package.".format(admodule.name))
+                # Don't package modules that fail to build
+                for module in packager.install_config.get_module_list():
+                    if module.name == admodule.name
+                        module.package = "NO"
             print("Check for missing dependecies, and if INSTALL_CONFIG is valid.")
 
 

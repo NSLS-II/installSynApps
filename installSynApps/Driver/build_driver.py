@@ -230,7 +230,8 @@ class BuildDriver:
             return -1, "Error building EPICS support", []
         ret, failed = self.build_ad()
         if len(failed) > 0:
-            return -1, "Error building AD modules", failed
+            # failing to build individual ad module is not a critical error, so return 0
+            return 0, "Error building AD modules", failed
         elif ret < 0:
             return -1, "Error building ADSupport and ADCore", []
         else:
