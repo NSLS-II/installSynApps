@@ -155,7 +155,9 @@ class BuildDriver:
 
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith("$(AREA_DETECTOR)") and module.build == "YES":
-                if module.name != "ADCORE" and module.name != "ADSUPPORT":
+                if module.custom_build_script_path is not None:
+                    self.build_via_custom_script(module)
+                elif module.name != "ADCORE" and module.name != "ADSUPPORT":
                     out_mod = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
                     if out_mod != 0:
                         failed_builds.append(module)
