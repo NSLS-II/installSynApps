@@ -224,7 +224,7 @@ else:
                 print("AD Module {} failed to build, will not package.".format(admodule.name))
                 # Don't package modules that fail to build
                 for module in packager.install_config.get_module_list():
-                    if module.name == admodule.name
+                    if module.name == admodule.name:
                         module.package = "NO"
             print("Check for missing dependecies, and if INSTALL_CONFIG is valid.")
 
