@@ -2,7 +2,23 @@
 
 <!--RELEASE START-->
 
-## R2-1 (???-August-2019)
+## R2-2 (???-September-2019)
+
+* Features Added
+    * Integration with the github api via PyGithub to allow for version sync
+    * Custom build script support - can now specify a custom build script for each non-core module
+    * Option to manually set package output name
+    * Custom dependency script is now run before clone if selected.
+
+* Bug Fixes/Improvements
+    * Install location changes whether on windows or linux
+    * import guards now allow the program to run even if certain optional dependencies are missing
+
+* Future Plans
+    * Improve log messages
+    * Module reordering.
+
+## R2-1 (09-August-2019)
 
 * Features Added
     * Integrated Packager - Can now create AD binary bundles directly from installSynApps

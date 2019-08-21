@@ -20,6 +20,13 @@ from tkinter import simpledialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
+# pygithub for github autosync tags integration.
+WITH_PYGITHUB=True
+try:
+    from github import Github
+except ImportError:
+    WITH_PYGITHUB=False
+
 # Some python utility libs
 import os
 import time
@@ -125,6 +132,7 @@ class InstallSynAppsGUI:
         filemenu.add_command(label='Open',      command=self.loadConfig)
         filemenu.add_command(label='Save',      command=self.saveConfig)
         filemenu.add_command(label='Save As',   command=self.saveConfigAs)
+        filemenu.add_command(label='Sync Tags', command=self.syncTags)
         filemenu.add_command(label='Exit',      command=self.close_cleanup)
         menubar.add_cascade(label='File', menu=filemenu)
 
@@ -133,9 +141,10 @@ class InstallSynAppsGUI:
         editmenu.add_command(label='Edit Config',               command=lambda : self.openEditWindow('edit_config'))
         editmenu.add_command(label='Add New Module',            command=lambda : self.openEditWindow('add_module'))
         editmenu.add_command(label='Edit Individual Module',    command=lambda : self.openEditWindow('edit_single_mod'))
+        editmenu.add_command(label='Edit Custom Build Scripts', command=lambda : self.openEditWindow('add_custom_build_script'))
         editmenu.add_command(label='Edit Injection Files',      command=lambda : self.openEditWindow('edit_injectors'))
         editmenu.add_command(label='Edit Build Flags',          command=lambda : self.openEditWindow('edit_build_flags'))
-        editmenu.add_command(label='Edit Make Core Count',           command=self.editCoreCount)
+        editmenu.add_command(label='Edit Make Core Count',      command=self.editCoreCount)
         editmenu.add_checkbutton(label='Toggle Popups',         onvalue=True, offvalue=False, variable=self.showPopups)
         editmenu.add_checkbutton(label='Toggle Single Core',    onvalue=True, offvalue=False, variable=self.singleCore)
         self.singleCore.trace('w', self.setSingleCore)
@@ -151,11 +160,13 @@ class InstallSynAppsGUI:
 
         # Build Menu
         buildmenu = Menu(menubar, tearoff=0)
-        buildmenu.add_command(label='Autorun',              command=lambda : self.initBuildProcess('autorun'))
-        buildmenu.add_command(label='Clone Modules',        command=lambda : self.initBuildProcess('clone'))
-        buildmenu.add_command(label='Update Config Files',  command=lambda : self.initBuildProcess('update'))
-        buildmenu.add_command(label='Inject into Files',    command=lambda : self.initBuildProcess('inject'))
-        buildmenu.add_command(label='Build Modules',        command=lambda : self.initBuildProcess('build'))
+        buildmenu.add_command(label='Autorun',                  command=lambda : self.initBuildProcess('autorun'))
+        buildmenu.add_command(label='Run Dependency Script',    command=lambda : self.initBuildProcess('install-dependencies'))
+        buildmenu.add_command(label='Clone Modules',            command=lambda : self.initBuildProcess('clone'))
+        buildmenu.add_command(label='Update Config Files',      command=lambda : self.initBuildProcess('update'))
+        buildmenu.add_command(label='Inject into Files',        command=lambda : self.initBuildProcess('inject'))
+        buildmenu.add_command(label='Build Modules',            command=lambda : self.initBuildProcess('build'))
+        buildmenu.add_command(label='Edit Dependency Script',   command=lambda : self.openEditWindow('edit_dependency_script'))
         buildmenu.add_checkbutton(label='Toggle Install Dependencies', onvalue=True, offvalue=False, variable=self.installDep)
         menubar.add_cascade(label='Build', menu=buildmenu)
 
@@ -163,19 +174,34 @@ class InstallSynAppsGUI:
         packagemenu = Menu(menubar, tearoff=0)
         packagemenu.add_command(label='Select Package Destination', command=self.selectPackageDestination)
         packagemenu.add_command(label='Package Modules',            command=lambda : self.initBuildProcess('package'))
+        packagemenu.add_command(label='Copy and Unpack',            command=lambda : self.initBuildProcess('moveunpack'))
+        packagemenu.add_command(label='Set Output Pacakge Name',    command=self.setOutputPackageName)
         menubar.add_cascade(label='Package', menu=packagemenu)
+
+        # InitIOCs Menu
+        iocmenu = Menu(menubar, tearoff=0)
+        iocmenu.add_command(label='Get initIOCs', command=self.getInitIOCs)
+        iocmenu.add_command(label='Launch initIOCs', command=self.launchInitIOCs)
+        menubar.add_cascade(label='IOCs', menu=iocmenu)
 
         # Help Menu
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label='Quick Help',                command=self.loadHelp)
-        helpmenu.add_command(label='Dependency Script Help',    command=self.depScriptHelp)
-        helpmenu.add_command(label='Online Documentation',      command=self.openOnlineDocs)
+        helpmenu.add_command(label='Required dependencies',     command=self.printDependencies)
+        helpmenu.add_command(label='installSynApps on Github',  command=lambda : webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps", new=2))
+        helpmenu.add_command(label='Report an issue',           command=lambda : webbrowser.open("https://github.com/epicsNSLS2-deploy/installSynApps/issues", new=2))
+        helpmenu.add_command(label='Custom Build Script Help',  command=self.depScriptHelp)
+        helpmenu.add_command(label='Online Documentation',      command=lambda : webbrowser.open("https://epicsNSLS2-deploy.github.io/installSynApps", new=2))
         helpmenu.add_command(label='About',                     command=self.showAbout)
         menubar.add_cascade(label='Help', menu=helpmenu)
 
         self.master.config(menu=menubar)
 
         self.msg = "Welcome to installSynApps!"
+
+        # Because EPICS versioning is not as standardized as it should be, certain modules cannot be properly auto updated.
+        # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
+        self.update_tags_blacklist = ["SSCAN", "CALC"]
 
         # title label
         self.topLabel       = Label(frame, text = self.msg, width = '25', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
@@ -218,23 +244,27 @@ class InstallSynAppsGUI:
 
         # default configure path
         self.configure_path = 'configure'
+        self.configure_path = os.path.abspath(self.configure_path)
         self.valid_install = False
         self.deps_found = True
+        self.install_loaded = False
 
         self.metacontroller = ViewModel.meta_pref_control.MetaDataController()
         if 'configure_path' in self.metacontroller.metadata.keys():
             self.configure_path = self.metacontroller.metadata['configure_path']
+            if self.configure_path != 'configure':
+                self.install_loaded = True
             self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
 
         self.metacontroller.metadata['isa_version'] = __version__
-        self.metacontroller.metadata['platform'] = platform
-        self.metacontroller.metadata['last_used'] = '{}'.format(datetime.datetime.now())
+        self.metacontroller.metadata['platform']    = platform
+        self.metacontroller.metadata['last_used']   = '{}'.format(datetime.datetime.now())
 
         # installSynApps options, initialzie + read default configure files
         self.parser = IO.config_parser.ConfigParser(self.configure_path)
 
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
-        self.install_loaded = False
+
         if message is not None:
             self.valid_install = False
             self.showWarningMessage('Warning', 'Illegal Install Config: {}'.format(message), force_popup=True)
@@ -254,6 +284,9 @@ class InstallSynAppsGUI:
         if 'package_location' in self.metacontroller.metadata.keys():
             self.packager.output_location = self.metacontroller.metadata['package_location']
             self.writeToLog('Loaded package output location: {}\n'.format(self.packager.output_location))
+        self.package_output_filename = None
+        if 'package_output_filename' in self.metacontroller.metadata.keys():
+            self.package_output_filename = self.metacontroller.metadata['package_output_filename']
 
         self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
 
@@ -289,7 +322,7 @@ class InstallSynAppsGUI:
         """ Function that initializes log text """
 
         text = "+-----------------------------------------------------------------\n"
-        text = text + "+ installSynApps, version: {}                                  +\n".format(__version__)
+        text = text + "+ installSynApps, version: {:<38}+\n".format(__version__)
         text = text +"+ Author: Jakub Wlodek                                           +\n"
         text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
         text = text +"+ This software comes with NO warranty!                          +\n"
@@ -312,21 +345,27 @@ class InstallSynAppsGUI:
         self.configPanel.delete('1.0', END)
         self.writeToLog("Writing Install Configuration to info panel...\n")
         if self.install_config is not None:
-            self.writeToConfigPanel("# Currently Loaded Install Configuration:\n\n")
+            self.writeToConfigPanel("Currently Loaded Install Configuration:\n\n")
             self.writeToConfigPanel("Install Location: {}\n\n".format(self.install_config.install_location))
-            self.writeToConfigPanel("Modules to auto-build:\n")
+            self.writeToConfigPanel("Modules to auto-build:\n-------------------------------\n")
             for module in self.install_config.get_module_list():
                 if module.build == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\tVersion: {}\n".format(module.name, module.version))
-            self.writeToConfigPanel("\nModules to clone but not build:\n")
+            self.writeToConfigPanel("\nModules with detected custom build scripts:\n----------------------------\n")
+            for module in self.install_config.get_module_list():
+                if module.custom_build_script_path is not None:
+                    self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
+
+            self.writeToConfigPanel("\nModules to clone but not build:\n----------------------------\n")
             for module in self.install_config.get_module_list():
                 if module.build == "NO" and module.clone == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
 
-            self.writeToConfigPanel("\nModules to package:\n")
+            self.writeToConfigPanel("\nModules to package:\n-----------------------------\n")
             for module in self.install_config.get_module_list():
                 if module.package == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
+
             self.writeToLog("Done.\n")
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
@@ -350,12 +389,18 @@ class InstallSynAppsGUI:
         """ Wrapper function for checking for installed dependancies """
 
         self.writeToLog('Checking for installed dependancies...\n')
-        inPath, missing = self.builder.check_dependencies_in_path()
+        inPath, missing = self.builder.check_dependencies_in_path(allow_partial=True)
         if not inPath:
-            #self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
+            self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
             self.deps_found = False
+        elif inPath and len(missing) > 0:
+            self.showWarningMessage('Warning', 'WARNING - {} not found in system path. Make sure to add it in dependency script'.format(missing))
+            self.deps_found = True
         else:
             self.deps_found = True
+        if not self.packager.found_distro:
+            self.writeToLog('Distro python package not found.\nTarball names will be generic and not distribution specific.\n')
+            self.writeToLog('To install distro, use pip: pip install distro\n')
         self.writeToLog('Done.\n')
 
 
@@ -367,6 +412,7 @@ class InstallSynAppsGUI:
         if messagebox.askokcancel('Quit', 'Do you want to quit?'):
             self.master.destroy()
         self.metacontroller.save_metadata()
+
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
 
@@ -408,8 +454,87 @@ class InstallSynAppsGUI:
         self.writeToLog(text + '\n')
 
 
-# ----------------------- Loading/saving Functions -----------------------------
+# ----------------------- Version Sync Functions -----------------------------
 
+
+
+    def syncTags(self):
+        """ Function that automatically updates all of the github tags for the install configuration git modules """
+
+        global WITH_PYGITHUB
+        if not WITH_PYGITHUB:
+            self.showErrorMessage('Error', 'ERROR - PyGithub not found. Install with pip install pygithub, and restart', force_popup=True)
+        else:
+            user = simpledialog.askstring('Please enter your github username.', 'Username')
+            if user is None or len(user) == 0:
+                return
+            passwd = simpledialog.askstring('Please enter your github password.', 'Password', show='*')
+            if passwd is None or len(passwd) == 0:
+                return
+            if user is not None and passwd is not None:
+                if not self.thread.is_alive():
+                    self.thread = threading.Thread(target=lambda : self.syncTagsProcess(user, passwd))
+                    self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+                    self.thread.start()
+                    self.loadingIconThread.start()
+                else:
+                    self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
+
+
+    def syncTagsProcess(self, user, passwd):
+        """
+        Function meant to synchronize tags for each github based module.
+    
+        Parameters
+        ----------
+        user : str
+            github username
+        passwd : str
+            github password
+        """
+    
+        try:
+            self.showMessage('Syncing...', 'Please wait while tags are synced - this may take a while...', force_popup=True)
+            g = Github(user, passwd)
+            for module in self.install_config.get_module_list():
+                if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in self.update_tags_blacklist:
+                    account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
+                    repo = g.get_repo(account_repo)
+                    if repo is not None:
+                        tags = repo.get_tags()
+                        if tags.totalCount > 0 and module.name != 'EPICS_BASE':
+                            tag_found = False
+                            for tag in tags:
+                                #print('{} - {}'.format(account_repo, tag))
+                                if tag.name.startswith('R') and tag.name[1].isdigit():
+                                    if tag.name == module.version:
+                                        tag_found = True
+                                        break
+                                    self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
+                                    module.version = tag.name
+                                    tag_found = True
+                                    break
+                            if not tag_found:
+                                for tag in tags:
+                                    if tag.name[0].isdigit() and tag.name != module.version:
+                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
+                                        module.version = tags[0].name
+                                        break
+                                    elif tag.name[0].isdigit():
+                                        break
+                        elif module.name == 'EPICS_BASE':
+                            for tag in tags:
+                                if tag.name.startswith('R7'):
+                                    if tag.name != module.version:
+                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
+                                        module.version = tag.name
+                                        break
+            self.updateAllRefs(self.install_config)
+            self.updateConfigPanel()
+        except:
+            self.showErrorMessage('Error', 'ERROR - Invalid Github credentials.', force_popup=True)
+
+# ----------------------- Loading/saving Functions -----------------------------
 
     def newConfig(self):
         """
@@ -517,12 +642,19 @@ class InstallSynAppsGUI:
             elif not ans:
                 return
             dirpath = force_loc
-            shutil.rmtree(dirpath)
+            shutil.rmtree(os.path.join(dirpath, 'injectionFiles'))
+            shutil.rmtree(os.path.join(dirpath, 'macroFiles'))
+            os.remove(os.path.join(dirpath, 'INSTALL_CONFIG'))
 
         wrote, message = self.writer.write_install_config(filepath=dirpath)
         if not wrote:
             self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
         else:
+            if self.install_loaded:
+                try:
+                    shutil.copytree(self.configure_path + '/customBuildScripts', dirpath + '/customBuildScripts')
+                except:
+                    pass
             self.configure_path = dirpath
             self.install_loaded = True
             self.updateAllRefs(self.install_config)
@@ -557,8 +689,8 @@ class InstallSynAppsGUI:
     def selectPackageDestination(self):
         """ Function that asks the user to select an output destination for the created tarball """
 
-        package_output = filedialog.askdirectory(initialdir = '.', title = 'Select output package directory', mustexist = True)
-        if package_output is None:
+        package_output = filedialog.askdirectory(initialdir = '.', title = 'Select output package directory')
+        if len(package_output) < 1:
             self.writeToLog('Operation Cancelled.\n')
         else:
             if os.path.exists(package_output):
@@ -567,6 +699,43 @@ class InstallSynAppsGUI:
                 self.writeToLog('New package output location set to: {}\n'.format(package_output))
             else:
                 self.showErrorMessage('Path Error', 'ERROR - Output path does not exist.')
+
+
+    def setOutputPackageName(self):
+        """ Function that sets the output package name """
+
+        self.writeToLog('Setting output package name...\n')
+        package_name = simpledialog.askstring('Enter an output name', 'Output Package Name - typically OS/Distro.')
+        if package_name is not None and len(package_name) > 0:
+            self.packager.OS = package_name
+            self.writeToLog('Done.\n')
+        else:
+            self.writeToLog('Operation Cancelled.\n')
+
+
+    def getInitIOCs(self):
+        """ Function that gets initIOCs from github. """
+
+        self.writeToLog('Fetching the initIOC script...\n')
+        out = subprocess.Popen(['git', 'clone', 'https://github.com/epicsNSLS2-deploy/initIOC'])
+        self.writeToLog('Done.\n')
+
+
+    def launchInitIOCs(self):
+        """ Function that launches the GUI version of initIOCs """
+
+        if os.path.exists('./initIOC/initIOCs.py'):
+            self.writeToLog('Launching initIOC GUI...\n')
+            current = os.getcwd()
+            os.chdir('initIOC')
+            if platform == 'win32':
+                p = subprocess.Popen(['py', 'initIOCs.py', '-g'])
+            else:
+                p = subprocess.Popen(['./initIOCs.py', '-g'])
+            os.chdir(current)
+            self.writeToLog('Done.\n')
+        else:
+            self.showErrorMessage('Error', 'ERROR - Could not find initIOCs. Run the Get initIOCs command first.')
 
 
 #---------------------------- Editing Functions --------------------------------
@@ -591,6 +760,10 @@ class InstallSynAppsGUI:
             window = ViewModel.edit_injector_screen.EditInjectorGUI(self, self.install_config)
         elif edit_window_str == 'edit_build_flags':
             window = ViewModel.edit_macro_screen.EditMacroGUI(self, self.install_config)
+        elif edit_window_str == 'add_custom_build_script':
+            window = ViewModel.add_custom_build_screen.AddCustomBuildScriptGUI(self, self.install_config)
+        elif edit_window_str == 'edit_dependency_script':
+            window = ViewModel.edit_dependency_script.EditDependencyScriptGUI(self, self.install_config)
         else:
             self.showErrorMessage('Open Error', 'ERROR - Illegal Edit Window selection')
 
@@ -629,14 +802,6 @@ class InstallSynAppsGUI:
 
 #--------------------------------- Help/Documentation Functions -----------------------------
 
-
-    def openOnlineDocs(self):
-        """ Function that uses the webbrowser python module to open up the installSynApps online docs """
-
-        webbrowser.open("https://epicsNSLS2-deploy.github.io/installSynApps", new=2)
-
-
-
     def loadHelp(self):
         """ Simple function that displays a help message """
 
@@ -648,6 +813,16 @@ class InstallSynAppsGUI:
         helpMessage = helpMessage + " and auto-build all of EPICS and synApps.\nPlease look over the current config below, and if changes are\n"
         helpMessage = helpMessage + "required, edit it via the `Edit` tab, or load a new configure\ndirectory."
         self.showMessage("Help", helpMessage)
+
+
+    def printDependencies(self):
+        """ Prints some information regarding required dependencies for installSynApps """
+
+        self.writeToLog('Dependencies required for installSynApps:')
+        self.writeToLog('For cloning: git, wget, and tar')
+        self.writeToLog('For building: make, perl, and either gcc/g++ on linux, or MSCV/MSVC++ on win32')
+        self.writeToLog('For packaging: tar, python module distro')
+        self.writeToLog('All dependencies must be in system path during build time.')
 
 
     def showAbout(self):
@@ -668,9 +843,12 @@ class InstallSynAppsGUI:
     def depScriptHelp(self):
         """ Function that displays help message for adding dependancy script """
 
-        self.writeToLog('When dependency install is enabled, installSynApps will attempt\nto run a dependency script')
-        self.writeToLog('in the configure directory,\ncalled dependencyInstall.sh on Linux, and dependencyInstall.bat\non win32.')
-        self.writeToLog('To add a script, simply write a shell/batch script,\nand place it in the configure directory.\n')
+        self.writeToLog('Use the Edit -> Edit Custom Build Scripts menu to add/remove\n')
+        self.writeToLog('custom build scripts for each module.\nOn windows they will be saved as')
+        self.writeToLog('.bat files, on linux as .sh files,\nand they will be run from the module')
+        self.writeToLog(' root directory.\nIf no custom script is found, the module will just be\n')
+        self.writeToLog('built with make. If you have a sudo call in your script,\nnote that you')
+        self.writeToLog('will need to enter it in the terminal to proceed.\n')
 
 
     def printPathInfo(self):
@@ -702,6 +880,8 @@ class InstallSynAppsGUI:
         elif not self.thread.is_alive():
             if action == 'autorun':
                 self.thread = threading.Thread(target=self.autorunProcess)
+            elif action == 'install-dependencies':
+                self.thread = threading.Thread(target=self.installDependenciesProcess)
             elif action == 'clone':
                 self.thread = threading.Thread(target=self.cloneConfigProcess)
             elif action == 'update':
@@ -712,6 +892,8 @@ class InstallSynAppsGUI:
                 self.thread = threading.Thread(target=self.buildConfigProcess)
             elif action == 'package':
                 self.thread = threading.Thread(target=self.packageConfigProcess)
+            elif action == 'moveunpack':
+                self.thread = threading.Thread(target=self.copyAndUnpackProcess)
             else:
                 self.showErrorMessage('Start Error', 'ERROR - Illegal init process call', force_popup=True)
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
@@ -719,6 +901,23 @@ class InstallSynAppsGUI:
             self.loadingIconThread.start()
         else:
             self.showErrorMessage("Start Error", "ERROR - Process thread is already active.")
+
+
+    def installDependenciesProcess(self):
+        """ Function that calls a dependency script if required """
+
+        self.writeToLog('Running dependency script...\n')
+        if platform == 'win32':
+            if os.path.exists(self.configure_path + '/dependencyInstall.bat'):
+                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.bat')
+            else:
+                self.writeToLog('No dependency script found.\n')
+        else:
+            if os.path.exists(self.configure_path + '/dependencyInstall.sh'):
+                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.sh')
+            else:
+                self.writeToLog('No dependency script found.\n')
+        self.writeToLog('Done.\n')
 
 
     def cloneConfigProcess(self):
@@ -791,22 +990,6 @@ class InstallSynAppsGUI:
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning build process...\n')
-        if not platform == "win32" and self.installDep.get():
-            self.writeToLog('Running dependency script...\n')
-            if os.path.exists(self.configure_path + '/dependencyInstall.sh'):
-                self.writeToLog('Please enter your sudo password into the terminal...\n')
-                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.sh')
-                self.writeToLog('Dependencies have been installed.\n')
-            else:
-                self.writeToLog('No dependency script found.\n')
-        elif platform == "win32" and self.installDep.get():
-            if os.path.exists(self.configure_path + '/dependencyInstall.bat'):
-                self.builder.acquire_dependecies(self.configure_path + '/dependencyInstall.bat')
-                self.writeToLog('Dependencies have been installed.\n')
-            else:
-                self.writeToLog('No dependency script found.\n')
-        else:
-            self.writeToLog("Auto install dependencies toggled off.\n")
         self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
         status = self.builder.build_base()
         if status < 0:
@@ -832,11 +1015,18 @@ class InstallSynAppsGUI:
             return status
         for module in self.install_config.get_module_list():
             if module.build == 'YES':
-                status, was_ad = self.builder.build_ad_module(module)
-                if was_ad and status == 0:
-                    self.writeToLog("Built AD module {}\n".format(module.name))
-                elif was_ad and status != 0:
-                    self.writeToLog("Failed to build AD module {}\n".format(module.name))
+                # Process any custom builds now
+                if module.custom_build_script_path is not None:
+                    self.writeToLog('Detected custom build script for module {}\n'.format(module.name))
+                    out = self.builder.build_via_custom_script(module)
+                    self.writeToLog('Custom build script for {} exited with code {}\n'.format(module.name, out))
+                else:
+                    # Also build any areaDetector plugins/drivers
+                    status, was_ad = self.builder.build_ad_module(module)
+                    if was_ad and status == 0:
+                        self.writeToLog("Built AD module {}\n".format(module.name))
+                    elif was_ad and status != 0:
+                        self.writeToLog("Failed to build AD module {}\n".format(module.name))
         self.writeToLog('Done.\n')
         self.writeToLog('Autogenerating install/uninstall scripts...\n')
         self.autogenerator.initialize_dir()
@@ -851,7 +1041,12 @@ class InstallSynAppsGUI:
     def autorunProcess(self):
         """ Function that performs all other processes sequentially """
 
-        self.showMessage('Start Autorun', 'Start Autorun - Clone -> Checkout -> Update -> Build -> Generate')
+        self.showMessage('Start Autorun', 'Start Autorun - Deps -> Clone -> Checkout -> Update -> Build -> Generate')
+        if self.installDep.get():
+            self.installDependenciesProcess()
+        else:
+            self.writeToLog("Auto install dependencies toggled off.\n")
+
         current_status = self.cloneConfigProcess()
         if current_status < 0:
             self.showErrorMessage('Clone Error', 'ERROR - Cloning error occurred, aborting...')
@@ -876,15 +1071,42 @@ class InstallSynAppsGUI:
         """ Function that packages the specified modules into a tarball """
 
         self.writeToLog('Starting packaging...\n')
-        output_filename = self.packager.create_bundle_name()
+        self.package_output_filename = self.packager.create_bundle_name()
         self.writeToLog('Tarring...\n')
-        output = self.packager.create_package(output_filename)
+        output = self.packager.create_package(self.package_output_filename)
+        self.package_output_filename = self.package_output_filename + '.tgz'
+        self.metacontroller.metadata['package_output_filename'] = self.package_output_filename
         if output < 0:
             self.showErrorMessage('Package Error', 'ERROR - Was unable to package areaDetector successfully. Aborting.', force_popup=True)
         else:
             self.writeToLog('Package saved to {}\n'.format(self.packager.output_location))
-            self.writeToLog('Bundle Name: {}\n'.format(output_filename))
+            self.writeToLog('Bundle Name: {}\n'.format(self.package_output_filename))
             self.writeToLog('Done. Completed in {} seconds.\n'.format(output))
+
+
+
+    def copyAndUnpackProcess(self):
+        """ Function that allows user to move their packaged tarball and unpack it. """
+
+        self.writeToLog('Starting move + unpack operation...\n')
+        if self.package_output_filename is None:
+            self.showErrorMessage('Error', 'ERROR - No tarball package has yet been created.')
+        elif not os.path.exists(self.packager.output_location + '/' + self.package_output_filename):
+            self.showErrorMessage('Error', 'ERROR - tarball was generated but could not be found. Possibly moved.')
+        else:
+            target = filedialog.askdirectory(initialdir='.')
+            if target is None:
+                self.writeToLog('Operation cancelled.\n')
+            else:
+                self.writeToLog('Moving and unpacking to: {}\n'.format(target))
+                shutil.move(os.path.join(self.packager.output_location, self.package_output_filename), os.path.join(target, self.package_output_filename))
+                current = os.getcwd()
+                os.chdir(target)
+                subprocess.call(['tar', '-xzf', self.package_output_filename])
+                os.remove(self.package_output_filename)
+                os.chdir(current)
+                self.writeToLog('Done.')
+        
 
 
 # ---------------- Start the GUI ---------------

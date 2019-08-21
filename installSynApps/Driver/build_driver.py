@@ -6,6 +6,7 @@ __author__   = 'Jakub Wlodek'
 
 import os
 import subprocess
+from sys import platform
 import installSynApps.DataModel.install_config as IC
 
 
@@ -70,7 +71,7 @@ class BuildDriver:
             self.make_flag = '-sj{}'.format(self.threads)
 
 
-    def check_dependencies_in_path(self):
+    def check_dependencies_in_path(self, allow_partial=False):
         """
         Function meant to check if required packages are located in the system path.
 
@@ -84,29 +85,34 @@ class BuildDriver:
         message = ''
         current = 'make'
         FNULL = open(os.devnull, 'w')
+
         try:
             subprocess.call(['make', '--version'], stdout=FNULL, stderr=FNULL)
+            current = 'perl'
+            subprocess.call(['perl', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'wget'
             subprocess.call(['wget', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'git'
             subprocess.call(['git', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'tar'
             subprocess.call(['tar', '--version'], stdout=FNULL, stderr=FNULL)
-            current = 'perl'
-            subprocess.call(['perl', '--version'], stdout=FNULL, stderr=FNULL)
         except FileNotFoundError:
-            status = False
+            if not allow_partial:
+                status = False
             message = current
 
         FNULL.close()
         return status, message
 
 
-    def acquire_dependecies(self, dependency_script_path, with_gui = False):
+    def acquire_dependecies(self, dependency_script_path):
         """ Method that runs dependency install shell script """
 
         if os.path.exists(dependency_script_path) and os.path.isfile(dependency_script_path):
-            subprocess.call(dependency_script_path, shell=True)
+            if dependency_script_path.endswith('.bat'):
+                subprocess.call([dependency_script_path])
+            else:
+                subprocess.call(['bash', dependency_script_path])
 
 
     def build_base(self):
@@ -149,7 +155,9 @@ class BuildDriver:
 
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith("$(AREA_DETECTOR)") and module.build == "YES":
-                if module.name != "ADCORE" and module.name != "ADSUPPORT":
+                if module.custom_build_script_path is not None:
+                    self.build_via_custom_script(module)
+                elif module.name != "ADCORE" and module.name != "ADSUPPORT":
                     out_mod = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
                     if out_mod != 0:
                         failed_builds.append(module)
@@ -187,6 +195,19 @@ class BuildDriver:
             return 0, False
 
 
+    def build_via_custom_script(self, module):
+        """ Function that builds a module using its custom build script """
+
+        current = os.getcwd()
+        os.chdir(module.abs_path)
+        if platform == 'win32':
+            out_mod = subprocess.call([module.custom_build_script_path])
+        else:
+            out_mod = subprocess.call(['bash', module.custom_build_script_path])
+        os.chdir(current)
+        return out_mod
+
+
     def build_all(self):
         """
         Main function that runs remaining ones sequentially
@@ -209,7 +230,8 @@ class BuildDriver:
             return -1, "Error building EPICS support", []
         ret, failed = self.build_ad()
         if len(failed) > 0:
-            return -1, "Error building AD modules", failed
+            # failing to build individual ad module is not a critical error, so return 0
+            return 0, "Error building AD modules", failed
         elif ret < 0:
             return -1, "Error building ADSupport and ADCore", []
         else:
