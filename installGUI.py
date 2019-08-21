@@ -199,6 +199,10 @@ class InstallSynAppsGUI:
 
         self.msg = "Welcome to installSynApps!"
 
+        # Because EPICS versioning is not as standardized as it should be, certain modules cannot be properly auto updated.
+        # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
+        self.update_tags_blacklist = ["SSCAN", "CALC"]
+
         # title label
         self.topLabel       = Label(frame, text = self.msg, width = '25', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
         self.topLabel.grid(row = 0, column = 0, padx = 10, pady = 10, columnspan = 2)
@@ -240,6 +244,7 @@ class InstallSynAppsGUI:
 
         # default configure path
         self.configure_path = 'configure'
+        self.configure_path = os.path.abspath(self.configure_path)
         self.valid_install = False
         self.deps_found = True
         self.install_loaded = False
@@ -492,7 +497,7 @@ class InstallSynAppsGUI:
             self.showMessage('Syncing...', 'Please wait while tags are synced - this may take a while...', force_popup=True)
             g = Github(user, passwd)
             for module in self.install_config.get_module_list():
-                if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master':
+                if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in self.update_tags_blacklist:
                     account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
                     repo = g.get_repo(account_repo)
                     if repo is not None:

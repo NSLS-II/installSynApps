@@ -155,7 +155,9 @@ class BuildDriver:
 
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith("$(AREA_DETECTOR)") and module.build == "YES":
-                if module.name != "ADCORE" and module.name != "ADSUPPORT":
+                if module.custom_build_script_path is not None:
+                    self.build_via_custom_script(module)
+                elif module.name != "ADCORE" and module.name != "ADSUPPORT":
                     out_mod = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
                     if out_mod != 0:
                         failed_builds.append(module)
@@ -228,7 +230,8 @@ class BuildDriver:
             return -1, "Error building EPICS support", []
         ret, failed = self.build_ad()
         if len(failed) > 0:
-            return -1, "Error building AD modules", failed
+            # failing to build individual ad module is not a critical error, so return 0
+            return 0, "Error building AD modules", failed
         elif ret < 0:
             return -1, "Error building ADSupport and ADCore", []
         else:

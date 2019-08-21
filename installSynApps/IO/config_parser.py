@@ -320,7 +320,8 @@ class ConfigParser:
     def parse_custom_build_scripts(self, install_config):
         """ Function that checks if there is a custom build script written for each module in the install config """
 
-        build_script_folder = os.path.join(self.configure_path, 'customBuildScripts')
+        # make sure the build script path is absolute
+        build_script_folder = os.path.abspath(os.path.join(self.configure_path, 'customBuildScripts'))
         if os.path.exists(build_script_folder):
             for module in install_config.get_module_list():
                 for file in os.listdir(build_script_folder):

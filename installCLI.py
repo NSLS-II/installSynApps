@@ -22,22 +22,25 @@ import installSynApps.IO as IO
 
 def parse_user_input():
     path_to_configure = "configure"
+
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
     parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
     parser.add_argument('-d', '--dependency', action='store_true', help='Add this flag to install dependencies via a dependency script.')
     parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
     parser.add_argument('-t', '--threads', help = 'Define a limit on the number of threads that make is allowed to use')
     parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
+    parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
     arguments = vars(parser.parse_args())
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
 
-    return path_to_configure, arguments
+    return path_to_configure, arguments['installpath'], arguments
 
 
 # ----------------- Run the script ------------------------
 
-path_to_configure, args = parse_user_input()
+path_to_configure, force_install_path, args = parse_user_input()
+path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
 single_thread   = args['singlethread']
 dep             = args['dependency']
@@ -66,16 +69,16 @@ print()
 
 # Parse base config file, make sure that it is valid - ask for user input until it is valid
 parser = IO.config_parser.ConfigParser(path_to_configure)
-install_config, message = parser.parse_install_config(allow_illegal=True)
+install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
 if install_config is None:
     print('Error parsing Install Config... {}'.format(message))
     exit()
 elif message is not None:
     loc_ok = False
 else:
-    if not yes:
-        new_loc = input('Install location {} OK. Do you wish to choose a different location? (y/n) > '.format(install_config.install_location))
-        if new_loc == 'y':
+    if not yes and force_install_path is None:
+        new_loc = input('Install location {} OK. Do you wish to continue with this location? (y/n) > '.format(install_config.install_location))
+        if new_loc == 'n':
             loc = input('Please enter a new install_location > ')
             install_config.install_location = loc.strip()
             for module in install_config.get_module_list():
@@ -117,9 +120,14 @@ cloner      = Driver.clone_driver.CloneDriver(install_config)
 updater     = Driver.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
 builder     = Driver.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
 packager    = Driver.packager_driver.Packager(install_config)
-if not packager.found_distro:
+if not packager.found_distro and platform != 'win32':
     print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
-    print("Note that the output tarball will use the generic 'linux-x86_64' name.")
+    print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
+    if not yes:
+        custom_output = input('Would you like to manually input a name to replace the generic one? (y/n) > ')
+        if custom_output == 'y':
+            custom_os = input('Please enter a suitable output package name: > ')
+            packager.OS = custom_os
 autogenerator = IO.script_generator.ScriptGenerator(install_config)
 
 
@@ -216,7 +224,11 @@ else:
             exit()
         elif len(failed_list) > 0:
             for admodule in failed_list:
-                print("AD Module {} failed to build".format(admodule.name))
+                print("AD Module {} failed to build, will not package.".format(admodule.name))
+                # Don't package modules that fail to build
+                for module in packager.install_config.get_module_list():
+                    if module.name == admodule.name:
+                        module.package = "NO"
             print("Check for missing dependecies, and if INSTALL_CONFIG is valid.")
 
 
