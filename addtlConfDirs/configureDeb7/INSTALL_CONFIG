@@ -1,5 +1,5 @@
 #
-# INSTALL_CONFIG file saved by installSynApps on 2019-08-21 13:34:38.313249
+# INSTALL_CONFIG file saved by installSynApps on 2019-08-21 13:33:21.939463
 #
 
 INSTALL=/epics
@@ -46,8 +46,8 @@ LOVE             R3_13_base           $(SUPPORT)/love                          l
 LUA              R2-0                 $(SUPPORT)/lua                           lua                      NO               NO               NO
 MCA              R7-8                 $(SUPPORT)/mca                           mca                      YES              YES              NO
 MEASCOMP         R2-3                 $(SUPPORT)/measComp                      measComp                 NO               NO               NO
-MODBUS           R3-0                 $(SUPPORT)/modbus                        modbus                   YES              YES              YES
-MOTOR            R7-1                 $(SUPPORT)/motor                         motor                    YES              YES              YES
+MODBUS           R3-0                 $(SUPPORT)/modbus                        modbus                   YES              NO               YES
+MOTOR            R7-1                 $(SUPPORT)/motor                         motor                    YES              YES              NO
 OPTICS           R2-13                $(SUPPORT)/optics                        optics                   NO               NO               NO
 SOFTGLUE         R2-8                 $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO               NO

@@ -22,22 +22,24 @@ import installSynApps.IO as IO
 
 def parse_user_input():
     path_to_configure = "configure"
+
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
     parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
     parser.add_argument('-d', '--dependency', action='store_true', help='Add this flag to install dependencies via a dependency script.')
     parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
     parser.add_argument('-t', '--threads', help = 'Define a limit on the number of threads that make is allowed to use')
     parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
+    parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
     arguments = vars(parser.parse_args())
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
 
-    return path_to_configure, arguments
+    return path_to_configure, arguments['installpath'], arguments
 
 
 # ----------------- Run the script ------------------------
 
-path_to_configure, args = parse_user_input()
+path_to_configure, force_install_path, args = parse_user_input()
 path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
 single_thread   = args['singlethread']
@@ -67,14 +69,14 @@ print()
 
 # Parse base config file, make sure that it is valid - ask for user input until it is valid
 parser = IO.config_parser.ConfigParser(path_to_configure)
-install_config, message = parser.parse_install_config(allow_illegal=True)
+install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
 if install_config is None:
     print('Error parsing Install Config... {}'.format(message))
     exit()
 elif message is not None:
     loc_ok = False
 else:
-    if not yes:
+    if not yes and force_install_path is None:
         new_loc = input('Install location {} OK. Do you wish to continue with this location? (y/n) > '.format(install_config.install_location))
         if new_loc == 'n':
             loc = input('Please enter a new install_location > ')
