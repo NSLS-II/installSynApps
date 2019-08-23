@@ -199,7 +199,10 @@ class Packager:
         self.grab_folder(base_path + '/include',            top + '/base/include')
         self.grab_folder(base_path + '/startup',            top + '/base/startup')
         try:
-            out = subprocess.check_output(['git', '-C', base_path, 'describe', '--tags'])
+            current_loc = os.getcwd()
+            os.chdir(base_path)
+            out = subprocess.check_output(['git', 'describe', '--tags'])
+            os.chdir(current_loc)
             readme_fp.write('base : {}'.format(out.decode("utf-8")))
         except subprocess.CalledProcessError:
             pass
@@ -246,7 +249,10 @@ class Packager:
                         self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
 
         try:
-            out = subprocess.check_output(['git', '-C', module_location + '/' + module_name, 'describe', '--tags'])
+            current_loc = os.getcwd()
+            os.chdir(os.path.join(module_location, module_name))
+            out = subprocess.check_output(['git', 'describe', '--tags'])
+            os.chdir(current_loc)
             readme_fp.write('{} : {}'.format(module_name, out.decode("utf-8")))
         except subprocess.CalledProcessError:
             pass
@@ -295,10 +301,14 @@ class Packager:
         self.grab_folder(ad_path + '/ADSupport/bin/'    + self.arch,    top + '/areaDetector/ADSupport/bin/'    + self.arch)
         self.grab_folder(ad_path + '/ADSupport/lib/'    + self.arch,    top + '/areaDetector/ADSupport/lib/'    + self.arch)
         try:
-            out = subprocess.check_output(['git', '-C', ad_path + '/ADCore',    'describe', '--tags'])
+            current_loc = os.getcwd()
+            os.chdir(os.path.join(ad_path, 'ADCore'))
+            out = subprocess.check_output(['git', 'describe', '--tags'])
             readme_fp.write('ADCore : {}'.format(out.decode("utf-8")))
-            out = subprocess.check_output(['git', '-C', ad_path + '/ADSupport', 'describe', '--tags'])
+            os.chdir(os.path.join(ad_path, 'ADSupport'))
+            out = subprocess.check_output(['git', 'describe', '--tags'])
             readme_fp.write('ADSupport : {}'.format(out.decode("utf-8")))
+            os.chdir(current_loc)
         except subprocess.CalledProcessError:
             pass
         if self.ad_drivers is not None:

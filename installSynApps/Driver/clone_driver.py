@@ -117,8 +117,11 @@ class CloneDriver:
             if module.abs_path != None:
                 ret = 0
                 if module.version != "master" and module.url_type == "GIT_URL":
-                    ret = subprocess.call(["git", "-C", module.abs_path, "checkout", "-q", module.version])
-                
+                    current_loc = os.getcwd()
+                    os.chdir(module.abs_path)
+                    ret = subprocess.call(["git", "checkout", "-q", module.version])
+                    os.chdir(current_loc)
+
                 if ret == 0:
                     return ret
                 
