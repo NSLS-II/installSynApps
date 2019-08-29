@@ -118,7 +118,7 @@
     <h4>installSynApps Releases:</h4>
     <!--RELEASE START-->
 
-<h4>R2-2 (???-August-2019</h4>
+<h4>R2-2 (21-August-2019)</h4>
 <ul>
 <li>
 <p>Features Added</p>
@@ -126,14 +126,16 @@
 <li>Integration with the github api via PyGithub to allow for version sync</li>
 <li>Custom build script support - can now specify a custom build script for each non-core module</li>
 <li>Option to manually set package output name</li>
+<li>Option to manually specify install location in installCLI.py</li>
 <li>Custom dependency script is now run before clone if selected.</li>
 </ul>
 </li>
 <li>
 <p>Bug Fixes/Improvements</p>
 <ul>
-<li>Install location changes whether on windows or linux</li>
+<li>Install location changes automatically whether on windows or linux</li>
 <li>import guards now allow the program to run even if certain optional dependencies are missing</li>
+<li>Improved error conditions should allow build to run smoother if issues are encountered.</li>
 </ul>
 </li>
 <li>

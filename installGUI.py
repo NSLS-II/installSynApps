@@ -8,7 +8,7 @@ to clone, update, and build the EPICS and synApps software stack.
 
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__version__     = "R2-1"
+__version__     = "R2-2"
 
 
 # Tkinter imports
