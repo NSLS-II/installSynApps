@@ -1,5 +1,5 @@
 #
-# INSTALL_CONFIG file saved by installSynApps on 2019-08-21 13:34:09.373406
+# INSTALL_CONFIG file saved by installSynApps on 2019-08-29 14:02:41.939209
 #
 
 INSTALL=/epics
@@ -132,7 +132,7 @@ ADNED            master               $(AREA_DETECTOR)/ADnED                   A
 ADMAR345         R2-2                 $(AREA_DETECTOR)/ADmar345                ADmar345                 NO               NO               NO
 ADQIMAGING       master               $(AREA_DETECTOR)/ADQImaging              ADQImaging               NO               NO               NO
 ADPHOTONII       master               $(AREA_DETECTOR)/ADPhotonII              ADPhotonII               NO               NO               NO
-ADPSL            R2-1                 $(AREA_DETECTOR)/ADPSL                   ADPSL                    NO               NO               NO
+ADPSL            master               $(AREA_DETECTOR)/ADPSL                   ADPSL                    YES              YES              YES
 ADBRUKER         R2-2                 $(AREA_DETECTOR)/ADBruker                ADBruker                 NO               NO               NO
 ADROPER          R2-3                 $(AREA_DETECTOR)/ADRoper                 ADRoper                  NO               NO               NO
 ADADSC           R2-1                 $(AREA_DETECTOR)/ADADSC                  ADADSC                   NO               NO               NO
