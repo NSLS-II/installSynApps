@@ -19,16 +19,18 @@ CONFIGURE        R6-0                 $(SUPPORT)/configure                     c
 DOCUMENTATION    R6-0                 $(SUPPORT)/documentation                 documentation            YES              YES
 UTILS            R6-0                 $(SUPPORT)/utils                         utils                    YES              YES
 
-GIT_URL=https://github.com/paulscherrerinstitute/
+WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             YES              YES
+SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-2.2.6.tar.gz         YES              YES
 
 GIT_URL=https://github.com/epics-modules/
 
+IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES
 ASYN             R4-35                $(SUPPORT)/asyn                          asyn                     YES              YES
 AUTOSAVE         R5-9                 $(SUPPORT)/autosave                      autosave                 YES              YES
 ALIVE            R1-1-0               $(SUPPORT)/alive                         alive                    YES              YES
 BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES
+SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES
 CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES
 CAMAC            R2-7-1               $(SUPPORT)/camac                         camac                    YES              YES
 CAPUTRECORDER    R1-7-1               $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES
@@ -39,7 +41,6 @@ DXP              R5-0                 $(SUPPORT)/dxp                           d
 DXPSITORO        R1-1                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO
 DEVIOCSTATS      3.1.15               $(SUPPORT)/iocStats                      iocStats                 YES              YES
 IP               2-19-1               $(SUPPORT)/ip                            ip                       NO               NO
-IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES
 IP330            R2-9                 $(SUPPORT)/ip330                         ip330                    NO               NO
 IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 YES              YES
 LOVE             R3-2-6               $(SUPPORT)/love                          love                     NO               NO
@@ -51,7 +52,6 @@ MOTOR            R6-11                $(SUPPORT)/motor                         m
 OPTICS           R2-13-1              $(SUPPORT)/optics                        optics                   NO               NO
 SOFTGLUE         R2-8-1               $(SUPPORT)/softGlue                      softGlue                 NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO
-SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES
 STD              R3-5                 $(SUPPORT)/std                           std                      YES              YES
 VAC              R1-7                 $(SUPPORT)/vac                           vac                      NO               NO
 VME              R2-9                 $(SUPPORT)/vme                           vme                      NO               NO
@@ -59,9 +59,9 @@ YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Y
 XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 YES              NO
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO
 
-WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
+GIT_URL=https://github.com/paulscherrerinstitute/
 
-SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-2.2.6.tar.gz         YES              YES
+STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             YES              YES
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 

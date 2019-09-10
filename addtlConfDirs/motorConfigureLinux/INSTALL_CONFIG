@@ -1,15 +1,16 @@
 #
-# INSTALL_CONFIG for motor builds
+# INSTALL_CONFIG file saved by installSynApps on 2019-09-10 11:46:05.794399
 #
 
-INSTALL=/epics
+INSTALL=/home/jwlodek/temp_epics
+
 
 #MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE    PACKAGE_MODULE
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE       R7.0.2.2             $(INSTALL)/base                          epics-base               YES              YES              YES
+EPICS_BASE       R7.0.3               $(INSTALL)/base                          epics-base               YES              YES              YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
@@ -18,39 +19,39 @@ CONFIGURE        R6-0                 $(SUPPORT)/configure                     c
 DOCUMENTATION    R6-0                 $(SUPPORT)/documentation                 documentation            YES              YES              NO
 UTILS            R6-0                 $(SUPPORT)/utils                         utils                    YES              YES              NO
 
-GIT_URL=https://github.com/paulscherrerinstitute/
+WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             NO               NO               NO
+SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES              YES
 
 GIT_URL=https://github.com/epics-modules/
 
+IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              YES
 ASYN             R4-35                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
 AUTOSAVE         R5-9                 $(SUPPORT)/autosave                      autosave                 YES              YES              YES
 ALIVE            R1-1-0               $(SUPPORT)/alive                         alive                    NO               NO               NO
 BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES              YES
+SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES              YES
 CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES              YES
 CAMAC            R2-7-1               $(SUPPORT)/camac                         camac                    NO               NO               NO
 CAPUTRECORDER    R1-7-1               $(SUPPORT)/caputRecorder                 caputRecorder            NO               NO               NO
 DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  NO               NO               NO
 DELAYGEN         R1-2-0               $(SUPPORT)/delaygen                      delaygen                 NO               NO               NO
 DEVLIB2          2.9                  $(SUPPORT)/devlib2                       devlib2                  NO               NO               NO
-DXP              R5-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
-DXPSITORO        R1-1                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
 DEVIOCSTATS      3.1.15               $(SUPPORT)/iocStats                      iocStats                 YES              YES              YES
 IP               2-19-1               $(SUPPORT)/ip                            ip                       NO               NO               NO
-IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     NO               NO               NO
 IP330            R2-9                 $(SUPPORT)/ip330                         ip330                    NO               NO               NO
 IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 NO               NO               NO
 LOVE             R3-2-6               $(SUPPORT)/love                          love                     NO               NO               NO
 LUA              R1-2                 $(SUPPORT)/lua                           lua                      NO               NO               NO
 MCA              R7-7                 $(SUPPORT)/mca                           mca                      NO               NO               NO
+DXP              R5-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
+DXPSITORO        R1-1                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
 MEASCOMP         R2-1                 $(SUPPORT)/measComp                      measComp                 NO               NO               NO
 MODBUS           R2-10-1              $(SUPPORT)/modbus                        modbus                   NO               NO               NO
 MOTOR            R7-1                 $(SUPPORT)/motor                         motor                    YES              YES              YES
 OPTICS           R2-13-1              $(SUPPORT)/optics                        optics                   NO               NO               NO
 SOFTGLUE         R2-8-1               $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO               NO
-SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES              YES
 STD              R3-5                 $(SUPPORT)/std                           std                      NO               NO               NO
 VAC              R1-7                 $(SUPPORT)/vac                           vac                      NO               NO               NO
 VME              R2-9                 $(SUPPORT)/vme                           vme                      NO               NO               NO
@@ -59,9 +60,9 @@ XSPRESS3         master               $(SUPPORT)/xspress3                      x
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
 QUADEM           R9-1                 $(SUPPORT)/quadEM                        quadEM                   NO               NO               NO
 
-WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
+GIT_URL=https://github.com/paulscherrerinstitute/
 
-SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES              YES
+STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             NO               NO               NO
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
@@ -75,43 +76,40 @@ GIT_URL=https://github.com/motorapp/
 
 GALIL            V3-6                 $(SUPPORT)/galil                         Galil-3-0                NO               NO               NO
 
-GIT_URL=https://github.com/epics-motor
-        
-MOTORMICOS       master               $(MOTOR)/motorMicos                      motorMicos               NO               NO               NO
-MOTOROMS         master               $(MOTOR)/motorOms                        motorOms                 NO               NO               NO
-MOTOROMSASYN     master               $(MOTOR)/motorOmsAsyn                    motorOmsAsyn             NO               NO               NO
-MOTORHYTEC       master               $(MOTOR)/motorHytec                      motorHytec               NO               NO               NO
-MOTORPIGCS2      master               $(MOTOR)/motorPIGCS2                     motorPIGCS2              NO               NO               NO
-MOTORNEWFOCUS    master               $(MOTOR)/motorNewFocus                   motorNewFocus            NO               NO               NO
-MOTORAEROTECH    master               $(MOTOR)/motorAeroTech                   motorAeroTech            NO               NO               NO
-MOTORSMARACT     master               $(MOTOR)/motorSmarAct                    motorSmarAct             NO               NO               NO
-MOTORNEWPORT     master               $(MOTOR)/motorNewport                    motorNewport             NO               NO               NO
-MOTORVMC         master               $(MOTOR)/motorVMC                        motorVMC                 NO               NO               NO
-MOTORPARKER      master               $(MOTOR)/motorParker                     motorParker              NO               NO               NO
-MOTORMXMOTOR     master               $(MOTOR)/motorMXmotor                    motorMXmotor             NO               NO               NO
-MOTORMOTORSIM    master               $(MOTOR)/motorMotorSim                   motorMotorSim            YES              YES              YES
-MOTORAMCI        master               $(MOTOR)/motorAMCI                       motorAMCI                NO               NO               NO
-MOTORPI          master               $(MOTOR)/motorPI                         motorPI                  NO               NO               NO
-MOTORSCIPTMOTOR  master               $(MOTOR)/motorScriptMotor                motorScriptMotor         NO               NO               NO
-MOTORPHYTRON     master               $(MOTOR)/motorPhytron                    motorPhytron             NO               NO               NO
-MOTORIMS         master               $(MOTOR)/motorIms                        motorIms                 NO               NO               NO
-MOTORACS         master               $(MOTOR)/motorAcs                        motorAcs                 NO               NO               NO
-MOTORTHORLABS    master               $(MOTOR)/motorThorLabs                   motorThorLabs            NO               NO               NO
-MOTORSMARTMOTOR  master               $(MOTOR)/motorSmartMotor                 motorSmartMotor          NO               NO               NO
-MOTORPIJENA      master               $(MOTOR)/motorPiJena                     motorPiJena              NO               NO               NO
-MOTORMICRONIX    master               $(MOTOR)/motorMicronix                   motorMicronix            NO               NO               NO
-MOTORORIEL       master               $(MOTOR)/motorOriel                      motorOriel               NO               NO               NO
-MOTORNPOINT      master               $(MOTOR)/motorNPoint                     motorNPoint              NO               NO               NO
-MOTORMICROMO     master               $(MOTOR)/motorMicroMo                    motorMicroMo             NO               NO               NO
-MOTORMCLENNAN    master               $(MOTOR)/motorMclennan                   motorMclennan            NO               NO               NO
-MOTORKOHZU       master               $(MOTOR)/motorKohzu                      motorKohzu               NO               NO               NO
-MOTORFAULHABER   master               $(MOTOR)/motorFaulhaber                  motorFaulhaber           NO               NO               NO
-MOTORDELTATAU    master               $(MOTOR)/motorDeltaTau                   motorDeltaTau            NO               NO               NO
-MOTORATTOCUBE    master               $(MOTOR)/motorAttocube                   motorAttocube            NO               NO               NO
-MOTORACSTECH80   master               $(MOTOR)/motorAcsTech80                  motorAcsTech80           NO               NO               NO
+GIT_URL=https://github.com/epics-motor/
 
-
-
+MOTOR_MICOS       master               $(MOTOR)/modules/motorMicos              motorMicos               NO               NO               NO
+MOTOR_OMS         master               $(MOTOR)/modules/motorOms                motorOms                 NO               NO               NO
+MOTOR_OMSASYN     master               $(MOTOR)/modules/motorOmsAsyn            motorOmsAsyn             NO               NO               NO
+MOTOR_HYTEC       master               $(MOTOR)/modules/motorHytec              motorHytec               NO               NO               NO
+MOTOR_PIGCS2      master               $(MOTOR)/modules/motorPIGCS2             motorPIGCS2              NO               NO               NO
+MOTOR_NEWFOCUS    master               $(MOTOR)/modules/motorNewFocus           motorNewFocus            YES              YES              YES
+MOTOR_AEROTECH    master               $(MOTOR)/modules/motorAeroTech           motorAeroTech            NO               NO               NO
+MOTOR_SMARACT     master               $(MOTOR)/modules/motorSmarAct            motorSmarAct             NO               NO               NO
+MOTOR_NEWPORT     master               $(MOTOR)/modules/motorNewport            motorNewport             NO               NO               NO
+MOTOR_VMC         master               $(MOTOR)/modules/motorVMC                motorVMC                 NO               NO               NO
+MOTOR_PARKER      master               $(MOTOR)/modules/motorParker             motorParker              NO               NO               NO
+MOTOR_MXMOTOR     master               $(MOTOR)/modules/motorMXmotor            motorMXmotor             NO               NO               NO
+MOTOR_MOTORSIM    master               $(MOTOR)/modules/motorMotorSim           motorMotorSim            YES              YES              YES
+MOTOR_AMCI        master               $(MOTOR)/modules/motorAMCI               motorAMCI                NO               NO               NO
+MOTOR_PI          master               $(MOTOR)/modules/motorPI                 motorPI                  NO               NO               NO
+MOTOR_SCIPTMOTOR  master               $(MOTOR)/modules/motorScriptMotor        motorScriptMotor         NO               NO               NO
+MOTOR_PHYTRON     master               $(MOTOR)/modules/motorPhytron            motorPhytron             NO               NO               NO
+MOTOR_IMS         master               $(MOTOR)/modules/motorIms                motorIms                 NO               NO               NO
+MOTOR_ACS         master               $(MOTOR)/modules/motorAcs                motorAcs                 NO               NO               NO
+MOTOR_THORLABS    master               $(MOTOR)/modules/motorThorLabs           motorThorLabs            NO               NO               NO
+MOTOR_SMARTMOTOR  master               $(MOTOR)/modules/motorSmartMotor         motorSmartMotor          NO               NO               NO
+MOTOR_PIJENA      master               $(MOTOR)/modules/motorPiJena             motorPiJena              NO               NO               NO
+MOTOR_MICRONIX    master               $(MOTOR)/modules/motorMicronix           motorMicronix            NO               NO               NO
+MOTOR_ORIEL       master               $(MOTOR)/modules/motorOriel              motorOriel               NO               NO               NO
+MOTOR_NPOINT      master               $(MOTOR)/modules/motorNPoint             motorNPoint              NO               NO               NO
+MOTOR_MICROMO     master               $(MOTOR)/modules/motorMicroMo            motorMicroMo             NO               NO               NO
+MOTOR_MCLENNAN    master               $(MOTOR)/modules/motorMclennan           motorMclennan            NO               NO               NO
+MOTOR_KOHZU       master               $(MOTOR)/modules/motorKohzu              motorKohzu               NO               NO               NO
+MOTOR_FAULHABER   master               $(MOTOR)/modules/motorFaulhaber          motorFaulhaber           NO               NO               NO
+MOTOR_DELTATAU    master               $(MOTOR)/modules/motorDeltaTau           motorDeltaTau            NO               NO               NO
+MOTOR_ATTOCUBE    master               $(MOTOR)/modules/motorAttocube           motorAttocube            NO               NO               NO
+MOTOR_ACSTECH80   master               $(MOTOR)/modules/motorAcsTech80          motorAcsTech80           NO               NO               NO
 
 GIT_URL=https://github.com/epicsNSLS2-deploy/
 
