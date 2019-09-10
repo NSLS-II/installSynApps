@@ -125,7 +125,7 @@ class BuildDriver:
     def build_support(self):
         """ Function that compiles EPICS Support """
 
-        out = subprocess.call(["make", "-C", self.install_config.support_path, "release"])
+        out = self.make_support_releases_consistent()
         if out != 0:
             return out
         out = subprocess.call(["make", "-C", self.install_config.support_path, self.make_flag])
@@ -183,6 +183,23 @@ class BuildDriver:
                 out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
                 return out
         return -1
+
+
+    def make_support_releases_consistent(self):
+        """ Function that makes support module release files consistent """
+
+        out = subprocess.call(["make", "-C", self.install_config.support_path, "release"])
+        return out
+
+
+    def build_support_module(self, module):
+        """ Function that builds only support modules """
+
+        non_build_packages = ["CONFIGURE", "UTILS", "DOCUMENTATION", "AREA_DETECTOR"]
+        if module.rel_path.startswith("$(SUPPORT)") and module.name not in non_build_packages:
+            out = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
+            return out, True
+        return 0, False
 
 
     def build_ad_module(self, module):

@@ -95,13 +95,14 @@ class UpdateConfigDriver:
     def update_ad_macros(self):
         """ Updates the macros in the AD configuration files """
 
-        self.update_macros(self.install_config.ad_path + "/configure")
+        if self.install_config.ad_path is not None:
+            self.update_macros(os.path.join(self.install_config.ad_path, "configure"))
 
 
     def update_support_macros(self):
         """ Updates the macros in the Support configuration files """
 
-        self.update_macros(self.install_config.support_path + "/configure/RELEASE", single_file=True)
+        self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), single_file=True)
 
 
     def update_macros(self, target_path, single_file = False):
