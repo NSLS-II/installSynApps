@@ -234,6 +234,7 @@ class Packager:
         self.grab_folder(target_folder + '/lib/' + self.arch,   top + '/' + module_name +'/lib/' + self.arch)
         self.grab_folder(target_folder + '/configure',          top + '/' + module_name +'/configure')
         self.grab_folder(target_folder + '/iocBoot',            top + '/' + module_name +'/iocBoot')
+        self.grab_folder(target_folder + '/modules',            top + '/' + module_name + '/modules')
         for dir in os.listdir(target_folder):
             if 'App' in dir and not dir.startswith('test'):
                 self.grab_folder(target_folder + '/' + dir + '/Db', top + '/' + module_name +'/' + dir + '/Db')

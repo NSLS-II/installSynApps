@@ -193,6 +193,8 @@ class EditConfigGUI:
                 self.install_config.support_path = module.abs_path
             elif module.name == 'AREA_DETECTOR':
                 self.install_config.ad_path = module.abs_path
+            elif module.name == 'MOTOR':
+                self.install_config.motor_path = module.abs_path
 
         self.root.updateConfigPanel()
         self.root.updateAllRefs(self.install_config)

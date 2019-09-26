@@ -979,6 +979,8 @@ class InstallSynAppsGUI:
         """ Function that injects settings into configuration files """
 
         self.writeToLog('Starting file injection process.\n')
+        for injector in self.install_config.injector_files:
+            self.writeToLog('Injecting {} into {}\n'.format(injector.name, injector.target))
         self.updater.perform_injection_updates()
         self.writeToLog('Done.\n')
         return 0
@@ -997,37 +999,46 @@ class InstallSynAppsGUI:
             return status
         self.writeToLog('Done.\n')
         self.writeToLog('Compiling EPICS support modules at location {}...\n'.format(self.install_config.support_path))
-        status = self.builder.build_support()
+        self.builder.make_support_releases_consistent()
+        for module in self.install_config.get_module_list():
+            if module.build == 'YES':
+                status, built = self.builder.build_support_module(module)
+                if built:
+                    if status == 0:
+                        self.writeToLog('Built support module {}\n'.format(module.name))
+                    else:
+                        self.writeToLog('Failed to build support module {}\n'.format(module.name))
         if status < 0:
             self.showErrorMessage('Build Error', 'ERROR - Failed to build support modules, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
             return status
         self.writeToLog('Done.\n')
-        self.writeToLog('Compiling selected areaDetector modules at location {}...\n'.format(self.install_config.ad_path))
-        self.writeToLog('Compiling ADSupport...\n')
-        status = self.builder.build_ad_support()
-        if status != 0:
-            self.showErrorMessage('Build Error', 'ERROR - Failed to build ADSupport, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
-            return status
-        self.writeToLog('Compiling ADCore...\n')
-        status = self.builder.build_ad_core()
-        if status != 0:
-            self.showErrorMessage('Build Error', 'ERROR - Failed to build ADCore, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
-            return status
-        for module in self.install_config.get_module_list():
-            if module.build == 'YES':
-                # Process any custom builds now
-                if module.custom_build_script_path is not None:
-                    self.writeToLog('Detected custom build script for module {}\n'.format(module.name))
-                    out = self.builder.build_via_custom_script(module)
-                    self.writeToLog('Custom build script for {} exited with code {}\n'.format(module.name, out))
-                else:
-                    # Also build any areaDetector plugins/drivers
-                    status, was_ad = self.builder.build_ad_module(module)
-                    if was_ad and status == 0:
-                        self.writeToLog("Built AD module {}\n".format(module.name))
-                    elif was_ad and status != 0:
-                        self.writeToLog("Failed to build AD module {}\n".format(module.name))
-        self.writeToLog('Done.\n')
+        if self.install_config.ad_path is not None:
+            self.writeToLog('Compiling selected areaDetector modules at location {}...\n'.format(self.install_config.ad_path))
+            self.writeToLog('Compiling ADSupport...\n')
+            status = self.builder.build_ad_support()
+            if status != 0:
+                self.showErrorMessage('Build Error', 'ERROR - Failed to build ADSupport, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
+                return status
+            self.writeToLog('Compiling ADCore...\n')
+            status = self.builder.build_ad_core()
+            if status != 0:
+                self.showErrorMessage('Build Error', 'ERROR - Failed to build ADCore, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
+                return status
+            for module in self.install_config.get_module_list():
+                if module.build == 'YES':
+                    # Process any custom builds now
+                    if module.custom_build_script_path is not None:
+                        self.writeToLog('Detected custom build script for module {}\n'.format(module.name))
+                        out = self.builder.build_via_custom_script(module)
+                        self.writeToLog('Custom build script for {} exited with code {}\n'.format(module.name, out))
+                    else:
+                        # Also build any areaDetector plugins/drivers
+                        status, was_ad = self.builder.build_ad_module(module)
+                        if was_ad and status == 0:
+                            self.writeToLog("Built AD module {}\n".format(module.name))
+                        elif was_ad and status != 0:
+                            self.writeToLog("Failed to build AD module {}\n".format(module.name))
+            self.writeToLog('Done.\n')
         self.writeToLog('Autogenerating install/uninstall scripts...\n')
         self.autogenerator.initialize_dir()
         self.autogenerator.generate_install()

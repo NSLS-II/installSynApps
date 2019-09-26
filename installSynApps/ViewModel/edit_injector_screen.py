@@ -8,6 +8,7 @@ __author__      = "Jakub Wlodek"
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
+from tkinter import simpledialog
 from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
@@ -80,16 +81,40 @@ class EditInjectorGUI:
         self.dropdown.grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
         self.currentEditVar.trace('w', self.updateEditPanel)
 
-        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=10).grid(row = 0, column = 1, columnspan = 1)
-        self.applyExitButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyExit, width=10).grid(row = 0, column = 2, columnspan = 1)
-        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 3, columnspan = 1)
+        self.addNewButton = Button(self.viewFrame, text='New Injector', command = self.newInjector, width = 10).grid(row = 0, column = 1, columnspan = 1)
+        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=10).grid(row = 0, column = 2, columnspan = 1)
+        self.applyExitButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyExit, width=10).grid(row = 0, column = 3, columnspan = 1)
+        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 4, columnspan = 1)
 
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 37, width = 100)
-        self.editPanel.grid(row = 1, column = 0, columnspan = 4)
+        self.editPanel.grid(row = 1, column = 0, columnspan = 5)
 
         self.updateEditPanel()
 
         self.master.mainloop()
+
+
+    def newInjector(self):
+        """ Function for creating new injector files from within the GUI """
+
+        new_name = simpledialog.askstring('New Injector', 'Please enter a new injector filename')
+        if new_name is not None:
+            new_target = simpledialog.askstring('New Target', 'Please enter an injector target relative path using $(INSTALL), $(SUPPORT), $(AREA_DETECTOR), or $(MOTOR)')
+            if new_target is not None:
+                if not new_target.startswith('$(INSTALL)') and not new_target.startswith('$(SUPPORT)') and not new_target.startswith('$(AREA_DETECTOR)') and not new_target.startswith('$(MOTOR)'):
+                    messagebox.showerror('ERROR', 'Please enter a valid relative path.')
+                    return
+                self.install_config.add_injector_file(new_name, '', new_target)
+                self.root.updateAllRefs(self.install_config)
+                del self.injectorList[:]
+                for file in self.install_config.injector_files:
+                    self.injectorList.append(file.name)
+
+                self.currentEditVar.set(self.injectorList[0])
+                self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, *self.injectorList)
+                self.dropdown.config(width=20)
+                self.dropdown.grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
+                self.reloadPanel()
 
 
     def updateEditPanel(self, *args):
@@ -134,6 +159,7 @@ class EditInjectorGUI:
             if file.name == target:
                 file.contents = new_contents
         self.root.writeToLog('Applied updated injector file contents.\n')
+        self.root.updateAllRefs(self.install_config)
 
 
     def applyExit(self):

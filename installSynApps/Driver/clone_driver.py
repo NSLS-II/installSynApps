@@ -75,6 +75,8 @@ class CloneDriver:
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
                 ret = -1
+                if os.path.exists(module.abs_path):
+                    shutil.rmtree(module.abs_path)
                 if not recursive and module.url_type == "GIT_URL":
                     ret = subprocess.call(["git", "clone", module.url + module.repository , module.abs_path])
                 elif recursive and module.url_type == "GIT_URL":

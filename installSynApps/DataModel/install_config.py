@@ -63,6 +63,7 @@ class InstallConfiguration:
         self.base_path = None
         self.support_path = None
         self.ad_path = None
+        self.motor_path = None
 
     
     def is_install_valid(self):
@@ -113,6 +114,8 @@ class InstallConfiguration:
                 self.support_path = module.abs_path
             elif module.name == "AREA_DETECTOR":
                 self.ad_path = module.abs_path
+            elif module.name == "MOTOR":
+                self.motor_path = module.abs_path
             
             self.modules.append(module)
 
@@ -193,13 +196,15 @@ class InstallConfiguration:
 
         temp = rel_path.split('/', 1)[-1]
         if "$(INSTALL)" in rel_path and self.install_location != None:
-            return self.install_location + "/" + temp
+            return os.path.join(self.install_location, temp)
         elif "$(EPICS_BASE)" in rel_path and self.base_path != None:
-            return self.base_path + "/" + temp
+            return os.path.join(self.base_path, temp)
         elif "$(SUPPORT)" in rel_path and self.support_path != None:
-            return self.support_path + "/" + temp
+            return os.path.join(self.support_path, temp)
         elif "$(AREA_DETECTOR)" in rel_path and self.ad_path != None:
-            return self.ad_path + "/" + temp
+            return os.path.join(self.ad_path, temp)
+        elif "$(MOTOR)" in rel_path and self.motor_path != None:
+            return os.path.join(self.motor_path, temp)
         else:
             return rel_path
 
