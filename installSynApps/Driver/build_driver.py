@@ -195,7 +195,7 @@ class BuildDriver:
     def build_support_module(self, module):
         """ Function that builds only support modules """
 
-        non_build_packages = ["CONFIGURE", "UTILS", "DOCUMENTATION", "AREA_DETECTOR"]
+        non_build_packages = ["CONFIGURE", "UTILS", "DOCUMENTATION", "AREA_DETECTOR", "QUADEM"]
         if module.rel_path.startswith("$(SUPPORT)") and module.name not in non_build_packages:
             out = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
             return out, True
@@ -205,7 +205,7 @@ class BuildDriver:
     def build_ad_module(self, module):
         """ Function that builds only ad modules """
 
-        if module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT':
+        if (module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT') or module.name == 'QUADEM':
             out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
             return out, True
         else:

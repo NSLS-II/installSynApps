@@ -58,7 +58,7 @@ class UpdateConfigDriver:
         self.path_to_configure = path_to_configure
         self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
-        self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS"]
+        self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS", "QUADEM"]
 
 
     def perform_injection_updates(self):
@@ -96,16 +96,19 @@ class UpdateConfigDriver:
         """ Updates the macros in the AD configuration files """
 
         if self.install_config.ad_path is not None:
-            self.update_macros(os.path.join(self.install_config.ad_path, "configure"))
+            self.update_macros(os.path.join(self.install_config.ad_path, "configure"), True)
 
 
     def update_support_macros(self):
         """ Updates the macros in the Support configuration files """
 
-        self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), single_file=True)
+        self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), False, single_file=True)
+        for module in self.install_config.get_module_list():
+            if module.name == "QUADEM" and module.build == "YES":
+                self.update_macros(os.path.join(module.abs_path, "configure/RELEASE"), True, single_file=True)
 
 
-    def update_macros(self, target_path, single_file = False):
+    def update_macros(self, target_path, include_ad, single_file = False):
         """
         Function that calls Config injector to update all macros in target dir
         
@@ -120,7 +123,7 @@ class UpdateConfigDriver:
         if not single_file:
             self.config_injector.update_macros_dir(install_macro_list, target_path)
         else:
-            self.config_injector.update_macros_file(install_macro_list, target_path.rsplit('/', 1)[0], target_path.rsplit('/', 1)[-1], comment_unsupported=True, with_ad=False)
+            self.config_injector.update_macros_file(install_macro_list, target_path.rsplit('/', 1)[0], target_path.rsplit('/', 1)[-1], comment_unsupported=True, with_ad=include_ad)
 
 
     def fix_target_release(self, target_module_name):
