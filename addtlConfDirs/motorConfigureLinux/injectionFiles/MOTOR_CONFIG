@@ -1,0 +1,4 @@
+# Saved by installSynApps on 2019-09-10 11:46:05.794014
+__TARGET_LOC__=$(MOTOR)/configure/EXAMPLE_CONFIG_SITE.local
+
+BUILD_IOCS=YES
