@@ -229,6 +229,7 @@ class Packager:
         target_folder = module_location + '/' + module_name
         self.grab_folder(target_folder + '/opi',                top + '/' + module_name +'/opi')
         self.grab_folder(target_folder + '/db',                 top + '/' + module_name +'/db')
+        self.grab_folder(target_folder + '/dbd',                top + '/' + module_name +'/dbd')
         self.grab_folder(target_folder + '/include',            top + '/' + module_name +'/include')
         self.grab_folder(target_folder + '/bin/' + self.arch,   top + '/' + module_name +'/bin/' + self.arch)
         self.grab_folder(target_folder + '/lib/' + self.arch,   top + '/' + module_name +'/lib/' + self.arch)
