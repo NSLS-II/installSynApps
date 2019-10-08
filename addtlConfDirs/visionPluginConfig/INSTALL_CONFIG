@@ -1,5 +1,5 @@
 #
-# INSTALL_CONFIG file saved by installSynApps on 2019-07-30 13:53:27.789000
+# INSTALL_CONFIG file saved by installSynApps on 2019-10-08 12:33:31.118769
 #
 
 INSTALL=/epics
@@ -10,55 +10,55 @@ INSTALL=/epics
 
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE       R7.0.2.2             $(INSTALL)/base                          epics-base               YES              YES              YES
+EPICS_BASE       R7.0.3               $(INSTALL)/base                          epics-base               YES              YES              YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
-SUPPORT          R6-0                 $(INSTALL)/support                       support                  YES              YES              NO
-CONFIGURE        R6-0                 $(SUPPORT)/configure                     configure                YES              YES              NO
-DOCUMENTATION    R6-0                 $(SUPPORT)/documentation                 documentation            YES              YES              NO
-UTILS            R6-0                 $(SUPPORT)/utils                         utils                    YES              YES              NO
+SUPPORT          R6-1                 $(INSTALL)/support                       support                  YES              YES              NO
+CONFIGURE        R6-1                 $(SUPPORT)/configure                     configure                YES              YES              NO
+DOCUMENTATION    R6-1                 $(SUPPORT)/documentation                 documentation            YES              YES              NO
+UTILS            R6-1                 $(SUPPORT)/utils                         utils                    YES              YES              NO
 
 GIT_URL=https://github.com/paulscherrerinstitute/
 
-STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             YES              YES              NO
+STREAM           stream_2_7_14        $(SUPPORT)/stream                        StreamDevice             YES              YES              NO
 
 GIT_URL=https://github.com/epics-modules/
 
-ASYN             R4-35                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
-AUTOSAVE         R5-9                 $(SUPPORT)/autosave                      autosave                 YES              YES              YES
-ALIVE            R1-1-0               $(SUPPORT)/alive                         alive                    NO               NO               NO
+ASYN             R4-36                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
+AUTOSAVE         R5-10                $(SUPPORT)/autosave                      autosave                 YES              YES              YES
+ALIVE            R1-1-1               $(SUPPORT)/alive                         alive                    NO               NO               NO
 BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES              YES
 CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES              YES
-CAMAC            R2-7-1               $(SUPPORT)/camac                         camac                    YES              YES              NO
-CAPUTRECORDER    R1-7-1               $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES              NO
+CAMAC            R2-7                 $(SUPPORT)/camac                         camac                    YES              YES              YES
+CAPUTRECORDER    R3-1                 $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES              NO
 DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  YES              YES              NO
-DELAYGEN         R1-2-0               $(SUPPORT)/delaygen                      delaygen                 YES              YES              NO
-DEVLIB2          2.9                  $(SUPPORT)/devlib2                       devlib2                  NO               NO               NO
-DXP              R5-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
-DXPSITORO        R1-1                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
-DEVIOCSTATS      3.1.15               $(SUPPORT)/iocStats                      iocStats                 YES              YES              YES
-IP               2-19-1               $(SUPPORT)/ip                            ip                       NO               NO               NO
-IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              NO
+DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 YES              YES              NO
+DEVLIB2          2.10                 $(SUPPORT)/devlib2                       devlib2                  NO               NO               NO
+DXP              R6-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
+DXPSITORO        R1-2                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
+DEVIOCSTATS      3.1.16               $(SUPPORT)/iocStats                      iocStats                 YES              YES              YES
+IP               R2-20                $(SUPPORT)/ip                            ip                       NO               NO               NO
+IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              YES
 IP330            R2-9                 $(SUPPORT)/ip330                         ip330                    NO               NO               NO
-IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 YES              YES              NO
-LOVE             R3-2-6               $(SUPPORT)/love                          love                     NO               NO               NO
-LUA              R1-2                 $(SUPPORT)/lua                           lua                      NO               NO               NO
-MCA              R7-7                 $(SUPPORT)/mca                           mca                      YES              YES              NO
-MEASCOMP         R2-1                 $(SUPPORT)/measComp                      measComp                 NO               NO               NO
-MODBUS           R2-10-1              $(SUPPORT)/modbus                        modbus                   YES              YES              NO
-MOTOR            R6-11                $(SUPPORT)/motor                         motor                    YES              YES              NO
-OPTICS           R2-13-1              $(SUPPORT)/optics                        optics                   NO               NO               NO
-SOFTGLUE         R2-8-1               $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
+IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 YES              YES              YES
+LOVE             R3_13_base           $(SUPPORT)/love                          love                     NO               NO               NO
+LUA              R2-0                 $(SUPPORT)/lua                           lua                      NO               NO               NO
+MCA              R7-8                 $(SUPPORT)/mca                           mca                      YES              YES              NO
+MEASCOMP         R2-4                 $(SUPPORT)/measComp                      measComp                 NO               NO               NO
+MODBUS           R3-0                 $(SUPPORT)/modbus                        modbus                   YES              YES              NO
+MOTOR            R7-1                 $(SUPPORT)/motor                         motor                    YES              YES              NO
+OPTICS           R2-13                $(SUPPORT)/optics                        optics                   NO               NO               NO
+SOFTGLUE         R2-8                 $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO               NO
 SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES              YES
-STD              R3-5                 $(SUPPORT)/std                           std                      YES              YES              YES
-VAC              R1-7                 $(SUPPORT)/vac                           vac                      NO               NO               NO
+STD              R3-6                 $(SUPPORT)/std                           std                      YES              YES              YES
+VAC              R1-9                 $(SUPPORT)/vac                           vac                      NO               NO               NO
 VME              R2-9                 $(SUPPORT)/vme                           vme                      NO               NO               NO
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO               NO
 XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 YES              NO               YES
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
-QUADEM           R9-1                 $(SUPPORT)/quadEM                        quadEM                   YES              NO               YES
+QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   YES              YES              YES
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
@@ -78,9 +78,9 @@ GALIL            V3-6                 $(SUPPORT)/galil                         G
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR    R3-6                 $(SUPPORT)/areaDetector                  areaDetector             YES              YES              NO
-ADSUPPORT        R1-8                 $(AREA_DETECTOR)/ADSupport               ADSupport                YES              YES              YES
-ADCORE           R3-6                 $(AREA_DETECTOR)/ADCore                  ADCore                   YES              YES              YES
+AREA_DETECTOR    R3-7                 $(SUPPORT)/areaDetector                  areaDetector             YES              YES              NO
+ADSUPPORT        R1-9                 $(AREA_DETECTOR)/ADSupport               ADSupport                YES              YES              YES
+ADCORE           R3-7                 $(AREA_DETECTOR)/ADCore                  ADCore                   YES              YES              YES
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
@@ -94,9 +94,9 @@ ADPLUGINEDGE     master               $(AREA_DETECTOR)/ADPluginEdge            A
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADUVC            R1-2                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    YES              NO               YES
+ADUVC            R1-3                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    YES              YES              YES
 ADEMERGENTVISION master               $(AREA_DETECTOR)/ADEmergentVision        ADEmergentVision         NO               NO               NO
-ADSPINNAKER      u18_compile          $(AREA_DETECTOR)/ADSpinnaker             ADSpinnaker              NO               NO               NO
+ADSPINNAKER      R0.1beta             $(AREA_DETECTOR)/ADSpinnaker             ADSpinnaker              NO               NO               NO
 ADLAMBDA         dual_threshold_feature $(AREA_DETECTOR)/ADLambda                ADLambda                 NO               NO               NO
 ADANDOR3         master               $(AREA_DETECTOR)/ADAndor3                ADAndor3                 YES              YES              YES
 ADPERKINELMER    master               $(AREA_DETECTOR)/ADPerkinElmer           ADPerkinElmer            NO               NO               NO
