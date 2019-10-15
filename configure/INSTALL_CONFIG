@@ -19,7 +19,7 @@ INSTALL=/epics
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE          R7.0.2.2     $(INSTALL)/base                             epics-base                      YES            YES             YES
+EPICS_BASE          R7.0.3     $(INSTALL)/base                             epics-base                      YES            YES             YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
