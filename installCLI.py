@@ -20,6 +20,63 @@ import installSynApps.IO as IO
 
 # -------------- Some helper functions ------------------
 
+def print_welcome_message():
+    # Welcome message
+    print("+-----------------------------------------------------------------")
+    print("+ installSynApps, version: {}                                  +".format(__version__))
+    print("+ Author: Jakub Wlodek                                           +")
+    print("+ Copyright (c): Brookhaven National Laboratory 2018-2019        +")
+    print("+ This software comes with NO warranty!                          +")
+    print("+-----------------------------------------------------------------")
+    print()
+    
+    print("Welcome to the installSynApps module.")
+    print("It is designed to automate the build process for EPICS and areaDetector.")
+    print("The scripts included will automatically edit all configuration files")
+    print("required, and then build with make.")
+    print()
+
+
+def create_new_install_config():
+    print_welcome_message()
+    print("You have selected to create a new install configuration.\n")
+    install_type = input("Would you like a coprehensive config, an areaDetector config, or a motor config? (AD/Motor/All) > ")
+    if install_type.lower() == 'ad':
+        install_template = 'NEW_CONFIG_AD'
+        print('AreaDetector config selected.\n')
+    elif install_type.lower() == 'motor':
+        install_template = 'NEW_CONFIG_MOTOR'
+        print('Motor config selected.\n')
+    else:
+        install_template = 'NEW_CONFIG_ALL'
+        print('Coprehensive config selected.\n')
+
+    write_loc = input('Where would you like the install configuration to be written? > ')
+    write_loc = os.path.abspath(write_loc)
+    print('Target output location set to {}'.format(write_loc))
+    install_loc = input('What should be the target install location for the config? > ')
+    print('Attempting to load default config with install location {}...'.format(install_loc))
+    parser = IO.config_parser.ConfigParser('resources')
+    install_config, message = parser.parse_install_config(config_filename=install_template, force_location=install_loc, allow_illegal=True)
+    if install_config is None:
+        print('Parse Error - {}'.format(message))
+    elif message is not None:
+        print('Warning - {}'.format(message))
+    else:
+        print('Done.')
+    print('Writing...')
+    writer = IO.config_writer.ConfigWriter(install_config)
+    ret, message = writer.write_install_config(filepath=write_loc)
+    if not ret:
+        print('Write Error - {}'.format(message))
+    else:
+        print()
+        print('Wrote new install configuration to {}.'.format(write_loc))
+        print('Please edit INSTALL_CONFIG file to specify build specifications.')
+        print('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
+
+
+
 def parse_user_input():
     path_to_configure = "configure"
 
@@ -30,7 +87,11 @@ def parse_user_input():
     parser.add_argument('-t', '--threads', help = 'Define a limit on the number of threads that make is allowed to use')
     parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
     parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
+    parser.add_argument('-n', '--newconfig', action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
     arguments = vars(parser.parse_args())
+    if arguments['newconfig']:
+        create_new_install_config()
+        exit()
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
 
@@ -49,20 +110,7 @@ threads         = args['threads']
 if threads is None:
     threads = 0
 
-# Welcome message
-print("+-----------------------------------------------------------------")
-print("+ installSynApps, version: {}                                  +".format(__version__))
-print("+ Author: Jakub Wlodek                                           +")
-print("+ Copyright (c): Brookhaven National Laboratory 2018-2019        +")
-print("+ This software comes with NO warranty!                          +")
-print("+-----------------------------------------------------------------")
-print()
-
-print("Welcome to the installSynApps module.")
-print("It is designed to automate the build process for EPICS and areaDetector.")
-print("The scripts included will automatically edit all configuration files")
-print("required, and then build with make.")
-print()
+print_welcome_message()
 print('Reading install configuration directory located at: {}...'.format(path_to_configure))
 print()
 
@@ -192,11 +240,11 @@ else:
         d = 'n'
 
     if d == "y":
+        print('Acquiring dependencies through dependency script...')
         if platform == 'win32':
-            print('Detected Windows platform... Currently no dependency script support.')
+            builder.acquire_dependecies("{}/dependencyInstall.bat".format(path_to_configure))
         else:
-            print('Acquiring dependencies through dependency script...')
-            builder.acquire_dependecies("scripts/dependencyInstall.sh")
+            builder.acquire_dependecies("{}/dependencyInstall.sh".format(path_to_configure))
 
     if not yes:
         # Inform user of number of CPU cores to use and prompt to build

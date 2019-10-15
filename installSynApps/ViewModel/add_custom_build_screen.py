@@ -169,6 +169,7 @@ class AddCustomBuildScriptGUI:
         fp.close()
         self.reloadPanel(ifsame=True)
         self.root.updateAllRefs(self.install_config)
+        self.root.updateConfigPanel()
 
 
     def exit(self):

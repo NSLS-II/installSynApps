@@ -128,7 +128,9 @@ class InstallSynAppsGUI:
 
         # File menu
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label='New',       command=self.newConfig)
+        filemenu.add_command(label='New AD Config',         command=lambda : self.newConfig('AD'))
+        filemenu.add_command(label='New Motor Config',      command=lambda : self.newConfig('Motor'))
+        filemenu.add_command(label='New Full Config',       command=lambda: self.newConfig('All'))
         filemenu.add_command(label='Open',      command=self.loadConfig)
         filemenu.add_command(label='Save',      command=self.saveConfig)
         filemenu.add_command(label='Save As',   command=self.saveConfigAs)
@@ -536,10 +538,16 @@ class InstallSynAppsGUI:
 
 # ----------------------- Loading/saving Functions -----------------------------
 
-    def newConfig(self):
+    def newConfig(self, template_type):
         """
         Will load a new blank config and allow user to edit/save it
         """
+
+        template_filename = 'NEW_CONFIG_ALL'
+        if template_type == 'AD':
+            template_filename = 'NEW_CONFIG_AD'
+        elif template_type == 'Motor':
+            template_filename = 'NEW_CONFIG_MOTOR'
 
         self.writeToLog("Opening new install config dialog...\n")
         temp = simpledialog.askstring('New Install Config', 'Please enter a new desired install location.', parent = self.master)
@@ -550,7 +558,7 @@ class InstallSynAppsGUI:
             old_config = self.configure_path
             self.configure_path = 'resources'
             self.parser.configure_path = self.configure_path
-            loaded_install_config, message = self.parser.parse_install_config(config_filename='NEW_CONFIG', force_location=temp, allow_illegal=True)
+            loaded_install_config, message = self.parser.parse_install_config(config_filename=template_filename, force_location=temp, allow_illegal=True)
             if message is not None:
                 self.valid_install = False
             else:

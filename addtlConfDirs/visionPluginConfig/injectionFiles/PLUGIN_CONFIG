@@ -1,4 +1,4 @@
-# Saved by installSynApps on 2019-07-30 13:53:27.788302
+# Saved by installSynApps on 2019-10-08 12:33:31.118079
 __TARGET_LOC__=$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd
 
 NDCVConfigure("CV1", $(QSIZE), 0, "$(PORT)", 0, 0, 0, 0)
