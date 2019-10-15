@@ -142,14 +142,14 @@ ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPe
 
 GIT_URL=https://github.com/areaDetector/
 
-ADGENICAM           R1-0        $(AREA_DETECTOR)/ADGenICam                  ADGenICam                       YES             YES             YES
+ADGENICAM           master      $(AREA_DETECTOR)/ADGenICam                  ADGenICam                       YES             YES             YES
 ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES             YES
 ADSIMDETECTOR       R2-9        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES             YES
 ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES             YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             YES             YES
-ADARAVIS            R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO              NO
+ADARAVIS            master      $(AREA_DETECTOR)/ADAravis                   ADAravis                        YES             YES             YES
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO              NO
-ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO              NO
+ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         YES             YES             YES
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO              NO
 ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO              NO
 ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             YES             YES
