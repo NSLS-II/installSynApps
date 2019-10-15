@@ -13,3 +13,4 @@ Below is a list of additional `configure` directories included here:
 * `minConfigureLinux` -  a minimum required install config for compiling EPICS base, support, areaDetector, and ADSimDetector on linux in the `/epics` default dir
 * `minConfigureWindows` -  a minimum required install config for compiling EPICS base, support, areaDetector, and ADSimDetector on windows in the `C:\epics` default dir
 * `visionPluginConfig` - a configure directory that adds all NSLS2 developed computer vision plugins as enabled by default.
+* `fullConfigureLinux` - a configure directory that contains AreaDetector and Motor modules

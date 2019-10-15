@@ -215,6 +215,8 @@ class ConfigParser:
         install_config.add_injector_file('AUTOSAVE_CONFIG',     '', '$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugin_settings.req')
         install_config.add_injector_file('MAKEFILE_CONFIG',     '', '$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile')
         install_config.add_injector_file('PLUGIN_CONFIG',       '', '$(AREA_DETECTOR)/ADCore/iocBoot/EXAMPLE_commonPlugins.cmd')
+        # Adds injector required for building QuadEM
+        install_config.add_injector_file('QUADEM_RELEASE',      '-include $(AREA_DETECTOR)/configure/RELEASE_PRODS.local', '$(SUPPORT)/quadEM/configure/RELEASE')
 
 
     def read_injector_files(self, install_config):
