@@ -1,6 +1,6 @@
 
 cd adUVCSupport
-git clone https://github.com/libuvc/libuvc.git
+git clone https://github.com/jwlodek/libuvc.git
 cd libuvc
 mkdir build
 cd build
