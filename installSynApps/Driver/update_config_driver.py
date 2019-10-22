@@ -60,7 +60,7 @@ class UpdateConfigDriver:
         self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS", "QUADEM"]
-        self.dependency_ignore_list = ["TEMPLATE_TOP"]
+        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT"]
 
 
     def check_module_dependencies(self, module):
@@ -76,7 +76,7 @@ class UpdateConfigDriver:
                     line = line.strip()
                     line = re.sub(' +', '', line)
                     dep = line.split('=')[0]
-                    if dep not in module.dependencies and dep not in self.dependency_ignore_list:
+                    if dep not in module.dependencies and dep not in self.dependency_ignore_list and dep != module.name:
                         module.dependencies.append(dep)
 
 
@@ -239,19 +239,19 @@ class UpdateConfigDriver:
     def perform_dependency_valid_check(self):
         dep_errors = []
         for module in self.install_config.get_module_list():
-            ret = 0
-            self.check_module_dependencies(module)
-            for dep in module.dependencies:
-                dep_mod = self.install_config.get_module_by_name(dep)
-                if dep_mod is None:
-                    ret = -1 
-                    dep_errors.append('Dependency {} for module {} not in install config.'.format(dep, module.name))
-                elif dep_mod.build == 'NO':
-                    ret = -1 
-                    dep_errors.append('Dependency {} for module {} not being built.'.format(dep_mod.name, module.name))
-                elif self.install_config.get_module_build_index(module.name) < self.install_config.get_module_build_index(dep):
-                    self.install_config.swap_module_positions(module, dep_mod)
-            if ret < 0:
-                module.build = "NO"
+            if module.build == "YES":
+                ret = 0
+                self.check_module_dependencies(module)
+                print('{} - {}'.format(module.name, module.dependencies))
+                for dep in module.dependencies:
+                    dep_mod = self.install_config.get_module_by_name(dep)
+                    if dep_mod is None:
+                        ret = -1 
+                        dep_errors.append('Dependency {} for module {} not in install config.'.format(dep, module.name))
+                    elif dep_mod.build == 'NO':
+                        ret = -1 
+                        dep_errors.append('Dependency {} for module {} not being built.'.format(dep_mod.name, module.name))
+                if ret < 0:
+                    module.build = "NO"
 
         return dep_errors

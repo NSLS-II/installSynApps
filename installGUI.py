@@ -979,6 +979,10 @@ class InstallSynAppsGUI:
         self.writeToLog('Commenting non-auto-build paths...\n')
         self.updater.comment_non_build_macros()
         #self.injectFilesProcess()
+        self.writeToLog("Checking module dependancies...\n")
+        dep_errors = self.updater.perform_dependency_valid_check()
+        for error in dep_errors:
+            self.writeToLog('ERROR - {}\n'.format(error))
         self.showMessage('Update RELEASE', 'Finished update RELEASE + configure process.')
         return 0
 

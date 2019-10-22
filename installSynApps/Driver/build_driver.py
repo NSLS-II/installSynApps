@@ -58,6 +58,7 @@ class BuildDriver:
         self.one_thread = one_thread
         self.make_flag = '-sj'
         self.create_make_flags()
+        self.built = []
 
 
     def create_make_flags(self):
@@ -119,6 +120,8 @@ class BuildDriver:
         """ Function that compiles epics base """
 
         out = subprocess.call(["make", "-C", self.install_config.base_path, self.make_flag])
+        if out == 0:
+            self.built.append('EPICS_BASE')
         return out
 
 
@@ -171,6 +174,8 @@ class BuildDriver:
         for module in self.install_config.get_module_list():
             if module.name == 'ADSUPPORT':
                 out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
+                if out == 0:
+                    self.built.append('ADSUPPORT')
                 return out
         return -1
 
@@ -181,6 +186,8 @@ class BuildDriver:
         for module in self.install_config.get_module_list():
             if module.name == 'ADCORE':
                 out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
+                if out == 0:
+                    self.built.append('ADCORE')
                 return out
         return -1
 
@@ -195,9 +202,16 @@ class BuildDriver:
     def build_support_module(self, module):
         """ Function that builds only support modules """
 
-        non_build_packages = ["CONFIGURE", "UTILS", "DOCUMENTATION", "AREA_DETECTOR", "QUADEM"]
+        non_build_packages = ["SUPPORT", "CONFIGURE", "UTILS", "DOCUMENTATION", "AREA_DETECTOR", "QUADEM"]
         if module.rel_path.startswith("$(SUPPORT)") and module.name not in non_build_packages:
+            if len(module.dependencies) > 0:
+                for dependency in module.dependencies:
+                    if dependency not in self.built:
+                        print('Building, {}, missing {}'.format(module.name, dependency))
+                        self.build_support_module(self.install_config.get_module_by_name(dependency))
             out = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
+            if out == 0:
+                self.built.append(module.name)
             return out, True
         return 0, False
 
