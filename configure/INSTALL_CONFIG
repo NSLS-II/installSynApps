@@ -29,14 +29,14 @@ DOCUMENTATION       R6-0        $(SUPPORT)/documentation                    docu
 UTILS               R6-0        $(SUPPORT)/utils                            utils                           YES             YES             NO
 
 
-# Stream module is maintained by PSI as of 2019
-GIT_URL=https://github.com/paulscherrerinstitute/
+WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-STREAM              2.8.9       $(SUPPORT)/stream                           StreamDevice                    YES             YES             NO
+SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES             YES             YES
 
 
 GIT_URL=https://github.com/epics-modules/
 
+IPAC                2.15        $(SUPPORT)/ipac                             ipac                            YES             YES             NO
 ASYN                R4-36       $(SUPPORT)/asyn                             asyn                            YES             YES             YES
 AUTOSAVE            R5-9        $(SUPPORT)/autosave                         autosave                        YES             YES             YES
 ALIVE               R1-1-0      $(SUPPORT)/alive                            alive                           NO              NO              NO
@@ -51,7 +51,6 @@ DXP                 R5-0        $(SUPPORT)/dxp                              dxp 
 DXPSITORO           R1-1        $(SUPPORT)/dxpSITORO                        dxpSITORO                       NO              NO              NO
 DEVIOCSTATS         3.1.15      $(SUPPORT)/iocStats                         iocStats                        YES             YES             YES
 IP                  2-19-1      $(SUPPORT)/ip                               ip                              NO              NO              NO
-IPAC                2.15        $(SUPPORT)/ipac                             ipac                            YES             YES             NO
 IP330               R2-9        $(SUPPORT)/ip330                            ip330                           NO              NO              NO
 IPUNIDIG            R2-11       $(SUPPORT)/ipUnidig                         ipUnidig                        YES             YES             NO
 LOVE                R3-2-6      $(SUPPORT)/love                             love                            NO              NO              NO
@@ -71,14 +70,13 @@ VME                 R2-9        $(SUPPORT)/vme                              vme 
 YOKOGAWA_DAS        master      $(SUPPORT)/Yokogawa_DAS                     Yokogawa_DAS                    NO              NO              NO
 XSPRESS3            master      $(SUPPORT)/xspress3                         xspress3                        YES             NO              YES
 XXX                 master      $(SUPPORT)/xxx                              xxx                             NO              NO              NO
-
-# Currently no support for auto-building quadem
 QUADEM              R9-1        $(SUPPORT)/quadEM                           quadEM                          YES             NO              YES
 
 
-WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
+# Stream module is maintained by PSI as of 2019
+GIT_URL=https://github.com/paulscherrerinstitute/
 
-SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES             YES             YES
+STREAM              2.8.9       $(SUPPORT)/stream                           StreamDevice                    YES             YES             NO
 
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/

@@ -6,6 +6,7 @@
 
 
 import os
+import re
 import shutil
 import installSynApps.DataModel.install_config as IC
 import installSynApps.IO.config_injector as CI
@@ -59,6 +60,24 @@ class UpdateConfigDriver:
         self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS", "QUADEM"]
+        self.dependency_ignore_list = ["TEMPLATE_TOP"]
+
+
+    def check_module_dependencies(self, module):
+        """ Function that checks what epics modules a module is dependant on """
+
+        release_path = os.path.join(module.abs_path, os.path.join('configure', 'RELEASE'))
+        if os.path.exists(release_path):
+            release_file = open(release_path, 'r')
+            lines = release_file.readlines()
+            release_file.close()
+            for line in lines:
+                if not line.startswith('#') and '=' in line:
+                    line = line.strip()
+                    line = re.sub(' +', '', line)
+                    dep = line.split('=')[0]
+                    if dep not in module.dependencies and dep not in self.dependency_ignore_list:
+                        module.dependencies.append(dep)
 
 
     def perform_injection_updates(self):
@@ -215,3 +234,24 @@ class UpdateConfigDriver:
         self.add_missing_support_macros()
         self.comment_non_build_macros()
         self.perform_injection_updates()
+
+
+    def perform_dependency_valid_check(self):
+        dep_errors = []
+        for module in self.install_config.get_module_list():
+            ret = 0
+            self.check_module_dependencies(module)
+            for dep in module.dependencies:
+                dep_mod = self.install_config.get_module_by_name(dep)
+                if dep_mod is None:
+                    ret = -1 
+                    dep_errors.append('Dependency {} for module {} not in install config.'.format(dep, module.name))
+                elif dep_mod.build == 'NO':
+                    ret = -1 
+                    dep_errors.append('Dependency {} for module {} not being built.'.format(dep_mod.name, module.name))
+                elif self.install_config.get_module_build_index(module.name) < self.install_config.get_module_build_index(dep):
+                    self.install_config.swap_module_positions(module, dep_mod)
+            if ret < 0:
+                module.build = "NO"
+
+        return dep_errors

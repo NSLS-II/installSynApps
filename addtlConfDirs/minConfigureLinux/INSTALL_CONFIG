@@ -58,7 +58,7 @@ VME              R2-9                 $(SUPPORT)/vme                           v
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO               NO
 XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 NO               NO               NO
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
-QUADEM           R9-1                 $(SUPPORT)/quadEM                        quadEM                   NO               NO               NO
+QUADEM           R9-1                 $(SUPPORT)/quadEM                        quadEM                   YES              YES              YES
 
 
 GIT_URL=https://github.com/paulscherrerinstitute/

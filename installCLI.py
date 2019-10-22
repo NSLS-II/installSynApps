@@ -229,6 +229,9 @@ else:
     if update == "y":
         print("Updating all RELEASE and configuration files...")
         updater.run_update_config()
+        dep_errors = updater.perform_dependency_valid_check()
+        for dep_error in dep_errors:
+            print(dep_error)
 
     print("----------------------------------------------")
     print("Ready to build EPICS base, support and areaDetector...")
@@ -263,14 +266,49 @@ else:
     if build == "y":
         print("Starting build...")
         # Build all
-        ret, message, failed_list = builder.build_all()
+        #ret, message, failed_list = builder.build_all()
+        message = ""
+        ret = builder.build_base()
+        if ret == 0:
+            builder.make_support_releases_consistent()
+            for module in install_config.get_module_list():
+                if module.build == 'YES':
+                    status, built = builder.build_support_module(module)
+                    if built:
+                        if status != 0:
+                            print('Failed to build support module {}\n'.format(module.name))
+            ret_support = builder.build_ad_support()
+            ret_core = builder.build_ad_core()
+            if ret_core != 0 or ret_support != 0:
+                ret = -1
+                message = "Error ADCORE / ADSUPPORT"
+        else:
+            message = "EPICS_BASE"
 
         if ret < 0:
             print("**ERROR - Build failed - {}**".format(message))
             print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
             print('**Critical build error - abort...**')
             exit()
-        elif len(failed_list) > 0:
+
+        failed_list = []
+        for module in install_config.get_module_list():
+            if module.build == 'YES':
+                # Process any custom builds now
+                if module.custom_build_script_path is not None:
+                    print('Detected custom build script for module {}\n'.format(module.name))
+                    out = builder.build_via_custom_script(module)
+                    print('Custom build script for {} exited with code {}\n'.format(module.name, out))
+                else:
+                    # Also build any areaDetector plugins/drivers
+                    status, was_ad = builder.build_ad_module(module)
+                    if was_ad and status == 0:
+                        print("Built AD module {}\n".format(module.name))
+                    elif was_ad and status != 0:
+                        print("Failed to build AD module {}\n".format(module.name))
+                        failed_list.append(module)
+
+        if len(failed_list) > 0:
             for admodule in failed_list:
                 print("AD Module {} failed to build, will not package.".format(admodule.name))
                 # Don't package modules that fail to build

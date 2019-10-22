@@ -56,6 +56,10 @@ class InstallConfiguration:
 
         self.install_location = install_location
         self.modules = []
+
+        # Dict that maps module name to index in module list for easier searching.
+        self.module_map = {}
+
         self.injector_files = []
         self.build_flags = []
 
@@ -117,6 +121,7 @@ class InstallConfiguration:
             elif module.name == "MOTOR":
                 self.motor_path = module.abs_path
             
+            self.module_map[module.name] = len(self.modules)
             self.modules.append(module)
 
 
@@ -169,6 +174,24 @@ class InstallConfiguration:
         return self.modules
 
 
+    def get_module_by_name(self, name):
+        """ Function that returns install module object given module name """
+
+        if name in self.module_map.keys():
+            return self.modules[self.module_map[name]]
+        else:
+            return None
+
+
+    def get_module_build_index(self, name):
+        """ Function that returns the index in the build order for the module """
+
+        if name in self.module_map.keys():
+            return self.module_map[name]
+        else:
+            return -1
+
+
     def get_core_version(self):
         """
         Funciton that returns selected version of ADCore
@@ -177,6 +200,18 @@ class InstallConfiguration:
         for module in self.get_module_list():
             if module.name == "ADCORE":
                 return module.version
+
+
+    def swap_module_positions(self, module_A, module_B):
+        """ Swaps build order of modules """
+
+        index_A = self.get_module_build_index(module_A)
+        index_B = self.get_module_build_index(module_B)
+        if index_A >= 0 and index_B >= 0:
+            self.modules[index_A] = module_B
+            self.modules[index_B] = module_A
+            self.module_map[module_A.name] = index_B
+            self.module_map[module_B.name] = index_A
 
 
     def convert_path_abs(self, rel_path):
