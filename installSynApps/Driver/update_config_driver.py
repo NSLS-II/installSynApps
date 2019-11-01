@@ -238,13 +238,13 @@ class UpdateConfigDriver:
 
     def perform_dependency_valid_check(self, print_info=False):
         dep_errors = []
+        if print_info:
+            print('The following dependencies have been identified for each auto-build module:')
         for module in self.install_config.get_module_list():
-            if print_info:
-                print('The following dependencies have been identified for each auto-build module:')
             if module.build == "YES" and module.name != 'SUPPORT':
                 ret = 0
                 self.check_module_dependencies(module)
-                if print_info:
+                if print_info and len(module.dependencies) > 0:
                     print('{:<16} - {}'.format(module.name, module.dependencies))
                 for dep in module.dependencies:
                     dep_mod = self.install_config.get_module_by_name(dep)

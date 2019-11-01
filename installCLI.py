@@ -231,7 +231,7 @@ else:
     if update == "y":
         print("Updating all RELEASE and configuration files...")
         updater.run_update_config()
-        dep_errors = updater.perform_dependency_valid_check()
+        dep_errors = updater.perform_dependency_valid_check(print_info=print_commands)
         for dep_error in dep_errors:
             print(dep_error)
 
