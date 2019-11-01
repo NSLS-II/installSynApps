@@ -125,17 +125,19 @@ class BuildDriver:
         return out
 
 
-    def build_support(self):
+    def build_support(self, print_commands=False):
         """ Function that compiles EPICS Support """
 
         out = self.make_support_releases_consistent()
         if out != 0:
             return out
+        if print_commands:
+            print('make -C {} {}'.format(self.install_config.support_path, self.make_flag))
         out = subprocess.call(["make", "-C", self.install_config.support_path, self.make_flag])
         return out
 
 
-    def build_ad(self):
+    def build_ad(self, print_commands=False):
         """
         Function that compiles ADSupport, then ADCore, then ADModules.
 
@@ -148,10 +150,14 @@ class BuildDriver:
         """
 
         failed_builds = []
+        if print_commands:
+            print('make -C {} {}'.format(self.install_config.ad_path + "/ADSupport", self.make_flag))
         out_support = subprocess.call(["make", "-C", self.install_config.ad_path + "/ADSupport", self.make_flag])
         if out_support != 0:
             return out_support, [] 
 
+        if print_commands:
+            print('make -C {} {}'.format(self.install_config.ad_path + "/ADCore", self.make_flag))
         out_core = subprocess.call(["make", "-C", self.install_config.ad_path + "/ADCore", self.make_flag])
         if out_core != 0:
             return out_core, []
@@ -161,6 +167,8 @@ class BuildDriver:
                 if module.custom_build_script_path is not None:
                     self.build_via_custom_script(module)
                 elif module.name != "ADCORE" and module.name != "ADSUPPORT":
+                    if print_commands:
+                        print('make -C {} {}'.format(module.abs_path, self.make_flag))
                     out_mod = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
                     if out_mod != 0:
                         failed_builds.append(module)
@@ -168,11 +176,13 @@ class BuildDriver:
         return 0, failed_builds
 
 
-    def build_ad_support(self):
+    def build_ad_support(self, print_commands=False):
         """ Function that builds ad support """
 
         for module in self.install_config.get_module_list():
             if module.name == 'ADSUPPORT':
+                if print_commands:
+                    print('make -C {} {}'.format(module.abs_path, self.make_flag))
                 out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
                 if out == 0:
                     self.built.append('ADSUPPORT')
@@ -180,11 +190,13 @@ class BuildDriver:
         return -1
 
 
-    def build_ad_core(self):
+    def build_ad_core(self, print_commands=False):
         """ Function that builds ad core """
 
         for module in self.install_config.get_module_list():
             if module.name == 'ADCORE':
+                if print_commands:
+                    print('make -C {} {}'.format(module.abs_path, self.make_flag))
                 out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
                 if out == 0:
                     self.built.append('ADCORE')
@@ -192,14 +204,16 @@ class BuildDriver:
         return -1
 
 
-    def make_support_releases_consistent(self):
+    def make_support_releases_consistent(self, print_commands=False):
         """ Function that makes support module release files consistent """
 
+        if print_commands:
+            print('make -C {} release'.format(self.install_config.support_path))
         out = subprocess.call(["make", "-C", self.install_config.support_path, "release"])
         return out
 
 
-    def build_support_module(self, module):
+    def build_support_module(self, module, print_commands=False):
         """ Function that builds only support modules """
 
         non_build_packages = ["SUPPORT", "CONFIGURE", "UTILS", "DOCUMENTATION", "AREA_DETECTOR", "QUADEM"]
@@ -207,8 +221,9 @@ class BuildDriver:
             if len(module.dependencies) > 0:
                 for dependency in module.dependencies:
                     if dependency not in self.built:
-                        print('Building, {}, missing {}'.format(module.name, dependency))
-                        self.build_support_module(self.install_config.get_module_by_name(dependency))
+                        self.build_support_module(self.install_config.get_module_by_name(dependency), print_commands=print_commands)
+            if print_commands:
+                print('make -C {} {}'.format(module.abs_path, self.make_flag))
             out = subprocess.call(["make", "-C", module.abs_path, self.make_flag])
             if out == 0:
                 self.built.append(module.name)
@@ -216,10 +231,12 @@ class BuildDriver:
         return 0, False
 
 
-    def build_ad_module(self, module):
+    def build_ad_module(self, module, print_commands=False):
         """ Function that builds only ad modules """
 
         if (module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT') or module.name == 'QUADEM':
+            if print_commands:
+                print('make -C {} {}'.format(module.abs_path, self.make_flag))
             out = subprocess.call(["make", "-C", module.abs_path , self.make_flag])
             return out, True
         else:
@@ -239,7 +256,7 @@ class BuildDriver:
         return out_mod
 
 
-    def build_all(self):
+    def build_all(self, show_commands = False):
         """
         Main function that runs remaining ones sequentially
 
@@ -253,13 +270,13 @@ class BuildDriver:
             List of modules that failed to compile
         """
 
-        ret = self.build_base()
+        ret = self.build_base(print_commands=show_commands)
         if ret != 0:
             return -1, "Error building EPICS base", []
-        ret = self.build_support()
+        ret = self.build_support(print_commands=show_commands)
         if ret != 0:
             return -1, "Error building EPICS support", []
-        ret, failed = self.build_ad()
+        ret, failed = self.build_ad(print_commands=show_commands)
         if len(failed) > 0:
             # failing to build individual ad module is not a critical error, so return 0
             return 0, "Error building AD modules", failed

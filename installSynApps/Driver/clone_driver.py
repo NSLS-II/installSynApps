@@ -57,7 +57,7 @@ class CloneDriver:
         self.install_config = install_config
 
 
-    def clone_module(self, module, recursive = False):
+    def clone_module(self, module, recursive = False, print_commands=False):
         """
         Function responsible for cloning each module into the appropriate location
 
@@ -78,18 +78,30 @@ class CloneDriver:
                 if os.path.exists(module.abs_path):
                     shutil.rmtree(module.abs_path)
                 if not recursive and module.url_type == "GIT_URL":
+                    if print_commands:
+                        print('git clone {} {}'.format(module.url + module.repository, module.abs_path))
                     ret = subprocess.call(["git", "clone", module.url + module.repository , module.abs_path])
                 elif recursive and module.url_type == "GIT_URL":
+                    if print_commands:
+                        print('git clone --recursive {} {}'.format(module.url + module.repository, module.abs_path))
                     ret = subprocess.call(["git", "clone", "--recursive", module.url + module.repository , module.abs_path])
                 elif module.url_type == "WGET_URL":
                     if platform == "win32":
+                        if print_commands:
+                            print('wget --no-check-certificate -P {} {}'.format(module.abs_path, module.url + module.repository))
                         ret = subprocess.call(["wget", "--no-check-certificate", "-P", module.abs_path, module.url + module.repository])
                     else:
+                        if print_commands:
+                            print('wget -P {} {}'.format(module.abs_path, module.url + module.repository))
                         ret = subprocess.call(["wget", "-P", module.abs_path, module.url + module.repository])
 
                     if (module.repository.endswith(".tar.gz") or module.repository.endswith(".tgz")) and ret == 0:
+                        if print_commands:
+                            print('tar -xzf {} -C {} --strip-components=1'.format(module.abs_path + "/" + module.repository, module.abs_path))
                         ret = subprocess.call(["tar", "-xzf", module.abs_path + "/" + module.repository, "-C", module.abs_path, "--strip-components=1"])
                     elif module.repository.endswith(".zip") and ret == 0:
+                        if print_commands:
+                            print('unzip {} -C {}'.format(module.abs_path + "/" + module.repository, module.abs_path))
                         ret = subprocess.call(["unzip", module.abs_path + "/" + module.repository, "-C", module.abs_path])
                 
                 if ret == 0:
@@ -100,7 +112,7 @@ class CloneDriver:
         return -3
 
 
-    def checkout_module(self, module):
+    def checkout_module(self, module, print_commands=False):
         """
         Function responsible for checking out selected tagged versions of modules.
 
@@ -121,6 +133,8 @@ class CloneDriver:
                 if module.version != "master" and module.url_type == "GIT_URL":
                     current_loc = os.getcwd()
                     os.chdir(module.abs_path)
+                    if print_commands:
+                        print('git checkout -q {}'.format(module.version))
                     ret = subprocess.call(["git", "checkout", "-q", module.version])
                     os.chdir(current_loc)
 
@@ -132,7 +146,7 @@ class CloneDriver:
         return -3
 
 
-    def update_submodule(self, module, submodule_name):
+    def update_submodule(self, module, submodule_name, print_commands=False):
         """
         Function that updates submodules given that the input module is in the self.submodule_list array
 
@@ -148,6 +162,9 @@ class CloneDriver:
             if module.abs_path != None:
                 submodule_path = module.abs_path + "/" + submodule_name
                 if os.path.exists(submodule_path):
+                    if print_commands:
+                        print('git -C {} submodule init'.format(submodule_path))
+                        print('git -C {} submodule update'.format(submodule_path))
                     subprocess.call(["git", "-C", submodule_path, "submodule", "init"])
                     subprocess.call(["git", "-C", submodule_path, "submodule", "update"])
 
@@ -162,7 +179,7 @@ class CloneDriver:
                         shutil.rmtree(module.abs_path)
 
 
-    def clone_and_checkout(self):
+    def clone_and_checkout(self, show_commands = False):
         """
         Top level function that clones and checks out all modules in the current install configuration
 
@@ -178,18 +195,18 @@ class CloneDriver:
                 if module.clone == "YES":
                     ret = 0
                     if module.name in self.recursive_modules:
-                        ret = self.clone_module(module, recursive=True)
+                        ret = self.clone_module(module, recursive=True, print_commands=show_commands)
                     else:
-                        ret = self.clone_module(module)
+                        ret = self.clone_module(module, print_commands=show_commands)
                     if ret < 0:
                         failed_modules.append(module)
                     else:
-                        ret = self.checkout_module(module)
+                        ret = self.checkout_module(module, print_commands=show_commands)
                         if ret < 0:
                             failed_modules.append(module)
                         else:
                             if module.name in self.submodule_list:
-                                self.update_submodule(module, self.submodule_names[module.name])
+                                self.update_submodule(module, self.submodule_names[module.name], print_commands=show_commands)
             self.cleanup_modules()
 
             return failed_modules

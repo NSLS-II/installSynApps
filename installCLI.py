@@ -88,6 +88,7 @@ def parse_user_input():
     parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
     parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
     parser.add_argument('-n', '--newconfig', action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
+    parser.add_argument('-p', '--printcommands', action='store_true', help='Add this flag for installCLI to print commands run during the build process.')
     arguments = vars(parser.parse_args())
     if arguments['newconfig']:
         create_new_install_config()
@@ -105,6 +106,7 @@ path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
 single_thread   = args['singlethread']
 dep             = args['dependency']
+print_commands  = args['printcommands']
 
 threads         = args['threads']
 if threads is None:
@@ -210,7 +212,7 @@ else:
     if clone == "y":
         print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
         print("----------------------------------------------")
-        unsuccessful = cloner.clone_and_checkout()
+        unsuccessful = cloner.clone_and_checkout(show_commands=print_commands)
         if len(unsuccessful) > 0:
             for module in unsuccessful:
                 print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
@@ -268,17 +270,17 @@ else:
         # Build all
         #ret, message, failed_list = builder.build_all()
         message = ""
-        ret = builder.build_base()
+        ret = builder.build_base(print_commands=print_commands)
         if ret == 0:
-            builder.make_support_releases_consistent()
+            builder.make_support_releases_consistent(print_commands=print_commands)
             for module in install_config.get_module_list():
                 if module.build == 'YES':
-                    status, built = builder.build_support_module(module)
+                    status, built = builder.build_support_module(module, print_commands=print_commands)
                     if built:
                         if status != 0:
                             print('Failed to build support module {}\n'.format(module.name))
-            ret_support = builder.build_ad_support()
-            ret_core = builder.build_ad_core()
+            ret_support = builder.build_ad_support(print_commands=print_commands)
+            ret_core = builder.build_ad_core(print_commands=print_commands)
             if ret_core != 0 or ret_support != 0:
                 ret = -1
                 message = "Error ADCORE / ADSUPPORT"
@@ -301,7 +303,7 @@ else:
                     print('Custom build script for {} exited with code {}\n'.format(module.name, out))
                 else:
                     # Also build any areaDetector plugins/drivers
-                    status, was_ad = builder.build_ad_module(module)
+                    status, was_ad = builder.build_ad_module(module, print_commands=print_commands)
                     if was_ad and status == 0:
                         print("Built AD module {}\n".format(module.name))
                     elif was_ad and status != 0:
