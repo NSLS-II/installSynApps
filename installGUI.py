@@ -203,7 +203,7 @@ class InstallSynAppsGUI:
 
         # Because EPICS versioning is not as standardized as it should be, certain modules cannot be properly auto updated.
         # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
-        self.update_tags_blacklist = ["SSCAN", "CALC"]
+        self.update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
         # title label
         self.topLabel       = Label(frame, text = self.msg, width = '25', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)

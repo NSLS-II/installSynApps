@@ -18,6 +18,15 @@ import installSynApps.Driver as Driver
 import installSynApps.IO as IO
 
 
+# pygithub for github autosync tags integration.
+WITH_PYGITHUB=True
+try:
+    from github import Github
+    import getpass
+except ImportError:
+    WITH_PYGITHUB=False
+
+
 # -------------- Some helper functions ------------------
 
 def print_welcome_message():
@@ -76,6 +85,50 @@ def create_new_install_config():
         print('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
 
 
+def sync_tags(user, passwd, install_config, save_path):
+    try:
+        update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
+        print('Syncing...', 'Please wait while tags are synced - this may take a while...')
+        g = Github(user, passwd)
+        for module in install_config.get_module_list():
+            if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in update_tags_blacklist:
+                account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
+                repo = g.get_repo(account_repo)
+                if repo is not None:
+                    tags = repo.get_tags()
+                    if tags.totalCount > 0 and module.name != 'EPICS_BASE':
+                        tag_found = False
+                        for tag in tags:
+                            #print('{} - {}'.format(account_repo, tag))
+                            if tag.name.startswith('R') and tag.name[1].isdigit():
+                                if tag.name == module.version:
+                                    tag_found = True
+                                    break
+                                print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
+                                module.version = tag.name
+                                tag_found = True
+                                break
+                        if not tag_found:
+                            for tag in tags:
+                                if tag.name[0].isdigit() and tag.name != module.version:
+                                    print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
+                                    module.version = tags[0].name
+                                    break
+                                elif tag.name[0].isdigit():
+                                    break
+                    elif module.name == 'EPICS_BASE':
+                        for tag in tags:
+                            if tag.name.startswith('R7'):
+                                if tag.name != module.version:
+                                    print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
+                                    module.version = tag.name
+                                    break
+        writer = IO.config_writer.ConfigWriter(install_config)
+        writer.write_install_config(save_path)
+        print('Updated install config saved to {}'.format(save_path))
+    except:
+        print('ERROR - Invalid Github credentials.')
+
 
 def parse_user_input():
     path_to_configure = "configure"
@@ -89,12 +142,18 @@ def parse_user_input():
     parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
     parser.add_argument('-n', '--newconfig', action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
     parser.add_argument('-p', '--printcommands', action='store_true', help='Add this flag for installCLI to print commands run during the build process.')
+    parser.add_argument('-v', '--updateversions', action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
     arguments = vars(parser.parse_args())
     if arguments['newconfig']:
         create_new_install_config()
         exit()
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
+    elif arguments['updateversions']:
+        print('ERROR - Update versions flag selected but no configure directory given.')
+        print('Rerun with the -c flag')
+        print('Aborting...')
+        exit()
 
     return path_to_configure, arguments['installpath'], arguments
 
@@ -107,12 +166,29 @@ yes             = args['forceyes']
 single_thread   = args['singlethread']
 dep             = args['dependency']
 print_commands  = args['printcommands']
+update_versions = args['updateversions']
 
 threads         = args['threads']
 if threads is None:
     threads = 0
 
 print_welcome_message()
+if update_versions:
+    print('Updating module versions for configuration {}'.format(path_to_configure))
+    if not WITH_PYGITHUB:
+        print("**PyGithub module required for version updates.**")
+        print("**Install with pip install pygithub**")
+        print("Exiting...")
+        exit()
+    parser = IO.config_parser.ConfigParser(path_to_configure)
+    install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
+    print('Please enter your github credentials.')
+    user = input('Username: ')
+    passwd = getpass.getpass()
+    sync_tags(user, passwd, install_config, path_to_configure)
+    print('Done.')
+    exit()
+
 print('Reading install configuration directory located at: {}...'.format(path_to_configure))
 print()
 
