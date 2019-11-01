@@ -317,7 +317,7 @@ else:
                 for module in packager.install_config.get_module_list():
                     if module.name == admodule.name:
                         module.package = "NO"
-            print("Check for missing dependecies, and if INSTALL_CONFIG is valid.")
+            print("Check for missing dependencies, and if INSTALL_CONFIG is valid.")
 
 
         print("----------------------------------------------")
