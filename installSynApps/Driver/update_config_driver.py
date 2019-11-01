@@ -236,13 +236,16 @@ class UpdateConfigDriver:
         self.perform_injection_updates()
 
 
-    def perform_dependency_valid_check(self):
+    def perform_dependency_valid_check(self, print_info=False):
         dep_errors = []
         for module in self.install_config.get_module_list():
-            if module.build == "YES":
+            if print_info:
+                print('The following dependencies have been identified for each auto-build module:')
+            if module.build == "YES" and module.name != 'SUPPORT':
                 ret = 0
                 self.check_module_dependencies(module)
-                print('{} - {}'.format(module.name, module.dependencies))
+                if print_info:
+                    print('{:<16} - {}'.format(module.name, module.dependencies))
                 for dep in module.dependencies:
                     dep_mod = self.install_config.get_module_by_name(dep)
                     if dep_mod is None:

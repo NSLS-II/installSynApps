@@ -33,8 +33,6 @@ WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
 SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES             YES             YES
 
-SNCSEQ              2.2.6       $(SUPPORT)/seq                              seq-$(VERSION).tar.gz           YES             YES             YES
-
 GIT_URL=https://github.com/epics-modules/
 
 IPAC                2.15        $(SUPPORT)/ipac                             ipac                            YES             YES             NO

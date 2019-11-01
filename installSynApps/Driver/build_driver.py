@@ -116,9 +116,11 @@ class BuildDriver:
                 subprocess.call(['bash', dependency_script_path])
 
 
-    def build_base(self):
+    def build_base(self, print_commands=False):
         """ Function that compiles epics base """
 
+        if print_commands:
+            print('make -C {} {}'.format(self.install_config.base_path, self.make_flag))
         out = subprocess.call(["make", "-C", self.install_config.base_path, self.make_flag])
         if out == 0:
             self.built.append('EPICS_BASE')
