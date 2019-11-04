@@ -58,6 +58,9 @@ class InstallModule:
         self.package    = package
         self.custom_build_script_path = None
 
+        # List of epics modules that this module depends on
+        self.dependencies = []
+
 
     def print_info(self, fp = None):
         """
