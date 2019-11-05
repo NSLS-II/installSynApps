@@ -62,7 +62,7 @@ QUADEM           R9-2                 $(SUPPORT)/quadEM                        q
 
 GIT_URL=https://github.com/paulscherrerinstitute/
 
-STREAM           stream_2_7_14        $(SUPPORT)/stream                        StreamDevice             YES              YES              YES
+STREAM           2.8.10               $(SUPPORT)/stream                        StreamDevice             YES              YES              YES
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
