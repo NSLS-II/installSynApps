@@ -1136,6 +1136,7 @@ class InstallSynAppsGUI:
 
 root = Tk()
 root.title("installSynApps")
+root.iconbitmap('docs/assets/isaIcon.ico')
 root.resizable(False, False)
 gui = InstallSynAppsGUI(root)
 
