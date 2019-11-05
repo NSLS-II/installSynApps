@@ -50,7 +50,7 @@ DXP                 R5-0        $(SUPPORT)/dxp                              dxp 
 DXPSITORO           R1-1        $(SUPPORT)/dxpSITORO                        dxpSITORO                       NO              NO          NO
 DEVIOCSTATS         3.1.15      $(SUPPORT)/iocStats                         iocStats                        YES             YES         YES
 IP                  2-19-1      $(SUPPORT)/ip                               ip                              NO              NO          NO
-IPAC                2.15        $(SUPPORT)/ipac                             ipac                            NO              NO          NO
+IPAC                2.15        $(SUPPORT)/ipac                             ipac                            YES             YES         YES
 IP330               R2-9        $(SUPPORT)/ip330                            ip330                           NO              NO          NO
 IPUNIDIG            R2-11       $(SUPPORT)/ipUnidig                         ipUnidig                        NO              NO          NO
 LOVE                R3-2-6      $(SUPPORT)/love                             love                            NO              NO          NO

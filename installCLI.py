@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """ Python script for running the installSynApps module through the CLI """
 
