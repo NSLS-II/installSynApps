@@ -256,10 +256,12 @@ class InstallConfiguration:
         index_A = self.get_module_build_index(module_A)
         index_B = self.get_module_build_index(module_B)
         if index_A >= 0 and index_B >= 0:
-            self.modules[index_A] = module_B
-            self.modules[index_B] = module_A
-            self.module_map[module_A.name] = index_B
-            self.module_map[module_B.name] = index_A
+            temp_A = self.get_module_by_name(module_B)
+            temp_B = self.get_module_by_name(module_A)
+            self.modules[index_A] = temp_A
+            self.modules[index_B] = temp_B
+            self.module_map[module_A] = index_B
+            self.module_map[module_B] = index_A
 
 
     def convert_path_abs(self, rel_path):
@@ -332,6 +334,14 @@ class InstallConfiguration:
         for module in self.modules:
             if module.clone == 'YES':
                 out = out + module.get_printable_string()
+        return out
+
+
+    def get_module_names_list(self):
+        out = []
+        for module in self.modules:
+            if module.build == 'YES':
+                out.append(module.name)
         return out
 
 
