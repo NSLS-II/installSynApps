@@ -10,6 +10,7 @@ import re
 from sys import platform
 import installSynApps.DataModel.install_config as IC
 import installSynApps.DataModel.install_module as IM
+from installSynApps.IO import logger as LOG
 
 
 class ConfigParser:

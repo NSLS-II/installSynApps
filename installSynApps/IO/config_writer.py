@@ -8,6 +8,7 @@ import datetime
 import os
 import errno
 from installSynApps.DataModel import *
+from installSynApps.IO import logger as LOG
 
 class ConfigWriter:
     """
@@ -41,6 +42,7 @@ class ConfigWriter:
 
         # for each injector file write it with its target location
         for injector_file in self.install_config.injector_files:
+            LOG.debug('Saving injector file {} with target {}'.format(injector_file, injector_file.target))
             new_fp = open(filepath + "/injectionFiles/" + injector_file.name, 'w')
             new_fp.write('# Saved by installSynApps on {}\n'.format(datetime.datetime.now()))
             new_fp.write('__TARGET_LOC__={}\n\n'.format(injector_file.target))
@@ -56,6 +58,7 @@ class ConfigWriter:
         new_build_flag = open(filepath + "/macroFiles/BUILD_FLAG_CONFIG", 'w')
         new_build_flag.write('# Saved by installSynApps on {}\n\n'.format(datetime.datetime.now()))
         for macro_pair in self.install_config.build_flags:
+            LOG.debug('Writing build flag {}={}'.format(macro_pair[0], macro_pair[1]))
             new_build_flag.write('{}={}\n'.format(macro_pair[0], macro_pair[1]))
         new_build_flag.close()
 
