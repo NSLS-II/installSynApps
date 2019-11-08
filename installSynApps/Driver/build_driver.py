@@ -1,5 +1,5 @@
 """
-Class responsible for driving the build process of installSynApps
+Module responsible for driving the build process of installSynApps
 """
 
 __author__   = 'Jakub Wlodek'
@@ -11,8 +11,7 @@ import installSynApps.DataModel.install_config as IC
 
 
 class BuildDriver:
-    """
-    Class responsible for driving the autobuilding of EPICS, synApps, and areaDetector
+    """Class responsible for driving the autobuilding of EPICS, synApps, and areaDetector
 
     Attributes
     ----------
@@ -24,6 +23,8 @@ class BuildDriver:
         toggle to use single thread
     make_flag : str
         make flag to use for compilation (-s, -sj, -sjNUM_THREADS)
+    built : list of str
+        list of modules built successfully
 
     Methods
     -------
@@ -51,7 +52,8 @@ class BuildDriver:
 
 
     def __init__(self, install_config, threads, one_thread=False):
-        """ Constructor for BuildDriver """
+        """Constructor for BuildDriver
+        """
 
         self.install_config = install_config
         self.threads = threads
@@ -62,7 +64,10 @@ class BuildDriver:
 
 
     def create_make_flags(self):
-        """ Function that creates the flags used by make depending on the thread config passed in. """
+        """Function that creates the flags used by make.
+        
+        This flag will either be -s, -sj, or -sjNUM_THREADS
+        """
 
         if self.one_thread:
             self.make_flag = '-s'
@@ -73,8 +78,7 @@ class BuildDriver:
 
 
     def check_dependencies_in_path(self, allow_partial=False):
-        """
-        Function meant to check if required packages are located in the system path.
+        """Function meant to check if required packages are located in the system path.
 
         Returns
         -------
@@ -107,7 +111,13 @@ class BuildDriver:
 
 
     def acquire_dependecies(self, dependency_script_path):
-        """ Method that runs dependency install shell script """
+        """Method that runs dependency install shell/batch script
+
+        Parameters
+        ----------
+        dependency_script_path : str
+            path to dependency shell/batch script
+        """
 
         if os.path.exists(dependency_script_path) and os.path.isfile(dependency_script_path):
             if dependency_script_path.endswith('.bat'):
@@ -117,7 +127,19 @@ class BuildDriver:
 
 
     def build_base(self, print_commands=False):
-        """ Function that compiles epics base """
+        """Function that compiles epics base
+        
+        Parameters
+        ----------
+
+        print_commands=False : bool
+            flag that prints command being run.
+
+        Returns
+        -------
+        int
+            return code of make call
+        """
 
         if print_commands:
             print('make -C {} {}'.format(self.install_config.base_path, self.make_flag))
@@ -128,7 +150,19 @@ class BuildDriver:
 
 
     def build_support(self, print_commands=False):
-        """ Function that compiles EPICS Support """
+        """Function that compiles EPICS Support
+        
+        Parameters
+        ----------
+
+        print_commands=False : bool
+            flag that prints command being run.
+
+        Returns
+        -------
+        int
+            return code of make call
+        """
 
         out = self.make_support_releases_consistent()
         if out != 0:
@@ -140,8 +174,14 @@ class BuildDriver:
 
 
     def build_ad(self, print_commands=False):
-        """
-        Function that compiles ADSupport, then ADCore, then ADModules.
+        """Function that compiles ADSupport, then ADCore, then ADModules.
+
+        If a module has a custom build script detected
+
+        Parameters
+        ----------
+        print_commands=False : bool
+            flag that prints command being run.
 
         Returns
         -------
@@ -234,7 +274,14 @@ class BuildDriver:
 
 
     def build_ad_module(self, module, print_commands=False):
-        """ Function that builds only ad modules """
+        """Function that builds only ad modules
+        
+        Parameters
+        ----------
+        print_commands=False : bool
+            flag that prints command being run.
+
+        """
 
         if (module.rel_path.startswith("$(AREA_DETECTOR)") and module.name != 'ADCORE' and module.name != 'ADSUPPORT') or module.name == 'QUADEM':
             if print_commands:
@@ -246,7 +293,18 @@ class BuildDriver:
 
 
     def build_via_custom_script(self, module):
-        """ Function that builds a module using its custom build script """
+        """Function that builds a module using its custom build script
+        
+        Parameters
+        ----------
+        module : InstallModule
+            module to build with custom build script
+
+        Returns
+        -------
+        int
+            exit code of custom build script
+        """
 
         current = os.getcwd()
         os.chdir(module.abs_path)
@@ -259,8 +317,12 @@ class BuildDriver:
 
 
     def build_all(self, show_commands = False):
-        """
-        Main function that runs remaining ones sequentially
+        """Main function that runs full build sequentially
+
+        Parameters
+        ----------
+        show_commands=False : bool
+            toggle for printing out commands being run
 
         Returns
         -------

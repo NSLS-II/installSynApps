@@ -140,7 +140,7 @@ class Packager:
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith('$(AREA_DETECTOR)') and module.name not in self.required_in_pacakge:
                 if module.package == 'YES':
-                    output.append(module.rel_path.split('/')[-1])
+                    output.append(module)
 
         return output
 
@@ -159,7 +159,8 @@ class Packager:
         for module in self.install_config.get_module_list():
             if module.rel_path.startswith('$(SUPPORT)') and module.name not in self.required_in_pacakge:
                 if module.package == 'YES':
-                    output.append(module.rel_path.split('/')[-1])
+                    output.append(module)
+
         return output
 
 
@@ -208,7 +209,7 @@ class Packager:
             pass
 
 
-    def grab_module(self, top, module_name, module_location, readme_fp, is_ad_module = False):
+    def grab_module(self, top, module, readme_fp, is_ad_module = False):
         """
         Function that grabs all of the required folders from each individual module.
 
@@ -226,7 +227,10 @@ class Packager:
             default false. if true search for iocs directory as well.
         """
 
-        target_folder = module_location + '/' + module_name
+        module_name = os.path.basename(module.abs_path)
+
+        target_folder = module.abs_path
+
         self.grab_folder(target_folder + '/opi',                top + '/' + module_name +'/opi')
         self.grab_folder(target_folder + '/db',                 top + '/' + module_name +'/db')
         self.grab_folder(target_folder + '/dbd',                top + '/' + module_name +'/dbd')
@@ -251,11 +255,14 @@ class Packager:
                         self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
 
         try:
-            current_loc = os.getcwd()
-            os.chdir(os.path.join(module_location, module_name))
-            out = subprocess.check_output(['git', 'describe', '--tags'])
-            os.chdir(current_loc)
-            readme_fp.write('{} : {}'.format(module_name, out.decode("utf-8")))
+            if module.url_type == 'GIT_URL':
+                current_loc = os.getcwd()
+                os.chdir(module.abs_path)
+                out = subprocess.check_output(['git', 'describe', '--tags'])
+                os.chdir(current_loc)
+                readme_fp.write('{} : {}'.format(module_name, out.decode("utf-8")))
+            else:
+                readme_fp.write('{} : {}'.format(module_name, module.version))
         except subprocess.CalledProcessError:
             pass
 
@@ -273,9 +280,10 @@ class Packager:
         """
 
         support_path = self.install_config.support_path
-        support_modules = ['asyn', 'autosave', 'busy', 'calc', 'iocStats', 'seq', 'sscan']
-        if self.opt_modules is not None:
-            support_modules.extend(self.opt_modules)
+        support_modules = ['ASYN', 'AUTOSAVE', 'BUSY', 'CALC', 'IOCSTATS', 'SNCSEQ', 'SSCAN']
+        for module in self.install_config.get_module_list():
+            if module.name in support_modules and self.opt_modules is not None:
+                self.opt_modules.append(module)
         for module in support_modules:
             self.grab_module(top, module, support_path, readme_fp)
 
@@ -381,8 +389,8 @@ class Packager:
             elapsed time if success, error code otherwise
         """
 
-        self.ad_drivers     = self.get_drivers_to_package()
-        self.opt_modules    = self.get_modules_to_package()
+        self.ad_drivers,  self.non_git_ad     = self.get_drivers_to_package()
+        self.opt_modules, self.non_git_mod    = self.get_modules_to_package()
 
         if not os.path.exists(self.output_location):
             try:
