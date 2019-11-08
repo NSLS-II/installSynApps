@@ -10,6 +10,7 @@ import re
 import shutil
 import installSynApps.DataModel.install_config as IC
 import installSynApps.IO.config_injector as CI
+import installSynApps.IO.logger as LOG
 
 
 class UpdateConfigDriver:
@@ -60,11 +61,20 @@ class UpdateConfigDriver:
         self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS", "QUADEM"]
-        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT"]
+        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT", "INSTALL_LOCATION_APP", "CAPFAST_TEMPLATES", ]
 
 
     def check_module_dependencies(self, module):
-        """ Function that checks what epics modules a module is dependant on """
+        """Function that checks inter-module dependencies
+        
+        Grabs dependencies form the configure/RELEASE file. Modules that are under
+        areaDetector get ADSupport and ADCore added as dependencies as well.
+
+        Parameters
+        ----------
+        module : InstallModule
+            install module for which to check dependencies
+        """
 
         release_path = os.path.join(module.abs_path, os.path.join('configure', 'RELEASE'))
         if os.path.exists(release_path):
@@ -78,6 +88,10 @@ class UpdateConfigDriver:
                     dep = line.split('=')[0]
                     if dep not in module.dependencies and dep not in self.dependency_ignore_list and dep != module.name:
                         module.dependencies.append(dep)
+                        if dep == 'AREA_DETECTOR' or (module.rel_path.startswith('$(AREA_DETECTOR)') and module.name != 'ADSUPPORT' and module.name != 'ADCORE'):
+                            module.dependencies.append('ADSUPPORT')
+                            module.dependencies.append('ADCORE')
+
 
 
     def perform_injection_updates(self):
@@ -112,24 +126,35 @@ class UpdateConfigDriver:
 
 
     def update_ad_macros(self):
-        """ Updates the macros in the AD configuration files """
+        """Updates the macros in the AD configuration files
+        """
 
         if self.install_config.ad_path is not None:
-            self.update_macros(os.path.join(self.install_config.ad_path, "configure"), True)
+            LOG.debug('Updating macros in the areaDetetor/configure directory')
+            self.update_macros(os.path.join(self.install_config.ad_path, "configure"), True, False)
 
 
     def update_support_macros(self):
-        """ Updates the macros in the Support configuration files """
+        """Updates the macros in the Support configuration files
+        """
 
         self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), False, single_file=True)
         for module in self.install_config.get_module_list():
             if module.name == "QUADEM" and module.build == "YES":
-                self.update_macros(os.path.join(module.abs_path, "configure/RELEASE"), True, single_file=True)
+                self.update_macros(os.path.join(module.abs_path, "configure/RELEASE"), True, False, single_file=True)
 
 
-    def update_macros(self, target_path, include_ad, single_file = False):
+    def update_support_build_macros(self):
+        """Function that applies build flags to support module configure directories.
         """
-        Function that calls Config injector to update all macros in target dir
+
+        for module in self.install_config.get_module_list():
+            self.update_macros(os.path.join(module.abs_path, 'configure'), False, True, build_flags_only=True)
+
+
+    def update_macros(self, target_path, include_ad, force_uncomment, single_file=False, build_flags_only=False):
+        """
+        Function that calls config injector to update all macros in target dir
         
         Parameters
         ----------
@@ -138,16 +163,17 @@ class UpdateConfigDriver:
         """
 
         install_macro_list = self.get_macros_from_install_config()
+        if build_flags_only:
+            install_macro_list = self.install_config.build_flags
         
         if not single_file:
-            self.config_injector.update_macros_dir(install_macro_list, target_path)
+            self.config_injector.update_macros_dir(install_macro_list, target_path, force_override_comments=force_uncomment)
         else:
-            self.config_injector.update_macros_file(install_macro_list, target_path.rsplit('/', 1)[0], target_path.rsplit('/', 1)[-1], comment_unsupported=True, with_ad=include_ad)
+            self.config_injector.update_macros_file(install_macro_list, os.path.dirname(target_path), os.path.basename(target_path), comment_unsupported=True, with_ad=include_ad, force=force_uncomment)
 
 
     def fix_target_release(self, target_module_name):
-        """
-        Used to replace a target module's release file
+        """Used to replace a target module's release file
         
         Parameters
         ----------
@@ -157,9 +183,9 @@ class UpdateConfigDriver:
 
         for module in self.install_config.get_module_list():
             if module.name == target_module_name:
-                replace_release_path = "resources/fixedRELEASEFiles/" + module.name + "_RELEASE"
+                replace_release_path = os.path.join("resources/fixedRELEASEFiles/", module.name + "_RELEASE")
                 if os.path.exists(replace_release_path) and os.path.isfile(replace_release_path):
-                    release_path = module.abs_path + "/configure/RELEASE"
+                    release_path = os.path.join(module.abs_path, "configure/RELEASE")
                     if not os.path.exists(release_path):
                         return
                     release_path_old = release_path + "_OLD"
@@ -168,8 +194,7 @@ class UpdateConfigDriver:
 
 
     def add_missing_support_macros(self):
-        """
-        Function that appends any paths to the support/configure/RELEASE file that were not in it originally
+        """Function that appends any paths to the support/configure/RELEASE file that were not in it originally
         """
 
         to_append_commented = []
@@ -177,7 +202,7 @@ class UpdateConfigDriver:
         for module in self.install_config.get_module_list():
             if module.clone == "YES":
                 was_found = False
-                rel_file = open(self.install_config.support_path + "/configure/RELEASE", "r")
+                rel_file = open(os.path.join(self.install_config.support_path, "configure/RELEASE"), "r")
                 line = rel_file.readline()
                 while line:
                     if line.startswith(module.name + "="):
@@ -191,19 +216,20 @@ class UpdateConfigDriver:
                 rel_file.close()
         app_file = open(self.install_config.support_path + "/configure/RELEASE", "a")
         for mod in to_append:
+            LOG.debug('Adding {} path to support/configure/RELEASE'.format(mod[0]))
             app_file.write("{}={}\n".format(mod[0], mod[1]))
         for mod in to_append_commented:
+            LOG.debug('Adding commented {} path to support/configure/RELEASE'.format(mod[0]))
             app_file.write("#{}={}\n".format(mod[0], mod[1]))
         app_file.close()
 
 
     def comment_non_build_macros(self):
-        """
-        Function that comments out any paths in the support/configure/RELEASE that are clone only and not build
+        """Function that comments out any paths in the support/configure/RELEASE that are clone only and not build.
         """
 
-        rel_file_path = self.install_config.support_path + "/configure/RELEASE"
-        rel_file_path_temp = self.install_config.support_path + "/configure/RELEASE_TEMP"
+        rel_file_path = os.path.join(self.install_config.support_path, "configure/RELEASE")
+        rel_file_path_temp = os.path.join(self.install_config.support_path, "configure/RELEASE_TEMP")
         os.rename(rel_file_path, rel_file_path_temp)
         rel_file_old = open(rel_file_path_temp, "r")
         rel_file_new = open(rel_file_path, "w")
@@ -225,27 +251,28 @@ class UpdateConfigDriver:
 
 
     def run_update_config(self):
-        """ Top level driver function that updates all config files as necessary """
+        """Top level driver function that updates all config files as necessary
+        """
 
         for target in self.fix_release_list:
             self.fix_target_release(target)
         self.update_ad_macros()
         self.update_support_macros()
+        self.update_support_build_macros()
         self.add_missing_support_macros()
         self.comment_non_build_macros()
         self.perform_injection_updates()
 
 
-    def perform_dependency_valid_check(self, print_info=False):
+    def perform_dependency_valid_check(self):
         dep_errors = []
-        if print_info:
-            print('The following dependencies have been identified for each auto-build module:')
+        LOG.write('The following dependencies have been identified for each auto-build module:')
         for module in self.install_config.get_module_list():
             if module.build == "YES" and module.name != 'SUPPORT':
                 ret = 0
                 self.check_module_dependencies(module)
-                if print_info and len(module.dependencies) > 0:
-                    print('{:<16} - {}'.format(module.name, module.dependencies))
+                if len(module.dependencies) > 0:
+                    LOG.write('{:<16} - {}'.format(module.name, module.dependencies))
                 for dep in module.dependencies:
                     dep_mod = self.install_config.get_module_by_name(dep)
                     if dep_mod is None:
@@ -258,3 +285,19 @@ class UpdateConfigDriver:
                     module.build = "NO"
 
         return dep_errors
+
+
+    def check_dependency_order_valid(self):
+        for module in self.install_config.get_module_list():
+            if len(module.dependencies) > 0:
+                for dep in module.dependencies:
+                    if self.install_config.get_module_build_index(module.name) < self.install_config.get_module_build_index(dep):
+                        return True, module.name, dep
+        return False, None, None
+
+    def perform_fix_out_of_order_dependencies(self):
+        invalid, current, dep = self.check_dependency_order_valid()
+        while invalid:
+            self.install_config.swap_module_positions(current, dep)
+            LOG.write('Swapping build order of {} and {}'.format(current, dep))
+            invalid, current, dep = self.check_dependency_order_valid()
