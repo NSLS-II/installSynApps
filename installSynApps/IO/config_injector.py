@@ -141,7 +141,7 @@ class ConfigInjector:
                         new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
                     elif line.startswith("#" + macro[0] + "="):
-                        if line.split('=', 1)[1] != macro[1]
+                        if line.split('=', 1)[1] != macro[1]:
                             LOG.debug('Updating commented macro {}: original val {}, new val {}'.format(macro[0], line.split('=', 1)[1], macro[1]))
                         if force:
                             new_fp.write("{}={}\n".format(macro[0], macro[1]))
