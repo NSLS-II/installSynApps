@@ -7,8 +7,7 @@
 import os
 
 class InstallModule:
-    """
-    Class that represents individual install module
+    """Class that represents individual install module
 
     It stores all the information per module in the INSTALL_CONFIG file
 
@@ -19,7 +18,9 @@ class InstallModule:
     version : str
         the desired module tag, or alternatively master
     rel_path : str
-        relative path to install, base, support, or area_detector
+        relative path to module
+    abs_path : str
+        absolute path to module
     url_type : str
         either GIT_URL if using git version control, or WGET_URL if sources hosted in .tar.gz file
     url : str
@@ -30,16 +31,25 @@ class InstallModule:
         YES or NO, flag to clone the module
     build : str
         YES or NO, flag to build the module
+    package : str
+        YES or NO, flag to package the module
+    custom_build_script_path : str
+        path to script used to build module instead of just make
+    dependencies : list of str
+        list of modules identified as dependencies for module
 
     Methods
     -------
     print_info(fp=None)
         Method that prints information about the given install module
+    get_printable_string()
+        Function that gets an InstallModule toString
     """
 
 
     def __init__(self, name, version, rel_path, url_type, url, repository, clone, build, package):
-        """Constructor for the InstallModule class"""
+        """Constructor for the InstallModule class
+        """
 
         self.name       = name
         self.version    = version
@@ -58,10 +68,12 @@ class InstallModule:
         self.package    = package
         self.custom_build_script_path = None
 
+        # List of epics modules that this module depends on
+        self.dependencies = []
+
 
     def print_info(self, fp = None):
-        """
-        Function that prints information about an install module
+        """Function that prints information about an install module
 
         if fp is None, will print to stdout, otherwise will print to the fp file pointer
 
@@ -78,7 +90,13 @@ class InstallModule:
 
 
     def get_printable_string(self):
-        """ Function that gets an InstallModule toString """
+        """Function that gets an InstallModule toString
+        
+        Returns
+        -------
+        str
+            A string representation of the install module
+        """
 
         out = "-----------------------------------------\n"
         out = out + "Module: {}, Version: {}\n".format(self.name, self.version)

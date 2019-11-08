@@ -12,5 +12,5 @@ Below is a list of additional `configure` directories included here:
 * `configureDeb9` - an install configuration known to build on Debian 9
 * `minConfigureLinux` -  a minimum required install config for compiling EPICS base, support, areaDetector, and ADSimDetector on linux in the `/epics` default dir
 * `minConfigureWindows` -  a minimum required install config for compiling EPICS base, support, areaDetector, and ADSimDetector on windows in the `C:\epics` default dir
-* `visionPluginConfig` - a configure directory that adds all NSLS2 developed computer vision plugins as enabled by default.
+* `visionPluginConfig` - a configure directory that adds all NSLS2 developed computer vision plugins as enabled by default. (Note that this config will build OpenCV from source, and so will take a significantly longer duration than most other configurations)
 * `fullConfigureLinux` - a configure directory that contains AreaDetector and Motor modules
