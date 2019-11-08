@@ -136,11 +136,13 @@ class ConfigInjector:
                 wrote_line = False
                 for macro in macro_replace_list:
                     if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
-                        LOG.debug('Replacing macro {}: original val {}, new val {}'.format(macro[0], line.split('=', 1)[1], macro[1]))
+                        if line.split('=', 1)[1] != macro[1]:
+                            LOG.debug('Replacing macro {}: original val {}, new val {}'.format(macro[0], line.split('=', 1)[1], macro[1]))
                         new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
                     elif line.startswith("#" + macro[0] + "="):
-                        LOG.debug('Updating commented macro {}: original val {}, new val {}'.format(macro[0], line.split('=', 1)[1], macro[1]))
+                        if line.split('=', 1)[1] != macro[1]
+                            LOG.debug('Updating commented macro {}: original val {}, new val {}'.format(macro[0], line.split('=', 1)[1], macro[1]))
                         if force:
                             new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         else:

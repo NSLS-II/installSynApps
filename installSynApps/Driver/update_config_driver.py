@@ -138,7 +138,7 @@ class UpdateConfigDriver:
         """Updates the macros in the Support configuration files
         """
 
-        self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), False, single_file=True)
+        self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), False, False, single_file=True)
         for module in self.install_config.get_module_list():
             if module.name == "QUADEM" and module.build == "YES":
                 self.update_macros(os.path.join(module.abs_path, "configure/RELEASE"), True, False, single_file=True)
