@@ -21,6 +21,11 @@ sudo apt install python3-tk
 ```
 on linux, while on windows it should be included in your python download.
 
+Furthermore, install the python pip Python Package Installer. This can be installed with:
+```
+sudo apt install python3-pip
+```
+
 In addition, installSynApps uses some additional python3 modules: `distro` for labelling output tarballs, and `pygithub` for auto-syncing of module versions with github. `installSynApps` will start and run without these modules, but you will lose access to the features that depend on them. To install these packages, first clone this repository, and then install using pip:
 ```
 git clone https://github.com/epicsNSLS2-deploy/installSynApps

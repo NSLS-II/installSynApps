@@ -33,6 +33,14 @@ class InstallConfiguration:
         abs path to install location of EPICS support modules
     ad_path : str
         abs path to install location of EPICS area detector
+    motor_path : str
+        abs path to install location of EPICS motor
+    module_map : dict of str -> int
+        Dictionary storing relation of module names to build index
+    injector_files : list of InjectorFile
+        list of injector files loaded by install configuration
+    build_flags : list of list of str
+        list of macro-value pairs enforced at build time
 
     Methods
     -------
@@ -40,22 +48,41 @@ class InstallConfiguration:
         Function that checks if given install location is valid
     add_module(module : InstallModule)
         Function that appends a new module to the list of InstallModules
+    add_injector_file(name : str, contents : str, target : str)
+        Creates new injector file object and adds it to list
+    add_macros(macro_list : list of list of str)
+        appends macros to build flag list
     get_module_list() : List InstallModule
         Function that gets the current list of InstallModules
+    get_module_by_name(name : str)
+        gets module given module name
+    get_module_build_index(name : str)
+        returns module build order index
+    get_core_version()
+        returns ADCORE version
+    swap_module_positions(module_A : str, module_B : str)
+        swaps build index positions o modules A and B
     convert_path_abs(rel_path : str) : str
         Function that converts a relative path to an absolute path based on locations of install, base, support, and ad
     print_installation_info(fp=None)
         Method that prints information about the given install module
+    get_printable_string()
+        gets install configuration info into string
     """
 
 
     def __init__(self, install_location, path_to_configure):
-        """Constructor for the InstallConfiguration object"""
+        """Constructor for the InstallConfiguration object
+        """
 
         self.path_to_configure = path_to_configure
 
         self.install_location = install_location
         self.modules = []
+
+        # Dict that maps module name to index in module list for easier searching.
+        self.module_map = {}
+
         self.injector_files = []
         self.build_flags = []
 
@@ -67,8 +94,7 @@ class InstallConfiguration:
 
     
     def is_install_valid(self):
-        """
-        Function that checks if given install location is valid
+        """Function that checks if given install location is valid
 
         Parameters
         ----------
@@ -91,11 +117,12 @@ class InstallConfiguration:
 
 
     def add_module(self, module):
-        """
-        Function that adds a module to the InstallConfiguration module list
+        """Function that adds a module to the InstallConfiguration module list
 
         First checks if parameter is a valid InstallModule, then sets the config, and abs path,
-        then if it is one of the three key modules to track, sets the appropriate variables
+        then if it is one of the three key modules to track, sets the appropriate variables. Also,
+        add the module to the map of modules which will keep track of which position each module is 
+        in in the list/build order
 
         Parameters
         ----------
@@ -117,12 +144,12 @@ class InstallConfiguration:
             elif module.name == "MOTOR":
                 self.motor_path = module.abs_path
             
+            self.module_map[module.name] = len(self.modules)
             self.modules.append(module)
 
 
     def add_injector_file(self, name, contents, target):
-        """
-        Function that adds a new injector file to the install_config object
+        """Function that adds a new injector file to the install_config object
         
         Parameters
         ----------
@@ -139,8 +166,7 @@ class InstallConfiguration:
 
 
     def add_macros(self, macro_list):
-        """
-        Function that adds macro-value pairs to the list of macros
+        """Function that adds macro-value pairs to a list of macros
 
         Parameters
         ----------
@@ -152,13 +178,7 @@ class InstallConfiguration:
 
 
     def get_module_list(self):
-        """
-        Function that adds a module to the InstallConfiguration module list
-
-        Parameters
-        ----------
-        self : InstallConfiguration
-            Self object
+        """Function that gets the list of modules in the configuration
 
         Returns
         -------
@@ -169,19 +189,83 @@ class InstallConfiguration:
         return self.modules
 
 
-    def get_core_version(self):
-        """
-        Funciton that returns selected version of ADCore
+    def get_module_by_name(self, name):
+        """Function that returns install module object given module name
+        
+        Uses module name as a key in a dictionary to return reference to given module object.
+
+        Parameters
+        ----------
+        name : str
+            Module name
+    
+        Returns
+        -------
+        obj - InstallModule
+            Return matching module, or None if not found.
         """
 
-        for module in self.get_module_list():
-            if module.name == "ADCORE":
-                return module.version
+        if name in self.module_map.keys():
+            return self.modules[self.module_map[name]]
+        else:
+            return None
+
+
+    def get_module_build_index(self, name):
+        """Function that returns the index in the build order for the module
+        
+        Used for ensuring dependencies are built before lower level packages.
+
+        Parameters
+        ----------
+        name : str
+            Module name
+        
+        Returns
+        -------
+        int
+            Index of module in build order if found, otherwise -1
+        """
+
+        if name in self.module_map.keys():
+            return self.module_map[name]
+        else:
+            return -1
+
+
+    def get_core_version(self):
+        """Funciton that returns selected version of ADCore
+        """
+
+        return self.get_module_by_name('ADCORE').version
+
+
+    def swap_module_positions(self, module_A, module_B):
+        """Swaps build order of modules
+
+        Used to ensure dependencies are built before lower level packages
+
+        Parameters
+        ----------
+        module_A : str
+            Name of first module
+        module_B : str
+            Name of second module
+        """
+
+        index_A = self.get_module_build_index(module_A)
+        index_B = self.get_module_build_index(module_B)
+        if index_A >= 0 and index_B >= 0:
+            self.modules[index_A] = module_B
+            self.modules[index_B] = module_A
+            self.module_map[module_A.name] = index_B
+            self.module_map[module_B.name] = index_A
 
 
     def convert_path_abs(self, rel_path):
-        """
-        Function that converts a given modules relative path to an absolute path
+        """Function that converts a given modules relative path to an absolute path
+
+        If the macro name can be found in the list of accounted for modules, replace it with that module's absolute path
 
         Parameters
         ----------
@@ -190,7 +274,7 @@ class InstallConfiguration:
 
         Returns
         -------
-        Path : str
+        str
             The absolute installation path for the module. (Macros are replaced)
         """
 
@@ -205,13 +289,21 @@ class InstallConfiguration:
             return os.path.join(self.ad_path, temp)
         elif "$(MOTOR)" in rel_path and self.motor_path != None:
             return os.path.join(self.motor_path, temp)
+        elif "$(" in rel_path:
+            macro_path = rel_path.split(')')[0]
+            rel_to = macro_part.split('(')[1]
+            if self.get_module_by_name(rel_to) is not None:
+                return os.path.join(self.get_module_by_name(rel_to).abs_path, temp)
+            else:
+                return rel_path
         else:
             return rel_path
 
 
     def print_installation_info(self, fp = None):
-        """
-        Function that prints installation info, along with the info for all modules being cloned
+        """Function that prints installation info
+        
+        Prints list of all modules including clone/build/package information
 
         Parameters
         ----------
@@ -226,7 +318,13 @@ class InstallConfiguration:
 
 
     def get_printable_string(self):
-        """ Function that gets a toString for an InstallConfigurations """
+        """Function that gets a toString for an InstallConfigurations
+
+        Returns
+        -------
+        str
+            A string representing the install configuration
+        """
 
         out = "--------------------------------\n"
         out = out + "Install Location = {}\n".format(self.install_location)
@@ -238,8 +336,10 @@ class InstallConfiguration:
 
 
 class InjectorFile:
-    """
-    Class that represents an injector file and stores its name, contents, and target
+    """Class that represents an injector file and stores its name, contents, and target
+
+    Injector file classes are used to represent data that needs to be appended to target files 
+    at build time. Used to add to commonPlugins, commonPlugin_settings, etc.
 
     Attributes
     ----------
@@ -254,7 +354,8 @@ class InjectorFile:
     """
 
     def __init__(self, path_to_configure, name, contents, target):
-        """ Constructor of InjectorFile """
+        """Constructor of InjectorFile class
+        """
 
         self.path_to_configure = path_to_configure
         self.name = name

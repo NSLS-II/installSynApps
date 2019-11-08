@@ -6,6 +6,7 @@
 
 
 import os
+import re
 import shutil
 import installSynApps.DataModel.install_config as IC
 import installSynApps.IO.config_injector as CI
@@ -59,6 +60,24 @@ class UpdateConfigDriver:
         self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS", "QUADEM"]
+        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT"]
+
+
+    def check_module_dependencies(self, module):
+        """ Function that checks what epics modules a module is dependant on """
+
+        release_path = os.path.join(module.abs_path, os.path.join('configure', 'RELEASE'))
+        if os.path.exists(release_path):
+            release_file = open(release_path, 'r')
+            lines = release_file.readlines()
+            release_file.close()
+            for line in lines:
+                if not line.startswith('#') and '=' in line:
+                    line = line.strip()
+                    line = re.sub(' +', '', line)
+                    dep = line.split('=')[0]
+                    if dep not in module.dependencies and dep not in self.dependency_ignore_list and dep != module.name:
+                        module.dependencies.append(dep)
 
 
     def perform_injection_updates(self):
@@ -215,3 +234,27 @@ class UpdateConfigDriver:
         self.add_missing_support_macros()
         self.comment_non_build_macros()
         self.perform_injection_updates()
+
+
+    def perform_dependency_valid_check(self, print_info=False):
+        dep_errors = []
+        if print_info:
+            print('The following dependencies have been identified for each auto-build module:')
+        for module in self.install_config.get_module_list():
+            if module.build == "YES" and module.name != 'SUPPORT':
+                ret = 0
+                self.check_module_dependencies(module)
+                if print_info and len(module.dependencies) > 0:
+                    print('{:<16} - {}'.format(module.name, module.dependencies))
+                for dep in module.dependencies:
+                    dep_mod = self.install_config.get_module_by_name(dep)
+                    if dep_mod is None:
+                        ret = -1 
+                        dep_errors.append('Dependency {} for module {} not in install config.'.format(dep, module.name))
+                    elif dep_mod.build == 'NO':
+                        ret = -1 
+                        dep_errors.append('Dependency {} for module {} not being built.'.format(dep_mod.name, module.name))
+                if ret < 0:
+                    module.build = "NO"
+
+        return dep_errors

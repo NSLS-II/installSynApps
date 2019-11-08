@@ -58,7 +58,7 @@ VME              R2-9                 $(SUPPORT)/vme                           v
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO               NO
 XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 YES              NO               YES
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
-QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   YES              YES               YES
+QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   NO               NO               NO
 
 GIT_URL=https://github.com/paulscherrerinstitute/
 
@@ -112,7 +112,7 @@ ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 A
 ADVIMBA          master               $(AREA_DETECTOR)/ADVimba                 ADVimba                  NO               NO               NO
 ADMMPAD          master               $(AREA_DETECTOR)/ADMMPAD                 ADMMPAD                  NO               NO               NO
 ADFASTCCD        R1-0                 $(AREA_DETECTOR)/ADFastCCD               ADFastCCD                NO               NO               NO
-ADPOINTGREY      R2-8                 $(AREA_DETECTOR)/ADPointGrey             ADPointGrey              YES              YES              YES
+ADPOINTGREY      R2-8                 $(AREA_DETECTOR)/ADPointGrey             ADPointGrey              NO               NO               NO
 ADPICAM          master               $(AREA_DETECTOR)/ADPICam                 ADPICam                  NO               NO               NO
 ADANDOR          R2-8                 $(AREA_DETECTOR)/ADAndor                 ADAndor                  NO               NO               NO
 ADTIMEPIX        master               $(AREA_DETECTOR)/ADTimePix               ADTimePix                NO               NO               NO

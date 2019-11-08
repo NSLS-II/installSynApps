@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """ Python script for running the installSynApps module through the CLI """
 
@@ -16,6 +16,15 @@ from sys import platform
 import installSynApps.DataModel as DataModel
 import installSynApps.Driver as Driver
 import installSynApps.IO as IO
+
+
+# pygithub for github autosync tags integration.
+WITH_PYGITHUB=True
+try:
+    from github import Github
+    import getpass
+except ImportError:
+    WITH_PYGITHUB=False
 
 
 # -------------- Some helper functions ------------------
@@ -76,6 +85,50 @@ def create_new_install_config():
         print('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
 
 
+def sync_tags(user, passwd, install_config, save_path):
+    try:
+        update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
+        print('Syncing...', 'Please wait while tags are synced - this may take a while...')
+        g = Github(user, passwd)
+        for module in install_config.get_module_list():
+            if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in update_tags_blacklist:
+                account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
+                repo = g.get_repo(account_repo)
+                if repo is not None:
+                    tags = repo.get_tags()
+                    if tags.totalCount > 0 and module.name != 'EPICS_BASE':
+                        tag_found = False
+                        for tag in tags:
+                            #print('{} - {}'.format(account_repo, tag))
+                            if tag.name.startswith('R') and tag.name[1].isdigit():
+                                if tag.name == module.version:
+                                    tag_found = True
+                                    break
+                                print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
+                                module.version = tag.name
+                                tag_found = True
+                                break
+                        if not tag_found:
+                            for tag in tags:
+                                if tag.name[0].isdigit() and tag.name != module.version:
+                                    print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
+                                    module.version = tags[0].name
+                                    break
+                                elif tag.name[0].isdigit():
+                                    break
+                    elif module.name == 'EPICS_BASE':
+                        for tag in tags:
+                            if tag.name.startswith('R7'):
+                                if tag.name != module.version:
+                                    print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
+                                    module.version = tag.name
+                                    break
+        writer = IO.config_writer.ConfigWriter(install_config)
+        writer.write_install_config(save_path)
+        print('Updated install config saved to {}'.format(save_path))
+    except:
+        print('ERROR - Invalid Github credentials.')
+
 
 def parse_user_input():
     path_to_configure = "configure"
@@ -88,12 +141,19 @@ def parse_user_input():
     parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
     parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
     parser.add_argument('-n', '--newconfig', action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
+    parser.add_argument('-p', '--printcommands', action='store_true', help='Add this flag for installCLI to print commands run during the build process.')
+    parser.add_argument('-v', '--updateversions', action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
     arguments = vars(parser.parse_args())
     if arguments['newconfig']:
         create_new_install_config()
         exit()
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
+    elif arguments['updateversions']:
+        print('ERROR - Update versions flag selected but no configure directory given.')
+        print('Rerun with the -c flag')
+        print('Aborting...')
+        exit()
 
     return path_to_configure, arguments['installpath'], arguments
 
@@ -105,12 +165,30 @@ path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
 single_thread   = args['singlethread']
 dep             = args['dependency']
+print_commands  = args['printcommands']
+update_versions = args['updateversions']
 
 threads         = args['threads']
 if threads is None:
     threads = 0
 
 print_welcome_message()
+if update_versions:
+    print('Updating module versions for configuration {}'.format(path_to_configure))
+    if not WITH_PYGITHUB:
+        print("**PyGithub module required for version updates.**")
+        print("**Install with pip install pygithub**")
+        print("Exiting...")
+        exit()
+    parser = IO.config_parser.ConfigParser(path_to_configure)
+    install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
+    print('Please enter your github credentials.')
+    user = input('Username: ')
+    passwd = getpass.getpass()
+    sync_tags(user, passwd, install_config, path_to_configure)
+    print('Done.')
+    exit()
+
 print('Reading install configuration directory located at: {}...'.format(path_to_configure))
 print()
 
@@ -210,7 +288,7 @@ else:
     if clone == "y":
         print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
         print("----------------------------------------------")
-        unsuccessful = cloner.clone_and_checkout()
+        unsuccessful = cloner.clone_and_checkout(show_commands=print_commands)
         if len(unsuccessful) > 0:
             for module in unsuccessful:
                 print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
@@ -229,6 +307,9 @@ else:
     if update == "y":
         print("Updating all RELEASE and configuration files...")
         updater.run_update_config()
+        dep_errors = updater.perform_dependency_valid_check(print_info=print_commands)
+        for dep_error in dep_errors:
+            print(dep_error)
 
     print("----------------------------------------------")
     print("Ready to build EPICS base, support and areaDetector...")
@@ -263,21 +344,56 @@ else:
     if build == "y":
         print("Starting build...")
         # Build all
-        ret, message, failed_list = builder.build_all()
+        #ret, message, failed_list = builder.build_all()
+        message = ""
+        ret = builder.build_base(print_commands=print_commands)
+        if ret == 0:
+            builder.make_support_releases_consistent(print_commands=print_commands)
+            for module in install_config.get_module_list():
+                if module.build == 'YES':
+                    status, built = builder.build_support_module(module, print_commands=print_commands)
+                    if built:
+                        if status != 0:
+                            print('Failed to build support module {}\n'.format(module.name))
+            ret_support = builder.build_ad_support(print_commands=print_commands)
+            ret_core = builder.build_ad_core(print_commands=print_commands)
+            if ret_core != 0 or ret_support != 0:
+                ret = -1
+                message = "Error ADCORE / ADSUPPORT"
+        else:
+            message = "EPICS_BASE"
 
         if ret < 0:
             print("**ERROR - Build failed - {}**".format(message))
             print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
             print('**Critical build error - abort...**')
             exit()
-        elif len(failed_list) > 0:
+
+        failed_list = []
+        for module in install_config.get_module_list():
+            if module.build == 'YES':
+                # Process any custom builds now
+                if module.custom_build_script_path is not None:
+                    print('Detected custom build script for module {}\n'.format(module.name))
+                    out = builder.build_via_custom_script(module)
+                    print('Custom build script for {} exited with code {}\n'.format(module.name, out))
+                else:
+                    # Also build any areaDetector plugins/drivers
+                    status, was_ad = builder.build_ad_module(module, print_commands=print_commands)
+                    if was_ad and status == 0:
+                        print("Built AD module {}\n".format(module.name))
+                    elif was_ad and status != 0:
+                        print("Failed to build AD module {}\n".format(module.name))
+                        failed_list.append(module)
+
+        if len(failed_list) > 0:
             for admodule in failed_list:
                 print("AD Module {} failed to build, will not package.".format(admodule.name))
                 # Don't package modules that fail to build
                 for module in packager.install_config.get_module_list():
                     if module.name == admodule.name:
                         module.package = "NO"
-            print("Check for missing dependecies, and if INSTALL_CONFIG is valid.")
+            print("Check for missing dependencies, and if INSTALL_CONFIG is valid.")
 
 
         print("----------------------------------------------")

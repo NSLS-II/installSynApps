@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """ GUI class for the installSynApps module
 
@@ -157,7 +157,7 @@ class InstallSynAppsGUI:
         debugmenu.add_command(label='Print Loaded Config Info', command=self.printLoadedConfigInfo)
         debugmenu.add_command(label='Clear Log',                command=self.resetLog)
         debugmenu.add_command(label='Recheck Dependancies',     command=self.recheckDeps)
-        debugmenu.add_command(label='Print path information',   command=self.printPathInfo)
+        debugmenu.add_command(label='Print Path Information',   command=self.printPathInfo)
         menubar.add_cascade(label='Debug', menu=debugmenu)
 
         # Build Menu
@@ -203,7 +203,7 @@ class InstallSynAppsGUI:
 
         # Because EPICS versioning is not as standardized as it should be, certain modules cannot be properly auto updated.
         # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
-        self.update_tags_blacklist = ["SSCAN", "CALC"]
+        self.update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
         # title label
         self.topLabel       = Label(frame, text = self.msg, width = '25', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
@@ -323,12 +323,12 @@ class InstallSynAppsGUI:
     def initLogText(self):
         """ Function that initializes log text """
 
-        text = "+-----------------------------------------------------------------\n"
+        text = "+----------------------------------------------------------------+\n"
         text = text + "+ installSynApps, version: {:<38}+\n".format(__version__)
         text = text +"+ Author: Jakub Wlodek                                           +\n"
         text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
         text = text +"+ This software comes with NO warranty!                          +\n"
-        text = text +"+-----------------------------------------------------------------\n\n"
+        text = text +"+----------------------------------------------------------------+\n\n"
         return text
 
 
@@ -391,13 +391,10 @@ class InstallSynAppsGUI:
         """ Wrapper function for checking for installed dependancies """
 
         self.writeToLog('Checking for installed dependancies...\n')
-        inPath, missing = self.builder.check_dependencies_in_path(allow_partial=True)
+        inPath, missing = self.builder.check_dependencies_in_path()
         if not inPath:
             self.showErrorMessage('Error', 'ERROR- Could not find {} in system path.'.format(missing), force_popup=True)
             self.deps_found = False
-        elif inPath and len(missing) > 0:
-            self.showWarningMessage('Warning', 'WARNING - {} not found in system path. Make sure to add it in dependency script'.format(missing))
-            self.deps_found = True
         else:
             self.deps_found = True
         if not self.packager.found_distro:
@@ -814,23 +811,30 @@ class InstallSynAppsGUI:
         """ Simple function that displays a help message """
 
         helpMessage = "---------------------------------------------\n"
-        helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nTo use this program, an install configuration is required.\n"
-        helpMessage = helpMessage + "An example configuration directory has already been loaded, and can be seen in the ./configure dir.\n"
-        helpMessage = helpMessage + "Using this program, you may inject options into EPICS\nand synApps config files, automatically set"
-        helpMessage = helpMessage + " build flags,\nclone and checkout all modules and their versions, update RELEASE\nand configuration files,"
-        helpMessage = helpMessage + " and auto-build all of EPICS and synApps.\nPlease look over the current config below, and if changes are\n"
-        helpMessage = helpMessage + "required, edit it via the `Edit` tab, or load a new configure\ndirectory."
+        helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nThis program is designed to help you rapidly build EPICS and synApps.\n\n"
+        helpMessage = helpMessage + "To begin, take a look at the panel on the bottom left.\nThis is the currently loaded install configuration.\n"
+        helpMessage = helpMessage + "Note the modules listed to be auto-built and their versions.\n\nTo edit these, check the Edit -> Edit Config tab in the menubar.\n"
+        helpMessage = helpMessage + "A second window should open and allow you to edit the version\nof each module, as well as to select modules to clone/build/package.\n"
+        helpMessage = helpMessage + "This window also allows you to edit the install location.\n\n"
+        helpMessage = helpMessage + "Once you have edited the configuration to your specifications,\nyou may press the autorun button on the side, to trigger the build.\n"
+        helpMessage = helpMessage + "For more detailed documentation on installSynApps, please\nvisit the documentation online."
         self.showMessage("Help", helpMessage)
 
 
     def printDependencies(self):
         """ Prints some information regarding required dependencies for installSynApps """
 
-        self.writeToLog('Dependencies required for installSynApps:')
-        self.writeToLog('For cloning: git, wget, and tar')
-        self.writeToLog('For building: make, perl, and either gcc/g++ on linux, or MSCV/MSVC++ on win32')
-        self.writeToLog('For packaging: tar, python module distro')
-        self.writeToLog('All dependencies must be in system path during build time.')
+        self.writeToLog('---------------------------------------------------\n')
+        self.writeToLog('Dependencies required for installSynApps:\n')
+        self.writeToLog(' * git\n * wget\n * tar\n * make\n * perl\n\n')
+        self.writeToLog('Also required are a C/C++ compiler:\n')
+        self.writeToLog(' * Linux - gcc/g++ (install with package manager)\n')
+        self.writeToLog(' * Windows - MSVC/MSVC++ (install with Visual Studio 2015+)\n\n')
+        self.writeToLog('Additional optional python3 modules used, install with pip:\n')
+        self.writeToLog(' * distro\n') 
+        self.writeToLog(' * pygithub\n\n')
+        self.writeToLog('All dependencies must be in system path during build time.\n')
+        self.writeToLog('---------------------------------------------------\n')
 
 
     def showAbout(self):
@@ -884,7 +888,7 @@ class InstallSynAppsGUI:
         elif not self.valid_install:
             self.showErrorMessage("Start Error", "ERROR - Loaded install config not valid.", force_popup=True)
         elif not self.deps_found:
-            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. Run Debug -> Recheck.", force_popup=True)
+            self.showErrorMessage("Start Error", "ERROR - Missing dependancies detected. See Help -> Required Dependencies.", force_popup=True)
         elif not self.thread.is_alive():
             if action == 'autorun':
                 self.thread = threading.Thread(target=self.autorunProcess)
@@ -979,6 +983,10 @@ class InstallSynAppsGUI:
         self.writeToLog('Commenting non-auto-build paths...\n')
         self.updater.comment_non_build_macros()
         #self.injectFilesProcess()
+        self.writeToLog("Checking module dependancies...\n")
+        dep_errors = self.updater.perform_dependency_valid_check()
+        for error in dep_errors:
+            self.writeToLog('ERROR - {}\n'.format(error))
         self.showMessage('Update RELEASE', 'Finished update RELEASE + configure process.')
         return 0
 
@@ -1132,6 +1140,10 @@ class InstallSynAppsGUI:
 
 root = Tk()
 root.title("installSynApps")
+try:
+    root.iconbitmap('docs/assets/isaIcon.ico')
+except:
+    pass
 root.resizable(False, False)
 gui = InstallSynAppsGUI(root)
 
