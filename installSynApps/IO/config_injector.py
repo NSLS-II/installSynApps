@@ -7,6 +7,7 @@ __author__      = "Jakub Wlodek"
 import os
 import re
 import installSynApps.DataModel.install_config as IC
+from installSynApps.IO import logger as LOG
 
 class ConfigInjector:
     """
