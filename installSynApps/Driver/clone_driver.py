@@ -88,15 +88,14 @@ class CloneDriver:
                     else:
                         command = 'wget -P {} {}'.format(module.abs_path, module.url + module.repository)
 
-                LOG.write(command)
-                proc = Popen(command.split(' '), stdout = PIPE, stdin=PIPE)
-                out, err = proc.communicate()
+                LOG.print_command(command)
+                proc = Popen(command.split(' '))
+                proc.wait()
                 ret = proc.returncode
                 if ret == 0:
-                    LOG.log_write(out.decode())
-                    LOG.write('Cloned module {} successfully'.format(module.name))
+                    LOG.write('Cloned module {} successfully.'.format(module.name))
                 else:
-                    LOG.log_write(err.decode())
+                    LOG.write('Failed to clone module {}.'.format(module.name))
                     return -1
 
                 if module.url_type == "WGET_URL":
@@ -106,15 +105,14 @@ class CloneDriver:
                     elif module.repository.endswith(".zip") and ret == 0:
                         command = "unzip {} -C {}".format(os.path.join(module.abs_path, module.repository), module.abs_path)
                     
-                    LOG.write(command)
-                    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-                    out, err = proc.communicate()
+                    LOG.print_command(command)
+                    proc = Popen(command.split(' '))
+                    proc.wait()
                     ret = proc.returncode
                     if ret == 0:
-                        LOG.log_write(out.decode())
-                        LOG.write('Unpacked module {} successfully'.format(module.name))
+                        LOG.write('Unpacked module {} successfully.'.format(module.name))
                     else:
-                        LOG.log_write(err.decode())
+                        LOG.write('Failed to unpack module {}.'.format(module.name))
 
                 if ret == 0:
                     return ret
@@ -148,15 +146,15 @@ class CloneDriver:
                     current_loc = os.getcwd()
                     os.chdir(module.abs_path)
                     command = "git checkout -q {}".format(module.version)
-                    LOG.write(command)
-                    proc = Popen(command.split(' '), stdout = PIPE, stdin=PIPE)
-                    out, err = proc.communicate()
+                    LOG.print_command(command)
+                    proc = Popen(command.split(' '))
+                    proc.wait()
                     ret = proc.returncode
                     os.chdir(current_loc)
                     if ret == 0:
                         LOG.write('Checked out version {}'.format(module.version))
                     else:
-                        LOG.log_write(err.decode())
+                        LOG.write('Checkout of version {} failed for module {}.'.format(module.version, module.name))
         return ret
 
 
@@ -177,22 +175,22 @@ class CloneDriver:
             if module.abs_path != None:
                 submodule_path = module.abs_path + "/" + submodule_name
                 if os.path.exists(submodule_path):
-                    LOG.write('git -C {} submodule init'.format(submodule_path))
-                    p1 = Popen(["git", "-C", submodule_path, "submodule", "init"], stdout = PIPE, stdin = PIPE)
-                    out, err = p1.communicate()
-                    ret1 = p1.communicate()
+                    LOG.print_command('git -C {} submodule init'.format(submodule_path))
+                    p1 = Popen(["git", "-C", submodule_path, "submodule", "init"])
+                    p1.wait()
+                    ret1 = p1.returncode
                     if ret1 == 0:
-                        LOG.log_write(out.decode())
+                        LOG.debug('Submodules initialized for module {}.'.format(module.name))
                     else:
-                        LOG.log_write(err.decode())
-                    LOG.write('git -C {} submodule update'.format(submodule_path))
-                    p2 = Popen(["git", "-C", submodule_path, "submodule", "update"], stdout = PIPE, stdin = PIPE)
-                    out, err = p2.communicate()
-                    ret2 = p2.communicate()
+                        LOG.debug('Failed to initialize submodules for module {}.'.format(module.name))
+                    LOG.print_command('git -C {} submodule update'.format(submodule_path))
+                    p2 = Popen(["git", "-C", submodule_path, "submodule", "update"])
+                    p2.wait()
+                    ret2 = p2.returncode
                     if ret2 == 0:
-                        LOG.log_write(out.decode())
+                        LOG.debug('Submodules updated for module {}.'.format(module.name))
                     else:
-                        LOG.log_write(err.decode())
+                        LOG.debug('Failed to update submodules for module {}.'.format(module.name))
 
 
     def cleanup_modules(self):

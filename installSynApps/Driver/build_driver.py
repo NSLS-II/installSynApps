@@ -1,13 +1,16 @@
-"""
-Module responsible for driving the build process of installSynApps
+"""Module responsible for driving the build process of installSynApps
+
+Includes functions for building modules, updating releases, setting maximum core counts,
+acquiring and checking dependencies.
 """
 
 __author__   = 'Jakub Wlodek'
 
 import os
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 import subprocess
 from sys import platform
+import sys
 import installSynApps.DataModel.install_config as IC
 import installSynApps.IO.logger as LOG
 
@@ -36,22 +39,15 @@ class BuildDriver:
         Function meant to check if required packages are located in the system path
     acquire_dependencies(dependency_script_path : str)
         function that calls script for acquiring dependency libraries and build environment
-    build_base()
-        function that calls make on EPICS base
-    build_support()
-        function that calls make release and then make on EPICS support
-    build_ad()
-        function that call make on ADSupport, then ADCore, then all AD modules
+    build_via_custom_script()
+        function used to build a module with a custom install script
+    make_support_releases_consistent()
+        Runs make release in the support directory to propagate RELEASE tags
+    build_module()
+        function that is used to build an individual module.
     build_all()
         function that calls all build functions sequentially
-    build_ad_support()
-        Function that builds only ad support
-    build_ad_core()
-        Function that builds only ad core
-    build_ad_module()
-        Function that builds an individual ad module
     """
-
 
     def __init__(self, install_config, threads, one_thread=False):
         """Constructor for BuildDriver
@@ -81,13 +77,15 @@ class BuildDriver:
             self.make_flag = '-sj{}'.format(self.threads)
 
 
-    def check_dependencies_in_path(self, allow_partial=False):
+    def check_dependencies_in_path(self):
         """Function meant to check if required packages are located in the system path.
 
         Returns
         -------
-        bool, str
-            True and empty string if success, False and name of missing package if error
+        bool
+            True if success, False if error
+        str
+            Empty string if success, otherwise name of mssing dependency
         """
 
         status = True
@@ -106,8 +104,7 @@ class BuildDriver:
             current = 'tar'
             subprocess.call(['tar', '--version'], stdout=FNULL, stderr=FNULL)
         except FileNotFoundError:
-            if not allow_partial:
-                status = False
+            status = False
             message = current
 
         FNULL.close()
@@ -126,13 +123,13 @@ class BuildDriver:
         LOG.debug('Grabbing dependencies via script {}'.format(dependency_script_path))
         if os.path.exists(dependency_script_path) and os.path.isfile(dependency_script_path):
             if dependency_script_path.endswith('.bat'):
-                exec = [dependency_script_path]
+                exec = dependency_script_path
             else:
-                exec = ['bash', dependency_script_path]
-            proc = Popen(exec, stdout=PIPE, stdin=PIPE)
-            out, err = proc.communicate()
+                exec = 'bash {}'.format(dependency_script_path)
+            LOG.print_command(exec)
+            proc = Popen(exec.split(' '))
+            proc.wait()
             ret = proc.returncode
-            LOG.log_write_subprocess_call(out, err)
             if ret != 0:
                 LOG.write('Dependency script exited with non-zero exit code: {}'.format(ret))
 
@@ -140,15 +137,19 @@ class BuildDriver:
 
     def make_support_releases_consistent(self):
         """Function that makes support module release files consistent
+
+        Returns
+        -------
+        int
+            return code of make release command call
         """
 
-        LOG.debug('Running make release to keep releases consistent')
+        LOG.write('Running make release to keep releases consistent.')
         command = 'make -C {} release'.format(self.install_config.support_path)
-        LOG.write(command)
-        proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
+        LOG.print_command(command)
+        proc = Popen(command.split(' '))
+        proc.wait()
         ret = proc.returncode
-        LOG.log_write_subprocess_call(out, err)
         if ret != 0:
             LOG.write('make release exited with non-zero exit code: {}'.format(ret))
         return ret
@@ -174,11 +175,10 @@ class BuildDriver:
             exec = module.custom_build_script_path
         else:
             exec = 'bash {}'.format(module.custom_build_script_path)
-        LOG.write(exec)
-        proc = Popen(exec.split(' '), stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
+        LOG.print_command(exec)
+        proc = Popen(exec.split(' '))
+        proc.wait()
         ret = proc.returncode
-        LOG.log_write_subprocess_call(out, err)
         os.chdir(current)
         return ret
 
@@ -200,7 +200,7 @@ class BuildDriver:
         Returns
         -------
         int
-            The return code of the build process
+            The return code of the build process, 0 if module is not buildable (ex. UTILS)
         """
 
         if module_name in self.non_build_packages:
@@ -214,21 +214,24 @@ class BuildDriver:
                     self.build_module(dep)
         if module.custom_build_script_path is not None:
             LOG.write('Detected custom build script located at {}'.format(module.custom_build_script_path))
-            out = self.build_via_custom_script(module)
-            if out == 0:
+            ret = self.build_via_custom_script(module)
+            if ret == 0:
                 self.built.append(module_name)
                 LOG.write('Built module {} via custom script'.format(module_name))
+            else:
+                LOG.write('Custom script for module {} exited with error code {}.'.format(module_name, ret))
         else:
             command = "make -C {} {}".format(module.abs_path, self.make_flag)
-            LOG.write(command)
-            proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-            out, err = proc.communicate()
+            LOG.print_command(command)
+            proc = Popen(command.split(' '))
+            proc.wait()
             ret = proc.returncode
-            LOG.log_write_subprocess_call(out, err)
             if ret == 0:
                 self.built.append(module_name)
                 LOG.write('Built module {}'.format(module_name))
-        return out
+            else:
+                LOG.write('Failed to build module {}'.format(module_name))
+        return ret
 
 
     def build_all(self):
@@ -238,8 +241,8 @@ class BuildDriver:
         -------
         int
             0 if success, number failed modules otherwise
-        List of modules
-            List of modules that failed to compile
+        list of str
+            List of module names that failed to compile
         """
 
         failed = []

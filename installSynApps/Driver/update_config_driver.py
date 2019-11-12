@@ -29,6 +29,8 @@ class UpdateConfigDriver:
         list of modules that need to have their RELEASE file replaced
     add_to_release_blacklist : List of str
         list of modules that should be commented in support/configure/RELEASE
+    dependency_ignore_list
+        list of macros in RELEASE files that are not EPICS module dependencies
     
     Methods
     -------
@@ -40,16 +42,26 @@ class UpdateConfigDriver:
         Updates the macros in the AD configuration files
     update_support_macros()
         Updates the macros in the Support configuration files
+    update_support_build_macros()
+        Function that applies build flags to support module configure directories.
     update_macros(target_path : str)
         Function that calls Config injector to update all macros in target dir
     fix_target_release(target_module_name : str)
         Function that replaces the RELEASE file of a target module with a corrected one
-    add_support_macros()
+    add_missing_support_macros()
         Function that appends any paths to the support/configure/RELEASE file that were not in it originally
     comment_non_build_macros()
         Function that comments out any paths in the support/configure/RELEASE that are clone only and not build
     run_update_config()
         Top level function that runs all required config update functions
+    check_module_dependencies()
+        Function that checks inter-module dependencies
+    perform_dependency_valid_check()
+        Function that searches each modules configure/RELEASE file for dependencies.
+    check_dependency_order_valid()
+        Function that checks if the order of module building is valid.
+    perform_fix_out_of_order_dependencies()
+        Function that repeatedly checks if dependency order is valid, until no issues found.
     """
 
 
@@ -61,41 +73,12 @@ class UpdateConfigDriver:
         self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS", "QUADEM"]
-        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT", "INSTALL_LOCATION_APP", "CAPFAST_TEMPLATES", ]
-
-
-    def check_module_dependencies(self, module):
-        """Function that checks inter-module dependencies
-        
-        Grabs dependencies form the configure/RELEASE file. Modules that are under
-        areaDetector get ADSupport and ADCore added as dependencies as well.
-
-        Parameters
-        ----------
-        module : InstallModule
-            install module for which to check dependencies
-        """
-
-        release_path = os.path.join(module.abs_path, os.path.join('configure', 'RELEASE'))
-        if os.path.exists(release_path):
-            release_file = open(release_path, 'r')
-            lines = release_file.readlines()
-            release_file.close()
-            for line in lines:
-                if not line.startswith('#') and '=' in line:
-                    line = line.strip()
-                    line = re.sub(' +', '', line)
-                    dep = line.split('=')[0]
-                    if dep not in module.dependencies and dep not in self.dependency_ignore_list and dep != module.name:
-                        module.dependencies.append(dep)
-                        if dep == 'AREA_DETECTOR' or (module.rel_path.startswith('$(AREA_DETECTOR)') and module.name != 'ADSUPPORT' and module.name != 'ADCORE'):
-                            module.dependencies.append('ADSUPPORT')
-                            module.dependencies.append('ADCORE')
-
+        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT", "INSTALL_LOCATION_APP", "CAPFAST_TEMPLATES"]
 
 
     def perform_injection_updates(self):
-        """ Function that calls the ConfigInjector functions for appending config files """
+        """Function that calls the ConfigInjector functions for appending config files.
+        """
 
         injector_files = self.install_config.injector_files
         for injector in injector_files:
@@ -103,8 +86,9 @@ class UpdateConfigDriver:
         
     
     def get_macros_from_install_config(self):
-        """ 
-        Retrieves a list of name-path pairs from install config modules
+        """ Retrieves a list of name-path pairs from install config modules.
+
+        The name-path pairs are used for updating areaDetector configuration files.
 
         Returns
         -------
@@ -126,16 +110,15 @@ class UpdateConfigDriver:
 
 
     def update_ad_macros(self):
-        """Updates the macros in the AD configuration files
+        """Updates the macros in the AD configuration files.
         """
 
         if self.install_config.ad_path is not None:
-            LOG.debug('Updating macros in the areaDetetor/configure directory')
             self.update_macros(os.path.join(self.install_config.ad_path, "configure"), True, False)
 
 
     def update_support_macros(self):
-        """Updates the macros in the Support configuration files
+        """Updates the macros in the support configuration files.
         """
 
         self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), False, False, single_file=True)
@@ -153,13 +136,25 @@ class UpdateConfigDriver:
 
 
     def update_macros(self, target_path, include_ad, force_uncomment, single_file=False, build_flags_only=False):
-        """
-        Function that calls config injector to update all macros in target dir
+        """Function that calls config injector to update all macros in target directory.
+
+        This function is used on 3 occasions. 
+        * To update areaDetector/configure/* files. This is done with indclude_ad and force_uncomment as True, and build_flags_only as false
+        * To update the support/configure/RELEASE file. This is done with include_ad=False, force_uncomment=True, single_file = True
+        * To update module/configure directories. In this case, build_flags_only = True and force_uncomment = True
         
         Parameters
         ----------
         target_path : str
             Path to directory that contains config files to be updated
+        include_ad : bool
+            Specifies whether or not to also update macros that fall under areaDetector (ADCORE, ADSUPPORT etc.)
+        force_uncomment : bool
+            If macro is found but commented, if this flag is set the comment is removed
+        single_file=False : bool
+            Apply update macros to a single file
+        build_flags_only=False : bool
+            In this case, only update the build flag macros specified in config, not module paths (use make release instead)
         """
 
         install_macro_list = self.get_macros_from_install_config()
@@ -173,7 +168,7 @@ class UpdateConfigDriver:
 
 
     def fix_target_release(self, target_module_name):
-        """Used to replace a target module's release file
+        """Used to replace a target module's release file.
         
         Parameters
         ----------
@@ -242,6 +237,7 @@ class UpdateConfigDriver:
                 for module in self.install_config.get_module_list():
                     if line.startswith(module.name + "=") and module.build == "NO":
                         rel_file_new.write('#')
+                        LOG.debug('Commenting out non-build module {} in support/configure/RELEASE'.format(module.name))
                 rel_file_new.write(line)
             line = rel_file_old.readline()
         rel_file_new.close()
@@ -250,7 +246,7 @@ class UpdateConfigDriver:
             
 
 
-    def run_update_config(self):
+    def run_update_config(self, with_injection=True):
         """Top level driver function that updates all config files as necessary
         """
 
@@ -261,10 +257,51 @@ class UpdateConfigDriver:
         self.update_support_build_macros()
         self.add_missing_support_macros()
         self.comment_non_build_macros()
-        self.perform_injection_updates()
+        if with_injection:
+            self.perform_injection_updates()
+
+
+    def check_module_dependencies(self, module):
+        """Function that checks inter-module dependencies
+        
+        Grabs dependencies form the configure/RELEASE file. Modules that are under
+        areaDetector get ADSupport and ADCore added as dependencies as well.
+
+        Parameters
+        ----------
+        module : InstallModule
+            install module for which to check dependencies
+        """
+
+        release_path = os.path.join(module.abs_path, os.path.join('configure', 'RELEASE'))
+        if os.path.exists(release_path):
+            release_file = open(release_path, 'r')
+            lines = release_file.readlines()
+            release_file.close()
+            for line in lines:
+                if not line.startswith('#') and '=' in line:
+                    line = line.strip()
+                    line = re.sub(' +', '', line)
+                    dep = line.split('=')[0]
+                    if dep not in module.dependencies and dep not in self.dependency_ignore_list and dep != module.name:
+                        module.dependencies.append(dep)
+                        if dep == 'AREA_DETECTOR' or (module.rel_path.startswith('$(AREA_DETECTOR)') and module.name != 'ADSUPPORT' and module.name != 'ADCORE'):
+                            module.dependencies.append('ADSUPPORT')
+                            module.dependencies.append('ADCORE')
 
 
     def perform_dependency_valid_check(self):
+        """Function that searches each modules configure/RELEASE file for dependencies.
+
+        If a dependency is found, it is checked against loaded install config to make sure it 
+        is scheduled to be built. Each module's dependencies attribute is populated
+
+        Returns
+        -------
+        list of str
+            A list of dependencies for modules that are not set to build.
+        """
+
         dep_errors = []
         LOG.write('The following dependencies have been identified for each auto-build module:')
         for module in self.install_config.get_module_list():
@@ -288,16 +325,37 @@ class UpdateConfigDriver:
 
 
     def check_dependency_order_valid(self):
+        """Function that checks if the order of module building is valid.
+
+        Checks whether each module is being built after all of its dependencies.
+
+        Returns
+        -------
+        bool
+            True if valid, False if invalid
+        str
+            Name of module built before dependency, or None if none found
+        str
+            Name of dependency being built after module, or None if none found
+        """
+
         for module in self.install_config.get_module_list():
             if len(module.dependencies) > 0:
                 for dep in module.dependencies:
                     if self.install_config.get_module_build_index(module.name) < self.install_config.get_module_build_index(dep):
-                        return True, module.name, dep
-        return False, None, None
+                        return False, module.name, dep
+        return True, None, None
+
 
     def perform_fix_out_of_order_dependencies(self):
-        invalid, current, dep = self.check_dependency_order_valid()
-        while invalid:
+        """Function that repeatedly checks if dependency order is valid, until no issues found.
+
+        Runs check_dependency_order_valid in a loop, until we get a 'True' response. If we get
+        'False' swap the module and it's dependency and rerun
+        """
+
+        valid, current, dep = self.check_dependency_order_valid()
+        while not valid:
             self.install_config.swap_module_positions(current, dep)
             LOG.write('Swapping build order of {} and {}'.format(current, dep))
-            invalid, current, dep = self.check_dependency_order_valid()
+            valid, current, dep = self.check_dependency_order_valid()
