@@ -17,9 +17,9 @@ packager = Driver.packager_driver.Packager(install_config)
 def test_get_ad_modules():
     out = packager.get_drivers_to_package()
     assert len(out) == 1
-    assert out[0] == 'dummy'
+    assert out[0].name == 'DUMMY'
 
 def test_get_support_modules():
     out = packager.get_modules_to_package()
     assert len(out) == 1
-    assert out[0] == 'MODBUS'
+    assert out[0].name == 'MODBUS'
