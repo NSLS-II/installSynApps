@@ -1,5 +1,4 @@
-"""
-Class that is responsible for writing an Install Configuration
+"""Class that is responsible for writing Install Configurations
 """
 
 __author__      = "Jakub Wlodek"
@@ -11,8 +10,7 @@ from installSynApps.DataModel import *
 from installSynApps.IO import logger as LOG
 
 class ConfigWriter:
-    """
-    Class that is responsible for writing an Install Configuration
+    """Class that is responsible for writing Install Configurations
 
     Attributes
     ----------
@@ -36,8 +34,12 @@ class ConfigWriter:
 
 
     def write_injector_files(self, filepath):
-        """
-        Helper Function for writing injector files from install config
+        """Helper Function for writing injector files from install config
+
+        Parameters
+        ----------
+        filepath : str
+            Path into which we wish to save configuration
         """
 
         # for each injector file write it with its target location
@@ -51,8 +53,12 @@ class ConfigWriter:
 
 
     def write_build_flags(self, filepath):
-        """
-        Helper Function for writing build flags from install config
+        """Helper Function for writing build flags from install config
+
+        Parameters
+        ----------
+        filepath : str
+            Path into which we wish to save configuration
         """
 
         new_build_flag = open(filepath + "/macroFiles/BUILD_FLAG_CONFIG", 'w')
@@ -65,19 +71,22 @@ class ConfigWriter:
 
 
     def write_install_config(self, filepath='addtlConfDirs/config{}'.format(datetime.date.today())):
-        """
+        """Function that saves loaded install configuration
+
         Main saving function for writing install config. Can create a save directory, then saves 
         main install configuration, build flags, and injector files.
 
         Parameters
         ----------
         filepath : str
-            defaults to addtlConfDirs/config$DATE. The filename into which to save the install configuration
+            defaults to addtlConfDirs/config$DATE. The filepath into which to save the install configuration
 
         Returns
         -------
-        bool, str
-            (True , None) if successful, (False, error message) if failure.
+        bool
+            True if successful, False otherwise
+        str
+            None if successfull, otherwise error message
         """
 
         # Check if path exists, create it if it doesn't
@@ -96,16 +105,20 @@ class ConfigWriter:
                 else:
                     return False, 'Unknown Error'
         try:
-            os.mkdir(filepath + "/injectionFiles")
-            os.mkdir(filepath + "/macroFiles")
+            os.mkdir(os.path.join(filepath, 'injectionFiles'))
+            os.mkdir(os.path.join(filepath, 'macroFiles'))
+            os.mkdir(os.path.join(filepath, 'customBuildScripts'))
         except:
             pass
 
+        LOG.debug('Writing injector files.')
         self.write_injector_files(filepath)
 
+        LOG.debug('Writing build flags.')
         self.write_build_flags(filepath)
 
-        new_install_config = open(filepath + "/INSTALL_CONFIG", "w+")
+        LOG.debug('Writing INSTALL_CONFIG file.')
+        new_install_config = open(os.path.join(filepath, "INSTALL_CONFIG"), "w+")
         new_install_config.write('#\n# INSTALL_CONFIG file saved by installSynApps on {}\n#\n\n'.format(datetime.datetime.now())) 
         new_install_config.write("INSTALL={}\n\n\n".format(self.install_config.install_location))
 

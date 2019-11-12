@@ -58,7 +58,7 @@ class ConfigInjector:
             return
         target_path = self.install_config.convert_path_abs(target_path)
         target_file = os.path.basename(target_path)
-        if (not os.path.exists(target_path) and not os.path.exists(target_path_no_example)):
+        if (not os.path.exists(target_path)):
             return
         if target_file.startswith("EXAMPLE_"):
             target_path_no_example = os.path.join(os.path.dirname(target_path), target_file[8:])
@@ -70,7 +70,7 @@ class ConfigInjector:
         if injector_file.contents is not None:
             LOG.debug('Injecting into {}'.format(target_path))
             target_fp.write(injector_file.contents)
-            LOG.debug(injector_file.contents)
+            LOG.debug(injector_file.contents, force_no_timestamp=True)
             LOG.debug('Injection Done.')
         target_fp.write("\n# --------------------------Auto-generated end----------------------\n")
         target_fp.close()
@@ -89,6 +89,7 @@ class ConfigInjector:
             path of target dir for which all macros will be edited.
         """
 
+        LOG.debug('Updating macros in directory {}'.format(target_dir))
         if os.path.exists(target_dir) and os.path.isdir(target_dir):
             for file in os.listdir(target_dir):
                 if os.path.isfile(target_dir + "/" + file) and not file.endswith(".pl") and file != "Makefile" and not file.endswith(".ioc"):
@@ -113,7 +114,6 @@ class ConfigInjector:
             if false, will comment out macros for area detector modules. used for RELEASE in support - AD is built separately
         """
 
-        LOG.debug('Updating macros for file {}'.format(target_filename))
         old_files_dir = os.path.join(target_dir, 'OLD_FILES')
         if not os.path.exists(old_files_dir):
             os.mkdir(old_files_dir)
@@ -137,12 +137,12 @@ class ConfigInjector:
                 for macro in macro_replace_list:
                     if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
                         if line.split('=', 1)[1] != macro[1]:
-                            LOG.debug('Replacing macro {}: original val {}, new val {}'.format(macro[0], line.split('=', 1)[1], macro[1]))
+                            LOG.debug('Replacing macro {}: original val {}, new val {} in file {}'.format(macro[0], line.split('=', 1)[1], macro[1], target_filename))
                         new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
                     elif line.startswith("#" + macro[0] + "="):
                         if line.split('=', 1)[1] != macro[1]:
-                            LOG.debug('Updating commented macro {}: original val {}, new val {}'.format(macro[0], line.split('=', 1)[1], macro[1]))
+                            LOG.debug('Updating commented macro {}: original val {}, new val {} in file {}'.format(macro[0], line.split('=', 1)[1], macro[1], target_filename))
                         if force:
                             new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         else:

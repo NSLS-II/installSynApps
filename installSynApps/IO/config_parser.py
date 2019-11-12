@@ -38,14 +38,16 @@ class ConfigParser:
         Function that parses an injector file and adds it to the install_config
     read_build_flags(install_config : InstallConfiguration)
         Function that reads the build flag files and adds them to install config
-    pause_macro_file(macro_file_name : str, install_config : InstallConfiguration)
-        Function that parses each individual build flag file into macro-value pairs,
-        and appends them to the list stored in the loaded install configuration
+    parse_macro_file(macro_file_name : str, install_config : InstallConfiguration)
+        Function to parse macro-value pairs and adds them to install config
+    parse_custom_build_scripts(install_config : InstallConfiguration)
+        Function that checks for custom build scripts
     """
 
 
     def __init__(self, configure_path):
-        """ Constructor for ConfigParser """
+        """Constructor for ConfigParser
+        """
 
         self.configure_path = configure_path
 
@@ -54,7 +56,13 @@ class ConfigParser:
 
 
     def check_valid_config_path(self):
-        """ Function that checks if configure path is valid """
+        """Function that checks if configure path is valid
+
+        Returns
+        -------
+        bool
+            True if install path is valid, false otherwise
+        """
 
         if os.path.exists(self.configure_path) and os.path.isdir(self.configure_path):
             return True
@@ -65,8 +73,7 @@ class ConfigParser:
 
 
     def parse_line_to_module(self, line, current_url, current_url_type):
-        """
-        Function that parses a line in the INSTALL_CONFIG file to an InstallModule object
+        """Function that parses a line in the INSTALL_CONFIG file into an InstallModule object
 
         Parameters
         ----------
@@ -79,7 +86,7 @@ class ConfigParser:
         
         Returns
         -------
-        install_module : InstallModule
+        InstallModule
             module parsed from the table line
         """
 
@@ -106,19 +113,20 @@ class ConfigParser:
         else:
             package = "NO"
         # create object from line and return it
+        LOG.debug('Parsed install module: {}'.format(name))
         install_module = IM.InstallModule(name, version, rel_path, current_url_type, current_url, repository, clone, build, package)
         return install_module
 
 
     def parse_install_config(self, config_filename = "INSTALL_CONFIG", force_location = None, allow_illegal = False):
-        """
-        Top level install config parser function
+        """Top level install config parser function
+
         Parses the self.path_to_configure/config_filename file
 
         Parameters
         ----------
         config_filename : str
-            defaults to INSTALL_CONFIG
+            name of main config file, defaults to INSTALL_CONFIG
         force_location : str
             default to None. if set, will force the install location to its value instead of the one read from file
         allow_illegal : bool
@@ -126,9 +134,9 @@ class ConfigParser:
 
         Returns
         -------
-        install_config : InstallConfiguration
+        InstallConfiguration
             valid install_config object if parse was successful, or None
-        message : str
+        str
             None if there is no error, or a message describing the error
         """
 
@@ -159,6 +167,7 @@ class ConfigParser:
                         else:
                             install_loc = force_location
                         if install_loc.startswith('/') and platform == 'win32':
+                            LOG.debug('Using linux path on windows, prepending C: to path.')
                             install_loc = 'C:' + install_loc
                         # create install config object
                         install_config = IC.InstallConfiguration(install_loc, self.configure_path)
@@ -203,8 +212,7 @@ class ConfigParser:
 
 
     def generate_default_injector_files(self, install_config):
-        """
-        Function that creates some new base default injector files
+        """Function that creates some new base default injector files
 
         Parameters
         ----------
@@ -221,8 +229,7 @@ class ConfigParser:
 
 
     def read_injector_files(self, install_config):
-        """
-        Function that reads the injector files and adds them to install config
+        """Function that reads the injector files and adds them to install config
         
         Parameters
         ----------
@@ -245,8 +252,7 @@ class ConfigParser:
 
 
     def parse_injector_file(self, injector_file_name, install_config):
-        """
-        Function that parses an injector file and adds it to the install_config
+        """Function that parses an injector file and adds it to the install_config
 
         Parameters
         ----------
@@ -276,8 +282,7 @@ class ConfigParser:
 
 
     def read_build_flags(self, install_config):
-        """
-        Function that reads the build flag files and adds them to install config
+        """Function that reads the build flag files and adds them to install config
         
         Parameters
         ----------
@@ -295,8 +300,9 @@ class ConfigParser:
 
 
     def parse_macro_file(self, macro_file_name, install_config):
-        """
-        Function that parses each individual build flag file into macro-value pairs,
+        """Function to parse macro-value pairs and adds them to install config
+        
+        Parses each individual build flag file into macro-value pairs,
         and appends them to the list stored in the loaded install configuration
 
         Parameters
@@ -321,7 +327,8 @@ class ConfigParser:
 
 
     def parse_custom_build_scripts(self, install_config):
-        """ Function that checks if there is a custom build script written for each module in the install config """
+        """Function that checks for custom build scripts
+        """
 
         # make sure the build script path is absolute
         build_script_folder = os.path.abspath(os.path.join(self.configure_path, 'customBuildScripts'))
