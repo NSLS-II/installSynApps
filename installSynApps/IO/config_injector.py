@@ -128,11 +128,8 @@ class ConfigInjector:
         while line:
             original = line
             line = line.strip()
-            if not line.startswith('#') and '=' in line:
+            if '=' in line:
                 line = line = re.sub(' +', '', line)
-            if line.startswith('#') and '=' not in line:
-                new_fp.write(original)
-            else:
                 wrote_line = False
                 for macro in macro_replace_list:
                     if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
@@ -144,6 +141,7 @@ class ConfigInjector:
                         if line.split('=', 1)[1] != macro[1]:
                             LOG.debug('Updating commented macro {}: original val {}, new val {} in file {}'.format(macro[0], line.split('=', 1)[1], macro[1], target_filename))
                         if force:
+                            LOG.debug('Uncommenting commented macro {}'.format(macro[0]))
                             new_fp.write("{}={}\n".format(macro[0], macro[1]))
                         else:
                             new_fp.write("#{}={}\n".format(macro[0], macro[1]))
@@ -153,6 +151,8 @@ class ConfigInjector:
                         new_fp.write("#" + original)
                     else:
                         new_fp.write(original)
+            else:
+                new_fp.write(original)
             line = old_fp.readline()
         new_fp.close()
         old_fp.close()
