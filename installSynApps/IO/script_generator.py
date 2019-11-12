@@ -3,8 +3,6 @@ Class responsible for generating bash build scripts once the top level scripts a
 """
 
 
-__author__= Jakub Wlodek
-
 import os
 import shutil
 import datetime
