@@ -4,7 +4,7 @@
 
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__version__     = "R2-2"
+__version__     = "R2-3"
 
 # Support python modules
 import os
