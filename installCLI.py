@@ -138,17 +138,20 @@ def parse_user_input():
     # Default path to configure
     path_to_configure = "configure"
 
-    parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
-    parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
-    parser.add_argument('-d', '--dependency', action='store_true', help='Add this flag to install dependencies via a dependency script.')
-    parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
-    parser.add_argument('-t', '--threads', help = 'Define a limit on the number of threads that make is allowed to use')
-    parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
-    parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
-    parser.add_argument('-n', '--newconfig', action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
-    parser.add_argument('-l', '--savelog', action='store_true', help='Add this flag to save the build log to a file in the logs/ directory.')
-    parser.add_argument('-m', '--debugmessages', action='store_true', help='Add this flag to enable printing verbose debug messages.')
-    parser.add_argument('-v', '--updateversions', action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
+    parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation.")
+    parser.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
+    parser.add_argument('-d', '--dependency',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
+    parser.add_argument('-s', '--singlethread',     action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
+    parser.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
+    parser.add_argument('-l', '--savelog',          action='store_true', help='Add this flag to save the build log to a file in the logs/ directory.')
+    parser.add_argument('-m', '--debugmessages',    action='store_true', help='Add this flag to enable printing verbose debug messages.')
+    parser.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
+    parser.add_argument('-p', '--printcommands',    action='store_true', help='Add this flag to print bash/batch commands run by installSynApps.')
+    parser.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
+
+    parser.add_argument('-c', '--customconfigure',  help='Use an external configuration directory. Note that it must have the same structure as the default one.')
+    parser.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.')
+    parser.add_argument('-i', '--installpath',      help='Define an override install location to use instead of the one read from INSTALL_CONFIG.')
     arguments = vars(parser.parse_args())
 
     print_welcome_message()
@@ -194,6 +197,8 @@ dep             = args['dependency']
 save_log        = args['savelog']
 show_debug      = args['debugmessages']
 
+if args['printcommands']:
+    IO.logger.toggle_command_printing()
 
 # For a CLI client, we just pass the sys.stdout.write function for logging
 IO.logger.assign_write_function(sys.stdout.write)
@@ -408,14 +413,13 @@ else:
     create_tarball = 'y'
 if create_tarball == 'y':
     output_filename = packager.create_bundle_name()
-    print('Tarring...')
-    ret = packager.create_package(output_filename)
+    ret = packager.create_package(output_filename, flat_format=args['flatbinaries'])
     if ret >= 0:
-        print('Done. Wrote bundle to {}'.format(packager.output_location))
-        print('Name of bundle: {}.tgz'.format(output_filename))
-        print('Tarring took {} seconds'.format(ret))
+        print('Done.')
+        clean_exit()
     else:
         print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
 
 print('Done.')
+clean_exit()
 
