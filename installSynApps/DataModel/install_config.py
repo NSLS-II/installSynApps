@@ -292,14 +292,13 @@ class InstallConfiguration:
         elif "$(MOTOR)" in rel_path and self.motor_path != None:
             return os.path.join(self.motor_path, temp)
         elif "$(" in rel_path:
-            macro_path = rel_path.split(')')[0]
+            macro_part = rel_path.split(')')[0]
             rel_to = macro_part.split('(')[1]
-            if self.get_module_by_name(rel_to) is not None:
-                return os.path.join(self.get_module_by_name(rel_to).abs_path, temp)
-            else:
-                return rel_path
-        else:
-            return rel_path
+            rel_to_module = self.get_module_by_name(rel_to)
+            if rel_to_module is not None:
+                return os.path.join(rel_to_module.abs_path, temp)
+
+        return rel_path
 
 
     def print_installation_info(self, fp = None):

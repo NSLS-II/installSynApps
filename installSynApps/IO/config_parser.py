@@ -321,7 +321,10 @@ class ConfigParser:
             if not line.startswith('#'):
                 line = line.strip()
                 if len(line) > 1 and '=' in line:
-                    macros.append(line.split('='))
+                    macro_val_pair = line.split('=')
+                    if macro_val_pair[0].startswith('$('):
+                        macro_val_pair[0] = install_config.convert_path_abs(macro_val_pair[0])
+                    macros.append(macro_val_pair)
 
         install_config.add_macros(macros)
 
