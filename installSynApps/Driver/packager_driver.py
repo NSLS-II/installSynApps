@@ -397,3 +397,37 @@ class Packager:
             return status
         else:
             return elapsed
+    def create_opi_folder(self, epics_dir, opi_dir):
+        """
+        Function that collects autoconverted .opi files from epics_dir and saves them in opi_dir
+        Parameters
+        ----------
+        epics_dir: 	string, from where .opi files are collected
+        opi_dir: 	string, to where .opi files will be copied
+
+        Returns
+        -------
+        0  - if suceeded
+        -1 - if error
+        """
+        opi_dir = str(self.output_location + '/opis')
+        ##epics_dir = install_config.install_location
+        try:
+            os.mkdir(opi_dir)
+        except OSError:
+            print('Error creating ' + opi_dir + ' directory', )
+
+        for (root, dirs, files) in os.walk(epics_dir, topdown=True):
+            for name in files:
+                if '.opi' in name and 'autoconvert' in root:
+                    file_name = root+ '/'+ name
+                    try:
+                        shutil.copy(file_name, opi_dir)
+                    except OSError:
+                        print("Can't copy " + file_name + ' to ' + opi_dir)
+                        sys.exit(1)
+        #opis_bundle_name = self.create_bundle_name('opis.tgz')
+        out = subprocess.call(['tar', 'czf', 'DEPLOYMENTS/opis.tgz', '-C', 'DEPLOYMENTS/opis', '.'])
+        if out < 0:
+            return out
+        return 1                

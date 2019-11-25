@@ -422,6 +422,13 @@ if create_tarball == 'y':
         print('Tarring took {} seconds'.format(ret))
     else:
         print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
+print()
+if not yes:
+    create_opi_dir = input('Whould you like to create opi_dir now? (y/n) >')
+else:
+    create_opi_dir = 'y'
+if create_opi_dir == 'y':
+    packager.create_opi_folder(install_config.install_location, packager.output_location)
 
 print('Done.')
 
