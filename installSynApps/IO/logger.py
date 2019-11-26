@@ -1,6 +1,6 @@
 """Module containing logging classes and functions.
 
-The logger is controlled via a set of global variables set by the installSynApps client function.
+The logger is controlled via a set of global variables set by the installSynApps client.
 
 The most important thing for the client to do is to run assign_write_function, and give the logger a 
 function that takes a single string input parameter. This can be print or writing to a GUI display etc.
@@ -30,9 +30,12 @@ def initialize_logger():
     """
 
     global _LOG_FILE
-    if not os.path.exists('logs'):
-        os.mkdir('logs')
-    _LOG_FILE = open(os.path.join('logs', 'installSynApps_{}.log'.format(datetime.datetime.now())), 'w')
+    try:
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+        _LOG_FILE = open(os.path.join('logs', 'installSynApps_{}.log'.format(datetime.datetime.now())), 'w')
+    except OSError:
+        write('Failed to initialize log file...')
 
 
 def close_logger():
@@ -74,7 +77,7 @@ def assign_write_function(write_function):
     Parameters
     ----------
     write_function : function(str)
-        A function that takes a single string parameter
+        A function that takes a single string parameter. Ex. print()
     """
 
     global _WRITE_FUNCTION
@@ -114,7 +117,7 @@ def print_command(command):
 
 
 def write(text, no_timestamp=True):
-    """Main logging writing funcion. Called if write function was set
+    """Main logging funcion. Called if write function was set
     
     Parameters
     ----------

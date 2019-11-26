@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 
-""" GUI class for the installSynApps module
+"""GUI class for the installSynApps module
 
 This GUI solution allows for much easier use of the installSynApps module 
 to clone, update, and build the EPICS and synApps software stack.
 """
-
-__author__      = "Jakub Wlodek"
-__copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__version__     = "R2-3"
-
 
 # Tkinter imports
 import tkinter as tk
@@ -38,6 +33,7 @@ import subprocess
 from sys import platform
 
 # installSynApps module imports
+import installSynApps
 import installSynApps.DataModel as DataModel
 import installSynApps.IO as IO
 import installSynApps.Driver as Driver
@@ -275,7 +271,7 @@ class InstallSynAppsGUI:
                 self.install_loaded = True
             self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
 
-        self.metacontroller.metadata['isa_version'] = __version__
+        self.metacontroller.metadata['isa_version'] = installSynApps.__version__
         self.metacontroller.metadata['platform']    = platform
         self.metacontroller.metadata['last_used']   = '{}'.format(datetime.datetime.now())
 
@@ -338,15 +334,10 @@ class InstallSynAppsGUI:
 
 
     def initLogText(self):
-        """ Function that initializes log text """
+        """Function that initializes log text
+        """
 
-        text = "+----------------------------------------------------------------+\n"
-        text = text + "+ installSynApps, version: {:<38}+\n".format(__version__)
-        text = text +"+ Author: Jakub Wlodek                                           +\n"
-        text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
-        text = text +"+ This software comes with NO warranty!                          +\n"
-        text = text +"+----------------------------------------------------------------+\n\n"
-        return text
+        return installSynApps.get_welcome_text() + '\n'
 
 
     def resetLog(self):
@@ -510,46 +501,10 @@ class InstallSynAppsGUI:
             github password
         """
     
-        try:
-            self.showMessage('Syncing...', 'Please wait while tags are synced - this may take a while...', force_popup=True)
-            g = Github(user, passwd)
-            for module in self.install_config.get_module_list():
-                if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in self.update_tags_blacklist:
-                    account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
-                    repo = g.get_repo(account_repo)
-                    if repo is not None:
-                        tags = repo.get_tags()
-                        if tags.totalCount > 0 and module.name != 'EPICS_BASE':
-                            tag_found = False
-                            for tag in tags:
-                                #print('{} - {}'.format(account_repo, tag))
-                                if tag.name.startswith('R') and tag.name[1].isdigit():
-                                    if tag.name == module.version:
-                                        tag_found = True
-                                        break
-                                    self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
-                                    module.version = tag.name
-                                    tag_found = True
-                                    break
-                            if not tag_found:
-                                for tag in tags:
-                                    if tag.name[0].isdigit() and tag.name != module.version:
-                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
-                                        module.version = tags[0].name
-                                        break
-                                    elif tag.name[0].isdigit():
-                                        break
-                        elif module.name == 'EPICS_BASE':
-                            for tag in tags:
-                                if tag.name.startswith('R7'):
-                                    if tag.name != module.version:
-                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
-                                        module.version = tag.name
-                                        break
-            self.updateAllRefs(self.install_config)
-            self.updateConfigPanel()
-        except:
-            self.showErrorMessage('Error', 'ERROR - Invalid Github credentials.', force_popup=True)
+        installSynApps.sync_github_tags(user, passwd, self.install_config)
+        self.updateAllRefs(self.install_config)
+        self.updateConfigPanel()
+
 
 # ----------------------- Loading/saving Functions -----------------------------
 

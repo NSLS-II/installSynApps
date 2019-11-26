@@ -1,44 +1,56 @@
 #!/usr/bin/env python3
 
-""" Python script for running the installSynApps module through the CLI """
+"""Python script for running the installSynApps module through the CLI
 
-__author__      = "Jakub Wlodek"
-__copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__version__     = "R2-3"
+usage: installCLI.py [-h] [-y] [-d] [-c CUSTOMCONFIGURE] [-t THREADS] [-s]
+                     [-i INSTALLPATH] [-n] [-p] [-v]
+
+installSynApps for CLI EPICS and synApps auto-compilation
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -y, --forceyes        Add this flag to automatically go through all of the
+                        installation steps without prompts
+  -d, --dependency      Add this flag to install dependencies via a dependency
+                        script.
+  -c CUSTOMCONFIGURE, --customconfigure CUSTOMCONFIGURE
+                        Use an external configuration directory. Note that it
+                        must have the same structure as the default one
+  -t THREADS, --threads THREADS
+                        Define a limit on the number of threads that make is
+                        allowed to use
+  -s, --singlethread    Flag that forces make to run on only one thread. Use
+                        this for low power devices.
+  -i INSTALLPATH, --installpath INSTALLPATH
+                        Define an override install location to use instead of
+                        the one read from INSTALL_CONFIG
+  -n, --newconfig       Add this flag to use installCLI to create a new
+                        install configuration.
+  -p, --printcommands   Add this flag for installCLI to print commands run
+                        during the build process.
+  -v, --updateversions  Add this flag to update module versions based on
+                        github tags. Must be used with -c flag.
+"""
 
 # Support python modules
 import os
 import subprocess
 import argparse
+import getpass
 from sys import platform
-import sys
 
 # InstallSynAppsModules
+import installSynApps
 import installSynApps.DataModel as DataModel
 import installSynApps.Driver as Driver
 import installSynApps.IO as IO
-
-
-# pygithub for github autosync tags integration.
-WITH_PYGITHUB=True
-try:
-    from github import Github
-    import getpass
-except ImportError:
-    WITH_PYGITHUB=False
 
 
 # -------------- Some helper functions ------------------
 
 def print_welcome_message():
     # Welcome message
-    print("+----------------------------------------------------------------+")
-    print("+ installSynApps, version: {:<38}+".format(__version__))
-    print("+ Author: Jakub Wlodek                                           +")
-    print("+ Copyright (c): Brookhaven National Laboratory 2018-2019        +")
-    print("+ This software comes with NO warranty!                          +")
-    print("+----------------------------------------------------------------+")
-    print()
+    print(installSynApps.get_welcome_text())
     
     print("Welcome to the installSynApps module.")
     print("It is designed to automate the build process for EPICS and areaDetector.")
@@ -47,11 +59,14 @@ def print_welcome_message():
     print()
 
 
+# Make sure we close logger before exiting
 def clean_exit():
     IO.logger.close_logger()
     exit()
 
+
 def create_new_install_config():
+    print_welcome_message()
     print("You have selected to create a new install configuration.\n")
     install_type = input("Would you like a coprehensive config, an areaDetector config, or a motor config? (AD/Motor/All) > ")
     if install_type.lower() == 'ad':
@@ -89,56 +104,10 @@ def create_new_install_config():
         print('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
 
 
-def sync_tags(user, passwd, install_config, save_path):
-    try:
-        update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
-        print('Syncing...', 'Please wait while tags are synced - this may take a while...')
-        g = Github(user, passwd)
-        for module in install_config.get_module_list():
-            if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in update_tags_blacklist:
-                account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
-                repo = g.get_repo(account_repo)
-                if repo is not None:
-                    tags = repo.get_tags()
-                    if tags.totalCount > 0 and module.name != 'EPICS_BASE':
-                        tag_found = False
-                        for tag in tags:
-                            #print('{} - {}'.format(account_repo, tag))
-                            if tag.name.startswith('R') and tag.name[1].isdigit():
-                                if tag.name == module.version:
-                                    tag_found = True
-                                    break
-                                print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
-                                module.version = tag.name
-                                tag_found = True
-                                break
-                        if not tag_found:
-                            for tag in tags:
-                                if tag.name[0].isdigit() and tag.name != module.version:
-                                    print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
-                                    module.version = tags[0].name
-                                    break
-                                elif tag.name[0].isdigit():
-                                    break
-                    elif module.name == 'EPICS_BASE':
-                        for tag in tags:
-                            if tag.name.startswith('R7'):
-                                if tag.name != module.version:
-                                    print('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
-                                    module.version = tag.name
-                                    break
-        writer = IO.config_writer.ConfigWriter(install_config)
-        writer.write_install_config(save_path)
-        print('Updated install config saved to {}'.format(save_path))
-    except:
-        print('ERROR - Invalid Github credentials.')
-
-
 def parse_user_input():
-    # Default path to configure
     path_to_configure = "configure"
 
-    parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation.")
+    parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
 
     config_group    = parser.add_argument_group('configuration options')
     build_group     = parser.add_argument_group('build options')
@@ -151,7 +120,6 @@ def parse_user_input():
 
     build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
     build_group.add_argument('-d', '--dependency',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
-    build_group.add_argument('-s', '--singlethread',     action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
     build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
     build_group.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.', type=int)
     
@@ -159,7 +127,6 @@ def parse_user_input():
     debug_group.add_argument('-m', '--debugmessages',    action='store_true', help='Add this flag to enable printing verbose debug messages.')
     debug_group.add_argument('-p', '--printcommands',    action='store_true', help='Add this flag to print bash/batch commands run by installSynApps.')
 
-    
     arguments = vars(parser.parse_args())
 
     print_welcome_message()
@@ -198,44 +165,43 @@ def parse_user_input():
     return path_to_configure, arguments['installpath'], arguments
 
 
-# ----------------- Run the build script ------------------------
+# ----------------- Run the script ------------------------
 
 path_to_configure, force_install_path, args = parse_user_input()
 path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
-single_thread   = args['singlethread']
 dep             = args['dependency']
+single_thread   = False
 save_log        = args['savelog']
 show_debug      = args['debugmessages']
 
 if args['printcommands']:
     IO.logger.toggle_command_printing()
 
-# For a CLI client, we just pass the sys.stdout.write function for logging
+
+# For a CLI client, we simply sys.stdout.write for logging.
 IO.logger.assign_write_function(sys.stdout.write)
 if save_log:
     IO.logger.initialize_logger()
 
 
-if show_debug:
-    IO.logger.toggle_debug_logging()
-
-
 threads         = args['threads']
 if threads is None:
     threads = 0
+elif threads == 1:
+    single_thread = True
 
 
 print('Reading install configuration directory located at: {}...'.format(path_to_configure))
 print()
 
+
 # Parse base config file, make sure that it is valid - ask for user input until it is valid
 parser = IO.config_parser.ConfigParser(path_to_configure)
 install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
-
 if install_config is None:
     print('Error parsing Install Config... {}'.format(message))
-    clean_exit()
+    exit()
 elif message is not None:
     loc_ok = False
 else:
@@ -327,7 +293,7 @@ else:
     if clone == "y":
         print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
         print("----------------------------------------------")
-        unsuccessful = cloner.clone_and_checkout()
+        unsuccessful = cloner.clone_and_checkout(show_commands=print_commands)
         if len(unsuccessful) > 0:
             for module in unsuccessful:
                 print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
@@ -346,9 +312,8 @@ else:
     if update == "y":
         print("Updating all RELEASE and configuration files...")
         updater.run_update_config()
-
-
-    dep_errors = updater.perform_dependency_valid_check()
+        
+    dep_errors = updater.perform_dependency_valid_check(print_info=print_commands)
     for dep_error in dep_errors:
         print(dep_error)
 
@@ -417,7 +382,7 @@ else:
             print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
 
     else:
-        print("Build cancelled...\nDone.")
+        print("Build aborted... Exiting.")
         clean_exit()
 
 
