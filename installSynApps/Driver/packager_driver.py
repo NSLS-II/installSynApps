@@ -309,6 +309,42 @@ class Packager:
             LOG.debug('Failed to copy install configuration into bundle.')
 
 
+    def create_opi_folder(self, epics_dir):
+        """Function that collects autoconverted .opi files from epics_dir.
+
+        OPI screens are saved  in output_location/ad_opis and creats a tarball.
+        
+        Parameters
+        ----------
+        epics_dir : str
+            from where .opi files are collected
+
+        Returns
+        -------
+        int
+            0 if suceeded, nonzero otherwise
+        """
+
+        opi_dir = str(self.output_location + '/ad_opis')
+        try:
+            os.mkdir(opi_dir)
+        except OSError:
+            print('Error creating ' + opi_dir + ' directory', )
+
+        for (root, dirs, files) in os.walk(epics_dir, topdown=True):
+            for name in files:
+                if '.opi' in name and 'autoconvert' in root:
+                    file_name = root+ '/'+ name
+                    try:
+                        shutil.copy(file_name, opi_dir)
+                    except OSError:
+                        print("Can't copy " + file_name + ' to ' + opi_dir)
+                        sys.exit(1)
+        #opis_bundle_name = self.create_bundle_name('opis.tgz')
+        out = subprocess.call(['tar', 'czf', os.path.join(self.output_location, 'opis.tgz'), '-C', self.output_location, '.'])
+        return out
+
+
     def create_tarball(self, filename, flat_format):
         """Function responsible for creating the tarball given a filename.
 
@@ -444,3 +480,4 @@ class Packager:
         self.create_bundle_cleanup_tool()
 
         return status
+

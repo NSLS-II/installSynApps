@@ -429,11 +429,24 @@ else:
 if create_tarball == 'y':
     output_filename = packager.create_bundle_name()
     ret = packager.create_package(output_filename, flat_format=args['flatbinaries'])
-    if ret >= 0:
-        print('Done.')
+    if ret != 0:
+        print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
         clean_exit()
     else:
-        print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
+        print('Bundle generated at: {}'.format(output_filename))
+
+print()
+if not yes:
+    create_opi_dir = input('Whould you like to create opi_dir now? (y/n) >')
+else:
+    create_opi_dir = 'y'
+if create_opi_dir == 'y':
+    ret = packager.create_opi_folder(install_config.install_location)
+    if ret != 0:
+        print('ERROR - Failed to create opi bundle.')
+        clean_exit()
+    else:
+        print('OPI screen tarball generated.')
 
 print('Done.')
 clean_exit()
