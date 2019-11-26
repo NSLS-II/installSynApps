@@ -2,7 +2,11 @@
 # INSTALL_CONFIG file saved by installSynApps on 2019-10-08 12:33:31.118769
 #
 
+<<<<<<< Updated upstream
 INSTALL=/epics
+=======
+INSTALL=/epics/src
+>>>>>>> Stashed changes
 
 
 #MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE    PACKAGE_MODULE
