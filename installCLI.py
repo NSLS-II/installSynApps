@@ -428,7 +428,7 @@ if not yes:
 else:
     create_opi_dir = 'y'
 if create_opi_dir == 'y':
-    packager.create_opi_folder(install_config.install_location, packager.output_location)
+    packager.create_opi_folder(install_config.install_location)
 
 print('Done.')
 
