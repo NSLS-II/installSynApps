@@ -256,10 +256,12 @@ class InstallConfiguration:
         index_A = self.get_module_build_index(module_A)
         index_B = self.get_module_build_index(module_B)
         if index_A >= 0 and index_B >= 0:
-            self.modules[index_A] = module_B
-            self.modules[index_B] = module_A
-            self.module_map[module_A.name] = index_B
-            self.module_map[module_B.name] = index_A
+            temp_A = self.get_module_by_name(module_B)
+            temp_B = self.get_module_by_name(module_A)
+            self.modules[index_A] = temp_A
+            self.modules[index_B] = temp_B
+            self.module_map[module_A] = index_B
+            self.module_map[module_B] = index_A
 
 
     def convert_path_abs(self, rel_path):
@@ -290,14 +292,13 @@ class InstallConfiguration:
         elif "$(MOTOR)" in rel_path and self.motor_path != None:
             return os.path.join(self.motor_path, temp)
         elif "$(" in rel_path:
-            macro_path = rel_path.split(')')[0]
+            macro_part = rel_path.split(')')[0]
             rel_to = macro_part.split('(')[1]
-            if self.get_module_by_name(rel_to) is not None:
-                return os.path.join(self.get_module_by_name(rel_to).abs_path, temp)
-            else:
-                return rel_path
-        else:
-            return rel_path
+            rel_to_module = self.get_module_by_name(rel_to)
+            if rel_to_module is not None:
+                return os.path.join(rel_to_module.abs_path, temp)
+
+        return rel_path
 
 
     def print_installation_info(self, fp = None):
@@ -332,6 +333,14 @@ class InstallConfiguration:
         for module in self.modules:
             if module.clone == 'YES':
                 out = out + module.get_printable_string()
+        return out
+
+
+    def get_module_names_list(self):
+        out = []
+        for module in self.modules:
+            if module.build == 'YES':
+                out.append(module.name)
         return out
 
 

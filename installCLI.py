@@ -4,13 +4,14 @@
 
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__version__     = "R2-2"
+__version__     = "R2-3"
 
 # Support python modules
 import os
 import subprocess
 import argparse
 from sys import platform
+import sys
 
 # InstallSynAppsModules
 import installSynApps.DataModel as DataModel
@@ -31,12 +32,12 @@ except ImportError:
 
 def print_welcome_message():
     # Welcome message
-    print("+-----------------------------------------------------------------")
-    print("+ installSynApps, version: {}                                  +".format(__version__))
+    print("+----------------------------------------------------------------+")
+    print("+ installSynApps, version: {:<38}+".format(__version__))
     print("+ Author: Jakub Wlodek                                           +")
     print("+ Copyright (c): Brookhaven National Laboratory 2018-2019        +")
     print("+ This software comes with NO warranty!                          +")
-    print("+-----------------------------------------------------------------")
+    print("+----------------------------------------------------------------+")
     print()
     
     print("Welcome to the installSynApps module.")
@@ -46,8 +47,11 @@ def print_welcome_message():
     print()
 
 
+def clean_exit():
+    IO.logger.close_logger()
+    exit()
+
 def create_new_install_config():
-    print_welcome_message()
     print("You have selected to create a new install configuration.\n")
     install_type = input("Would you like a coprehensive config, an areaDetector config, or a motor config? (AD/Motor/All) > ")
     if install_type.lower() == 'ad':
@@ -131,74 +135,107 @@ def sync_tags(user, passwd, install_config, save_path):
 
 
 def parse_user_input():
+    # Default path to configure
     path_to_configure = "configure"
 
-    parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
-    parser.add_argument('-y', '--forceyes', action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts')
-    parser.add_argument('-d', '--dependency', action='store_true', help='Add this flag to install dependencies via a dependency script.')
-    parser.add_argument('-c', '--customconfigure', help = 'Use an external configuration directory. Note that it must have the same structure as the default one')
-    parser.add_argument('-t', '--threads', help = 'Define a limit on the number of threads that make is allowed to use')
-    parser.add_argument('-s', '--singlethread', action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
-    parser.add_argument('-i', '--installpath', help='Define an override install location to use instead of the one read from INSTALL_CONFIG')
-    parser.add_argument('-n', '--newconfig', action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
-    parser.add_argument('-p', '--printcommands', action='store_true', help='Add this flag for installCLI to print commands run during the build process.')
-    parser.add_argument('-v', '--updateversions', action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
+    parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation.")
+
+    config_group    = parser.add_argument_group('configuration options')
+    build_group     = parser.add_argument_group('build options')
+    debug_group     = parser.add_argument_group('logging options')
+
+    config_group.add_argument('-i', '--installpath',      help='Define an override install location to use instead of the one read from INSTALL_CONFIG.')
+    config_group.add_argument('-c', '--customconfigure',  help='Use an external configuration directory. Note that it must have the same structure as the default one.')
+    config_group.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
+    config_group.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
+
+    build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
+    build_group.add_argument('-d', '--dependency',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
+    build_group.add_argument('-s', '--singlethread',     action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
+    build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
+    build_group.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.', type=int)
+    
+    debug_group.add_argument('-l', '--savelog',          action='store_true', help='Add this flag to save the build log to a file in the logs/ directory.')
+    debug_group.add_argument('-m', '--debugmessages',    action='store_true', help='Add this flag to enable printing verbose debug messages.')
+    debug_group.add_argument('-p', '--printcommands',    action='store_true', help='Add this flag to print bash/batch commands run by installSynApps.')
+
+    
     arguments = vars(parser.parse_args())
+
+    print_welcome_message()
+
+    # Two cases where build will not happen, creating new config, and updating versions.
     if arguments['newconfig']:
         create_new_install_config()
-        exit()
+        clean_exit()
     if arguments['customconfigure'] is not None:
         path_to_configure = arguments['customconfigure']
+        if arguments['updateversions']:
+            print('Updating module versions for configuration {}'.format(path_to_configure))
+            if not os.path.exists(os.path.join(path_to_configure, 'INSTALL_CONFIG')):
+                print("**INSTALL_CONFIG file not found in specified directory!**\nAborting...")
+                clean_exit()
+            if not WITH_PYGITHUB:
+                print("**PyGithub module required for version updates.**")
+                print("**Install with pip install pygithub**")
+                print("Exiting...")
+                clean_exit()
+            parser = IO.config_parser.ConfigParser(path_to_configure)
+            install_config, message = parser.parse_install_config(allow_illegal=True)
+            print('Please enter your github credentials.')
+            user = input('Username: ')
+            passwd = getpass.getpass()
+            sync_tags(user, passwd, install_config, path_to_configure)
+            print('Done.')
+            clean_exit()
+
     elif arguments['updateversions']:
         print('ERROR - Update versions flag selected but no configure directory given.')
         print('Rerun with the -c flag')
         print('Aborting...')
-        exit()
+        clean_exit()
 
     return path_to_configure, arguments['installpath'], arguments
 
 
-# ----------------- Run the script ------------------------
+# ----------------- Run the build script ------------------------
 
 path_to_configure, force_install_path, args = parse_user_input()
 path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
 single_thread   = args['singlethread']
 dep             = args['dependency']
-print_commands  = args['printcommands']
-update_versions = args['updateversions']
+save_log        = args['savelog']
+show_debug      = args['debugmessages']
+
+if args['printcommands']:
+    IO.logger.toggle_command_printing()
+
+# For a CLI client, we just pass the sys.stdout.write function for logging
+IO.logger.assign_write_function(sys.stdout.write)
+if save_log:
+    IO.logger.initialize_logger()
+
+
+if show_debug:
+    IO.logger.toggle_debug_logging()
+
 
 threads         = args['threads']
 if threads is None:
     threads = 0
 
-print_welcome_message()
-if update_versions:
-    print('Updating module versions for configuration {}'.format(path_to_configure))
-    if not WITH_PYGITHUB:
-        print("**PyGithub module required for version updates.**")
-        print("**Install with pip install pygithub**")
-        print("Exiting...")
-        exit()
-    parser = IO.config_parser.ConfigParser(path_to_configure)
-    install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
-    print('Please enter your github credentials.')
-    user = input('Username: ')
-    passwd = getpass.getpass()
-    sync_tags(user, passwd, install_config, path_to_configure)
-    print('Done.')
-    exit()
 
 print('Reading install configuration directory located at: {}...'.format(path_to_configure))
 print()
 
-
 # Parse base config file, make sure that it is valid - ask for user input until it is valid
 parser = IO.config_parser.ConfigParser(path_to_configure)
 install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
+
 if install_config is None:
     print('Error parsing Install Config... {}'.format(message))
-    exit()
+    clean_exit()
 elif message is not None:
     loc_ok = False
 else:
@@ -215,6 +252,8 @@ else:
                     install_config.support_path = module.abs_path
                 elif module.name == 'AREA_DETECTOR':
                     install_config.ad_path = module.abs_path
+                elif module.name == 'MOTOR':
+                    install_config.motor_path = module.abs_path
             loc_ok = False
         else:
             loc_ok = True
@@ -264,7 +303,7 @@ if not status:
     print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
     print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
     print("Critical dependancy error, abort.")
-    exit()
+    clean_exit()
 
 
 # Ask useer to proceed
@@ -288,13 +327,13 @@ else:
     if clone == "y":
         print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
         print("----------------------------------------------")
-        unsuccessful = cloner.clone_and_checkout(show_commands=print_commands)
+        unsuccessful = cloner.clone_and_checkout()
         if len(unsuccessful) > 0:
             for module in unsuccessful:
                 print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
-                if module.name == "EPICS_BASE" or module.rel_path.startswith("$(SUPPORT)") or module.name == "ADSUPPORT" or module.name == "ADCORE":
+                if module.name in builder.critical_modules:
                     print("Critical clone error... abort.")
-                    exit()
+                    clean_exit()
             print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
 
     print("----------------------------------------------")
@@ -307,9 +346,15 @@ else:
     if update == "y":
         print("Updating all RELEASE and configuration files...")
         updater.run_update_config()
-        dep_errors = updater.perform_dependency_valid_check(print_info=print_commands)
-        for dep_error in dep_errors:
-            print(dep_error)
+
+
+    dep_errors = updater.perform_dependency_valid_check()
+    for dep_error in dep_errors:
+        print(dep_error)
+
+    # Here the update driver will reorder build to make sure all modules are being built after their dependencies.
+    print('Reordering module build order to account for intra-module dependencies...')
+    updater.perform_fix_out_of_order_dependencies()
 
     print("----------------------------------------------")
     print("Ready to build EPICS base, support and areaDetector...")
@@ -323,9 +368,13 @@ else:
     if d == "y":
         print('Acquiring dependencies through dependency script...')
         if platform == 'win32':
-            builder.acquire_dependecies("{}/dependencyInstall.bat".format(path_to_configure))
+            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
         else:
-            builder.acquire_dependecies("{}/dependencyInstall.sh".format(path_to_configure))
+            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
+        if not os.path.exists(dep_script_path):
+            print('Could not find script at {}, skipping...'.format(dep_script_path))
+        else:
+            builder.acquire_dependecies(dep_script_path)
 
     if not yes:
         # Inform user of number of CPU cores to use and prompt to build
@@ -344,68 +393,33 @@ else:
     if build == "y":
         print("Starting build...")
         # Build all
-        #ret, message, failed_list = builder.build_all()
-        message = ""
-        ret = builder.build_base(print_commands=print_commands)
-        if ret == 0:
-            builder.make_support_releases_consistent(print_commands=print_commands)
-            for module in install_config.get_module_list():
-                if module.build == 'YES':
-                    status, built = builder.build_support_module(module, print_commands=print_commands)
-                    if built:
-                        if status != 0:
-                            print('Failed to build support module {}\n'.format(module.name))
-            ret_support = builder.build_ad_support(print_commands=print_commands)
-            ret_core = builder.build_ad_core(print_commands=print_commands)
-            if ret_core != 0 or ret_support != 0:
-                ret = -1
-                message = "Error ADCORE / ADSUPPORT"
-        else:
-            message = "EPICS_BASE"
+        ret, failed_list = builder.build_all()
 
-        if ret < 0:
-            print("**ERROR - Build failed - {}**".format(message))
-            print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
-            print('**Critical build error - abort...**')
-            exit()
-
-        failed_list = []
-        for module in install_config.get_module_list():
-            if module.build == 'YES':
-                # Process any custom builds now
-                if module.custom_build_script_path is not None:
-                    print('Detected custom build script for module {}\n'.format(module.name))
-                    out = builder.build_via_custom_script(module)
-                    print('Custom build script for {} exited with code {}\n'.format(module.name, out))
+        if ret != 0:
+            for failed in failed_list:
+                print('Module {} failed to build, will not package'.format(failed))
+                if failed in builder.critical_modules:
+                    print("**ERROR - Build failed - {}**".format(message))
+                    print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
+                    print('**Critical build error - abort...**')
+                    clean_exit()
                 else:
-                    # Also build any areaDetector plugins/drivers
-                    status, was_ad = builder.build_ad_module(module, print_commands=print_commands)
-                    if was_ad and status == 0:
-                        print("Built AD module {}\n".format(module.name))
-                    elif was_ad and status != 0:
-                        print("Failed to build AD module {}\n".format(module.name))
-                        failed_list.append(module)
-
-        if len(failed_list) > 0:
-            for admodule in failed_list:
-                print("AD Module {} failed to build, will not package.".format(admodule.name))
-                # Don't package modules that fail to build
-                for module in packager.install_config.get_module_list():
-                    if module.name == admodule.name:
-                        module.package = "NO"
-            print("Check for missing dependencies, and if INSTALL_CONFIG is valid.")
+                    install_config.get_module_by_name(failed).package = "NO"
 
 
         print("----------------------------------------------")
         print("Autogenerating scripts and README file...")
         autogenerator.autogenerate_all()
         print("Done.")
+        if ret == 0:
+            print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
+        else:
+            print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
 
     else:
-        print("Build aborted... Exiting.")
-        exit()
+        print("Build cancelled...\nDone.")
+        clean_exit()
 
-    print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
 
 print()
 if not yes:
@@ -414,14 +428,26 @@ else:
     create_tarball = 'y'
 if create_tarball == 'y':
     output_filename = packager.create_bundle_name()
-    print('Tarring...')
-    ret = packager.create_package(output_filename)
-    if ret >= 0:
-        print('Done. Wrote bundle to {}'.format(packager.output_location))
-        print('Name of bundle: {}.tgz'.format(output_filename))
-        print('Tarring took {} seconds'.format(ret))
-    else:
+    ret = packager.create_package(output_filename, flat_format=args['flatbinaries'])
+    if ret != 0:
         print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
+        clean_exit()
+    else:
+        print('Bundle generated at: {}'.format(output_filename))
+
+print()
+if not yes:
+    create_opi_dir = input('Whould you like to create opi_dir now? (y/n) >')
+else:
+    create_opi_dir = 'y'
+if create_opi_dir == 'y':
+    ret = packager.create_opi_folder(install_config.install_location)
+    if ret != 0:
+        print('ERROR - Failed to create opi bundle.')
+        clean_exit()
+    else:
+        print('OPI screen tarball generated.')
 
 print('Done.')
+clean_exit()
 
