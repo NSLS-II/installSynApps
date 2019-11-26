@@ -1,8 +1,6 @@
 """Class responsible for packaging compiled binaries based on install config
 """
 
-__author__      = "Jakub Wlodek"
-
 # imports
 import os
 import shutil
@@ -325,23 +323,33 @@ class Packager:
             0 if suceeded, nonzero otherwise
         """
 
-        opi_dir = str(self.output_location + '/ad_opis')
+        opi_base_dir = os.path.join(self.output_location, '__opis_temp__')
+        opi_dir = os.path.join(opi_base_dir, 'opis')
         try:
+            os.mkdir(opi_base_dir)
             os.mkdir(opi_dir)
         except OSError:
-            print('Error creating ' + opi_dir + ' directory', )
+            LOG.write('Error creating ' + opi_dir + ' directory', )
 
         for (root, dirs, files) in os.walk(epics_dir, topdown=True):
             for name in files:
                 if '.opi' in name and 'autoconvert' in root:
-                    file_name = root+ '/'+ name
+                    file_name = os.path.join(root, name)
                     try:
                         shutil.copy(file_name, opi_dir)
                     except OSError:
-                        print("Can't copy " + file_name + ' to ' + opi_dir)
-                        sys.exit(1)
-        #opis_bundle_name = self.create_bundle_name('opis.tgz')
-        out = subprocess.call(['tar', 'czf', os.path.join(self.output_location, 'opis.tgz'), '-C', self.output_location, '.'])
+                        LOG.debug("Can't copy {} to {}".format(file_name, opi_dir))
+
+        opi_tarball_basename = 'opis_{}'.format(self.install_config.get_core_version())
+        opi_tarball = opi_tarball_basename
+        counter = 1
+        while os.path.exists(os.path.join(self.output_location, opi_tarball + '.tgz')):
+            opi_tarball = opi_tarball_basename + '_({})'.format(counter)
+            counter = counter + 1
+
+        out = subprocess.call(['tar', 'czf', opi_tarball + '.tgz', '-C', opi_base_dir, '.'])
+        shutil.rmtree(opi_base_dir)
+        os.rename(opi_tarball + '.tgz', os.path.join(self.output_location, opi_tarball + '.tgz'))
         return out
 
 

@@ -1,7 +1,8 @@
 """Class that is responsible for writing Install Configurations
+
+Converts datamodel objects back into text files
 """
 
-__author__      = "Jakub Wlodek"
 
 import datetime
 import os

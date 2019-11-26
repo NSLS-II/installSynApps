@@ -1,10 +1,11 @@
-#
-# A class representing an install configuration.
-# This will potentially allow for multiple install configurations in
-# the future.
-#
-# Author: Jakub Wlodek
-#
+"""A file containing representations of install configurations.
+
+The core Data representation for installSynApps. An InstallConfiguration object
+is parsed from a configuration, and is then used throughout the build process.
+
+InjectorFile objects are used for representing text that need to be injected
+into configuration files prior to builds.
+"""
 
 
 import os
@@ -337,6 +338,14 @@ class InstallConfiguration:
 
 
     def get_module_names_list(self):
+        """Function that gets list of modules being built
+
+        Returns
+        -------
+        list of str
+            list of module names that are set to build
+        """
+
         out = []
         for module in self.modules:
             if module.build == 'YES':
@@ -349,6 +358,8 @@ class InjectorFile:
 
     Injector file classes are used to represent data that needs to be appended to target files 
     at build time. Used to add to commonPlugins, commonPlugin_settings, etc.
+
+    TODO: This class can probably be abstracted into a simpler data structure (since its used as a struct anyway)
 
     Attributes
     ----------

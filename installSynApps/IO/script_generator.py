@@ -1,5 +1,4 @@
-"""
-Class responsible for generating bash build scripts once the top level scripts are run
+"""Module responsible for generating bash build scripts once the top level scripts are run
 """
 
 

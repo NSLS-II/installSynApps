@@ -37,6 +37,7 @@ import os
 import subprocess
 import argparse
 import getpass
+import sys
 from sys import platform
 
 # InstallSynAppsModules
@@ -402,7 +403,7 @@ if create_tarball == 'y':
 
 print()
 if not yes:
-    create_opi_dir = input('Whould you like to create opi_dir now? (y/n) >')
+    create_opi_dir = input('Whould you like to create opi_dir now? (y/n) > ')
 else:
     create_opi_dir = 'y'
 if create_opi_dir == 'y':

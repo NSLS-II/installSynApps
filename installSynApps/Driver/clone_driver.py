@@ -1,9 +1,8 @@
-#
-# Driver class for cloning all of the install modules
-#
-# Author: Jakub Wlodek
-#
+"""Driver class for cloning all of the install modules
 
+The clone driver uses git, wget, tar and zip to download all modules specified in install configuration
+to the local machine.
+"""
 
 import os
 from subprocess import Popen, PIPE
@@ -14,9 +13,7 @@ import installSynApps.DataModel.install_module as IM
 import installSynApps.IO.logger as LOG
 
 class CloneDriver:
-    """
-    Class responsible for cloning and checking out all of the modules described in a
-    given InstallConfiguration
+    """Class responsible for cloning and checking out all of the modules described in a given InstallConfiguration
 
     Attributes
     ----------
@@ -45,10 +42,7 @@ class CloneDriver:
 
 
     def __init__(self, install_config):
-        """
-        Constructor for the CloneDriver class
-
-        Contains lists of modules that require some special treatment when cloning
+        """Constructor for the CloneDriver class
         """
 
         self.recursive_modules = ["EPICS_BASE"]
@@ -58,8 +52,7 @@ class CloneDriver:
 
 
     def clone_module(self, module, recursive = False):
-        """
-        Function responsible for cloning each module into the appropriate location
+        """Function responsible for cloning each module into the appropriate location
 
         First checks if the module uses git or a download, and whether it needs to be recursive
         then, uses the information in the module object along with subprocess commands to clone the module.
@@ -123,8 +116,7 @@ class CloneDriver:
 
 
     def checkout_module(self, module):
-        """
-        Function responsible for checking out selected tagged versions of modules.
+        """Function responsible for checking out selected tagged versions of modules.
 
         Parameters
         ----------
@@ -159,8 +151,7 @@ class CloneDriver:
 
 
     def update_submodule(self, module, submodule_name):
-        """
-        Function that updates submodules given that the input module is in the self.submodule_list array
+        """Function that updates submodules given that the input module is in the self.submodule_list array
 
         Parameters
         ----------
@@ -194,7 +185,8 @@ class CloneDriver:
 
 
     def cleanup_modules(self):
-        """Function responsible for cleaning up directories that were not selected to clone"""
+        """Function responsible for cleaning up directories that were not selected to clone
+        """
 
         if self.install_config != None and isinstance(self.install_config, IC.InstallConfiguration):
             for module in self.install_config.modules:

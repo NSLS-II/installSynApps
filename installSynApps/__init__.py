@@ -1,3 +1,8 @@
+"""A python module that helps in downloading, building, and packaging EPICS, synApps and areaDetector.
+
+installSynApps has two primary clients, installCLI, and installGUI, which allow for different ways to 
+clone build and package specified modules.
+"""
 
 import sys
 from sys import platform
@@ -7,6 +12,8 @@ if platform == 'win32':
     OS_class = 'windows-x64'
 else:
     try:
+        # External package used to identify linux distribution version. Note that this adds external
+        # dependancy, but it is required because the platform.linuxdistro() function is being deprecated
         import distro
         v = distro.linux_distribution(full_distribution_name=False)
         OS_class = '{}_{}'.format(v[0], v[1])
@@ -14,7 +21,10 @@ else:
         OS_class='linux'
 
 
+# Because EPICS versioning is not as standardized as it should be, certain modules cannot be properly auto updated.
+# Ex. Calc version R3-7-3 is most recent, but R5-* exists?
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
+
 
 # pygithub for github autosync tags integration.
 WITH_PYGITHUB=True

@@ -4,8 +4,6 @@ Includes functions for building modules, updating releases, setting maximum core
 acquiring and checking dependencies.
 """
 
-__author__   = 'Jakub Wlodek'
-
 import os
 from subprocess import Popen, PIPE, STDOUT
 import subprocess

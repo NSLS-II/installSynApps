@@ -1,9 +1,8 @@
-#
-# Class responsible for driving updates to config files
-#
-# Author: Jakub Wlodek
-#
+"""Class responsible for driving updates to config files
 
+For a better understanding of how the update_config_driver works, it may be worthwhile
+to run an installSynApps client with debug message printing enabled.
+"""
 
 import os
 import re
@@ -14,8 +13,7 @@ import installSynApps.IO.logger as LOG
 
 
 class UpdateConfigDriver:
-    """
-    Class that is used to drive the updating of configuration files
+    """Class that is used to drive the updating of configuration files
 
     Attributes
     ----------
@@ -66,7 +64,8 @@ class UpdateConfigDriver:
 
 
     def __init__(self, path_to_configure, install_config):
-        """ Constructor for UpdateConfigDriver """
+        """Constructor for UpdateConfigDriver
+        """
 
         self.install_config = install_config
         self.path_to_configure = path_to_configure
@@ -86,7 +85,7 @@ class UpdateConfigDriver:
         
     
     def get_macros_from_install_config(self):
-        """ Retrieves a list of name-path pairs from install config modules.
+        """Retrieves a list of name-path pairs from install config modules.
 
         The name-path pairs are used for updating areaDetector configuration files.
 
@@ -140,8 +139,8 @@ class UpdateConfigDriver:
 
         This function is used on 3 occasions. 
         * To update areaDetector/configure/* files. This is done with indclude_ad and force_uncomment as True, and build_flags_only as false
-        * To update the support/configure/RELEASE file. This is done with include_ad=False, force_uncomment=True, single_file = True
-        * To update module/configure directories. In this case, build_flags_only = True and force_uncomment = True
+        * To update the support/configure/RELEASE file. This is done with include_ad=False, force_uncomment=True, single_file=True
+        * To update module/configure directories. In this case, build_flags_only=True and force_uncomment=True
         
         Parameters
         ----------

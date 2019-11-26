@@ -1,8 +1,8 @@
-#
-# Class that parses the CONFIG files
-#
-# Author: Jakub Wlodek
-#
+"""Class that parses the CONFIG files
+
+The purpose of this class is given an install configuration path as input, to output
+DataModel objects representing the configuration.
+"""
 
 
 import os
@@ -14,8 +14,7 @@ from installSynApps.IO import logger as LOG
 
 
 class ConfigParser:
-    """
-    Class responsible for parsing the INSTALL_CONFIG file into an InstallConfguration object
+    """Class responsible for parsing the INSTALL_CONFIG file into an InstallConfguration object
 
     Attributes
     ----------
@@ -331,6 +330,11 @@ class ConfigParser:
 
     def parse_custom_build_scripts(self, install_config):
         """Function that checks for custom build scripts
+
+        Parameters
+        ----------
+        install_config : InstallConfiguration
+            Checks for custom build scripts for install modules
         """
 
         # make sure the build script path is absolute

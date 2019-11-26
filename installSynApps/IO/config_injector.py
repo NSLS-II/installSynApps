@@ -1,8 +1,9 @@
-"""
-Class responsible for injecting settings into configuration files
-"""
+"""Class responsible for injecting settings into configuration files
 
-__author__      = "Jakub Wlodek"
+Does most of the heavy lifting for the update_config_driver.
+The reason this module was split out was because it does the IO operations
+for the update_config_driver.
+"""
 
 import os
 import re
@@ -10,8 +11,7 @@ import installSynApps.DataModel.install_config as IC
 from installSynApps.IO import logger as LOG
 
 class ConfigInjector:
-    """
-    Class that is responsible for injecting configuration information and replaces macros.
+    """Class that is responsible for injecting configuration information and replaces macros.
 
     Attributes
     ----------
@@ -34,15 +34,15 @@ class ConfigInjector:
 
 
     def __init__(self, install_config):
-        """Constructor for ConfigInjector"""
+        """Constructor for ConfigInjector
+        """
 
         self.install_config = install_config
         self.ad_modules = ["ADCORE", "AREA_DETECTOR", "ADSUPPORT"]
 
 
     def inject_to_file(self, injector_file):
-        """
-        Function that injects contents of specified file into target
+        """Function that injects contents of specified file into target
 
         First, convert to absolute path given the install config. Then open it in append mode, then
         write all uncommented lines in the injector file into the target, and then close both
@@ -78,8 +78,7 @@ class ConfigInjector:
 
 
     def update_macros_dir(self, macro_replace_list, target_dir, force_override_comments=False):
-        """
-        Function that updates the macros for all files in a target location, given a list of macro-value pairs
+        """Function that updates the macros for all files in a target location, given a list of macro-value pairs
 
         Parameters
         ----------
@@ -97,8 +96,7 @@ class ConfigInjector:
 
 
     def update_macros_file(self, macro_replace_list, target_dir, target_filename, comment_unsupported = False, with_ad = True, force=False):
-        """
-        Function that updates the macro values in a single configure file
+        """Function that updates the macro values in a single configure file
 
         Parameters
         ----------
