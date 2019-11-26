@@ -6,6 +6,7 @@ __author__      = "Jakub Wlodek"
 # imports
 import os
 import shutil
+import sys
 from sys import platform
 import datetime
 import time
@@ -22,8 +23,10 @@ except ImportError:
 
 
 # Only depends on install config
+import installSynApps
 import installSynApps.DataModel.install_config as IC
 import installSynApps.IO.logger as LOG
+import installSynApps.IO.config_writer as Writer
 
 
 class Packager:
@@ -166,7 +169,7 @@ class Packager:
             LOG.print_command('cd {}'.format(current_loc))
             os.chdir(current_loc)
             LOG.debug('Detected version git tag {} for EPICS_BASE'.format(out.decode("utf-8").strip()))
-            readme_fp.write('base : {}'.format(out.decode("utf-8")))
+            readme_fp.write('{:<16}- {}'.format('base', out.decode("utf-8")))
         except subprocess.CalledProcessError:
             pass
 
@@ -230,12 +233,80 @@ class Packager:
                 LOG.print_command('cd {}'.format(current_loc))
                 os.chdir(current_loc)
                 LOG.debug('Detected git tag/version: {} for module {}'.format(out.decode("utf-8").strip(), module.name))
-                readme_fp.write('{} : {}'.format(module_name, out.decode("utf-8")))
+                readme_fp.write('{:<16}- {}'.format(module_name, out.decode("utf-8")))
             else:
                 LOG.debug('Detected version {} for module {}'.format(module.version, module.name))
-                readme_fp.write('{} : {}'.format(module_name, module.version))
+                readme_fp.write('{:<16}- {}\n'.format(module_name, module.version))
         except subprocess.CalledProcessError:
             pass
+
+
+    def write_readme_heading(self, text, readme_fp):
+        """Simple helper function used to write headings for README file sections
+        """
+
+        readme_fp.write('{}\n#{}#\n# {:<61}#\n#{}#\n{}\n\n'.format('#' * 64, ' '* 62, text, ' '* 62, '#' * 64))
+
+
+    def find_isa_version(self):
+        """Function that attempts to get the version of installSynApps used.
+
+        Returns
+        -------
+        str
+            The version string for installSynApps. Either hardcoded version, or git tag description
+        str
+            None if git status not available, otherwise hash of current installSynApps commit.
+        """
+
+        isa_version = installSynApps.__version__
+        commit_hash = None
+
+        try:
+            LOG.print_command('git describe --tags')
+            out = subprocess.check_output(['git', 'describe', '--tags'])
+            isa_version = out.decode('utf-8').strip()
+            LOG.print_command('git rev-parse HEAD')
+            out = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+            commit_hash = out.decode('utf-8')
+        except:
+            LOG.debug('Could not find git information for installSynApps versions.')
+
+        return isa_version, commit_hash
+
+
+    def grab_configuration_used(self, top_location, readme_fp):
+        """Function that includes the install configuration into the bundle for reuse.
+        
+        Parameters
+        ----------
+        top : str
+            resulting location - __temp__
+        """
+
+        try:
+            LOG.write('Copying build configuration into bundle.')
+            writer = Writer.ConfigWriter(self.install_config)
+            build_config_dir = os.path.join(top_location, 'build-config')
+            writer.write_install_config(filepath=build_config_dir)
+            isa_version, isa_commit_hash = self.find_isa_version()
+            self.write_readme_heading('Build environment version information', readme_fp)
+            readme_fp.write('installSynApps Version: {}\n\n'.format(isa_version))
+            if isa_commit_hash is not None:
+                readme_fp.write('To grab this version:\n\n\tgit clone https://github.com/epicsNSLS2-deploy/installSynApps\n')
+                readme_fp.write('\tgit checkout {}\n'.format(isa_commit_hash))
+            else:
+                readme_fp.write('To grab this version use:\n\n\tgit clone https://github.com/epicsNSLS2-deploy/installSynApps\n')
+                readme_fp.write('\tgit checkout -q {}\n'.format(isa_version))
+            readme_fp.write('To regenerate sources for this bundle, grab installSynApps as described above, and use:\n\n')
+            readme_fp.write('\t./installCLI.py -c BUILD_CONFIG -p\n\n')
+            readme_fp.write('where BUILD_CONFIG is the path to the build-config directory in this bundle.\n')
+            readme_fp.write('Make sure to specify an install location as well\n{}\n\n'.format('-' * 64))
+            readme_fp.write('{:<20}{}\n'.format('Python 3 Version:',sys.version.split()[0]))
+            readme_fp.write('{:<20}{}\n'.format('OS Class:', self.OS))
+            readme_fp.write('{:<20}{}\n'.format('Build Date:', datetime.datetime.now()))
+        except:
+            LOG.debug('Failed to copy install configuration into bundle.')
 
 
     def create_tarball(self, filename, flat_format):
@@ -258,11 +329,14 @@ class Packager:
             shutil.rmtree('__temp__')
         os.mkdir('__temp__')
         readme_fp = open(self.output_location + '/README_{}.txt'.format(filename), 'w')
-        readme_fp.write('{}\n\n'.format(filename))
-        readme_fp.write('Versions used in this deployment:\n')
-        readme_fp.write('[folder name] : [git tag]\n\n')
+        self.write_readme_heading('Bundle - {}'.format(filename), readme_fp)
+        isa_version, commit_hash = self.find_isa_version()
+        readme_fp.write('Bundle generated using installSynApps version: {}\n'.format(isa_version))
+        readme_fp.write('See below for detailed build tool version information.\n')
+        readme_fp.write('Module versions used in this deployment:\n')
+        readme_fp.write('[folder name] - [git tag]\n\n')
 
-        self.grab_base(     '__temp__', readme_fp)
+        self.grab_base('__temp__', readme_fp)
 
         support_top = '__temp__'
         if not flat_format:
@@ -280,9 +354,11 @@ class Packager:
                 else:
                     self.grab_module(support_top, module, readme_fp)
 
+        readme_fp.write('\n\n')
+        self.grab_configuration_used('__temp__', readme_fp)
         readme_fp.close()
         LOG.debug('Generating README file with module versions...')
-        shutil.copy(self.output_location + '/README_{}.txt'.format(filename), '__temp__/README_{}.txt'.format(filename))
+        shutil.copy(os.path.join(self.output_location, 'README_{}.txt'.format(filename)), os.path.join('__temp__', 'README_{}.txt'.format(filename)))
 
         LOG.write('Tarring...')
         out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', '__temp__', '.'])

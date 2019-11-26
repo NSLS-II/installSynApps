@@ -139,19 +139,27 @@ def parse_user_input():
     path_to_configure = "configure"
 
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation.")
-    parser.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
-    parser.add_argument('-d', '--dependency',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
-    parser.add_argument('-s', '--singlethread',     action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
-    parser.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
-    parser.add_argument('-l', '--savelog',          action='store_true', help='Add this flag to save the build log to a file in the logs/ directory.')
-    parser.add_argument('-m', '--debugmessages',    action='store_true', help='Add this flag to enable printing verbose debug messages.')
-    parser.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
-    parser.add_argument('-p', '--printcommands',    action='store_true', help='Add this flag to print bash/batch commands run by installSynApps.')
-    parser.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
 
-    parser.add_argument('-c', '--customconfigure',  help='Use an external configuration directory. Note that it must have the same structure as the default one.')
-    parser.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.')
-    parser.add_argument('-i', '--installpath',      help='Define an override install location to use instead of the one read from INSTALL_CONFIG.')
+    config_group    = parser.add_argument_group('configuration options')
+    build_group     = parser.add_argument_group('build options')
+    debug_group     = parser.add_argument_group('logging options')
+
+    config_group.add_argument('-i', '--installpath',      help='Define an override install location to use instead of the one read from INSTALL_CONFIG.')
+    config_group.add_argument('-c', '--customconfigure',  help='Use an external configuration directory. Note that it must have the same structure as the default one.')
+    config_group.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
+    config_group.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
+
+    build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
+    build_group.add_argument('-d', '--dependency',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
+    build_group.add_argument('-s', '--singlethread',     action='store_true', help='Flag that forces make to run on only one thread. Use this for low power devices.')
+    build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
+    build_group.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.', type=int)
+    
+    debug_group.add_argument('-l', '--savelog',          action='store_true', help='Add this flag to save the build log to a file in the logs/ directory.')
+    debug_group.add_argument('-m', '--debugmessages',    action='store_true', help='Add this flag to enable printing verbose debug messages.')
+    debug_group.add_argument('-p', '--printcommands',    action='store_true', help='Add this flag to print bash/batch commands run by installSynApps.')
+
+    
     arguments = vars(parser.parse_args())
 
     print_welcome_message()
@@ -164,13 +172,16 @@ def parse_user_input():
         path_to_configure = arguments['customconfigure']
         if arguments['updateversions']:
             print('Updating module versions for configuration {}'.format(path_to_configure))
+            if not os.path.exists(os.path.join(path_to_configure, 'INSTALL_CONFIG')):
+                print("**INSTALL_CONFIG file not found in specified directory!**\nAborting...")
+                clean_exit()
             if not WITH_PYGITHUB:
                 print("**PyGithub module required for version updates.**")
                 print("**Install with pip install pygithub**")
                 print("Exiting...")
                 clean_exit()
             parser = IO.config_parser.ConfigParser(path_to_configure)
-            install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
+            install_config, message = parser.parse_install_config(allow_illegal=True)
             print('Please enter your github credentials.')
             user = input('Username: ')
             passwd = getpass.getpass()
@@ -357,9 +368,13 @@ else:
     if d == "y":
         print('Acquiring dependencies through dependency script...')
         if platform == 'win32':
-            builder.acquire_dependecies("{}/dependencyInstall.bat".format(path_to_configure))
+            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
         else:
-            builder.acquire_dependecies("{}/dependencyInstall.sh".format(path_to_configure))
+            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
+        if not os.path.exists(dep_script_path):
+            print('Could not find script at {}, skipping...'.format(dep_script_path))
+        else:
+            builder.acquire_dependecies(dep_script_path)
 
     if not yes:
         # Inform user of number of CPU cores to use and prompt to build

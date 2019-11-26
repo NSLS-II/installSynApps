@@ -6,6 +6,7 @@ __author__      = "Jakub Wlodek"
 import datetime
 import os
 import errno
+import shutil
 from installSynApps.DataModel import *
 from installSynApps.IO import logger as LOG
 
@@ -69,6 +70,28 @@ class ConfigWriter:
         new_build_flag.close()
 
 
+    def write_custom_build_scripts(self, filepath):
+        """Helper Function for writing custom build scripts of modules
+
+        Parameters
+        ----------
+        filepath : str
+            Path into which we wish to save configuration
+        """
+
+        build_script_out = os.path.join(filepath, 'customBuildScripts')
+        for module in self.install_config.get_module_list():
+            old_script = module.custom_build_script_path
+            if old_script is not None:
+                if os.path.exists(old_script):
+                    LOG.debug('Copying module custom build script: {}'.format(old_script))
+                    try:
+                        shutil.copyfile(old_script, os.path.join(build_script_out, os.path.basename(old_script)))
+                    except:
+                        LOG.debug('Encountered error copying: {}'.format(old_script))
+                else:
+                    LOG.debug('Could not find build script at: {}'.format(old_script))
+
 
     def write_install_config(self, filepath='addtlConfDirs/config{}'.format(datetime.date.today())):
         """Function that saves loaded install configuration
@@ -109,13 +132,17 @@ class ConfigWriter:
             os.mkdir(os.path.join(filepath, 'macroFiles'))
             os.mkdir(os.path.join(filepath, 'customBuildScripts'))
         except:
-            pass
+            LOG.write('Failed to make configuration directories!')
+            return False, 'Unknown Error'
 
         LOG.debug('Writing injector files.')
         self.write_injector_files(filepath)
 
         LOG.debug('Writing build flags.')
         self.write_build_flags(filepath)
+
+        LOG.debug('Writing custom build scripts.')
+        self.write_custom_build_scripts(filepath)
 
         LOG.debug('Writing INSTALL_CONFIG file.')
         new_install_config = open(os.path.join(filepath, "INSTALL_CONFIG"), "w+")
