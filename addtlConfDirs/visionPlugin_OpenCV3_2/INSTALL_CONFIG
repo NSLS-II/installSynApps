@@ -1,16 +1,16 @@
 #
-# INSTALL_CONFIG file saved by installSynApps on 2019-11-21 15:12:31.723508
+# INSTALL_CONFIG file saved by installSynApps on 2019-11-26 15:32:10.606995
 #
 
-
 INSTALL=/epics
+
 
 #MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE    PACKAGE_MODULE
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE       R7.0.3.1             $(INSTALL)/base                          epics-base               YES              YES              YES
+EPICS_BASE       R7.0.3               $(INSTALL)/base                          epics-base               YES              YES              YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
@@ -19,55 +19,50 @@ CONFIGURE        R6-1                 $(SUPPORT)/configure                     c
 DOCUMENTATION    R6-1                 $(SUPPORT)/documentation                 documentation            YES              YES              NO
 UTILS            R6-1                 $(SUPPORT)/utils                         utils                    YES              YES              NO
 
-GIT_URL=https://github.com/epics-modules/
+GIT_URL=https://github.com/paulscherrerinstitute/
 
-IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              YES
-
-WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
-
-SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES              YES
+STREAM           stream_2_7_14        $(SUPPORT)/stream                        StreamDevice             YES              YES              NO
 
 GIT_URL=https://github.com/epics-modules/
 
+ASYN             R4-36                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
 AUTOSAVE         R5-10                $(SUPPORT)/autosave                      autosave                 YES              YES              YES
 ALIVE            R1-1-1               $(SUPPORT)/alive                         alive                    NO               NO               NO
-ASYN             R4-37                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
-SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES              YES
-STD              R3-6                 $(SUPPORT)/std                           std                      YES              YES              YES
+BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES              YES
+CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES              YES
+CAMAC            R2-7                 $(SUPPORT)/camac                         camac                    YES              YES              YES
 CAPUTRECORDER    R3-1                 $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES              NO
 DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  YES              YES              NO
-IP               R2-20                $(SUPPORT)/ip                            ip                       NO               NO               NO
+DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 YES              YES              NO
 DEVLIB2          2.10                 $(SUPPORT)/devlib2                       devlib2                  NO               NO               NO
 DXP              R6-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
 DXPSITORO        R1-2                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
 DEVIOCSTATS      3.1.16               $(SUPPORT)/iocStats                      iocStats                 YES              YES              YES
-CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES              YES
-
-GIT_URL=https://github.com/paulscherrerinstitute/
-
-STREAM           2.8.10               $(SUPPORT)/stream                        StreamDevice             YES              YES              NO
-
-GIT_URL=https://github.com/epics-modules/
-
+IP               R2-20                $(SUPPORT)/ip                            ip                       NO               NO               NO
+IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              YES
 IP330            R2-9                 $(SUPPORT)/ip330                         ip330                    NO               NO               NO
 IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 YES              YES              YES
 LOVE             R3_13_base           $(SUPPORT)/love                          love                     NO               NO               NO
-LUA              R2-1                 $(SUPPORT)/lua                           lua                      NO               NO               NO
-BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES              YES
+LUA              R2-0                 $(SUPPORT)/lua                           lua                      NO               NO               NO
+MCA              R7-8                 $(SUPPORT)/mca                           mca                      YES              YES              NO
 MEASCOMP         R2-4                 $(SUPPORT)/measComp                      measComp                 NO               NO               NO
 MODBUS           R3-0                 $(SUPPORT)/modbus                        modbus                   YES              YES              NO
 MOTOR            R7-1                 $(SUPPORT)/motor                         motor                    YES              YES              NO
 OPTICS           R2-13                $(SUPPORT)/optics                        optics                   NO               NO               NO
 SOFTGLUE         R2-8                 $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO               NO
-DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 YES              NO               NO
-CAMAC            R2-7                 $(SUPPORT)/camac                         camac                    YES              YES              YES
+SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES              YES
+STD              R3-6                 $(SUPPORT)/std                           std                      YES              YES              YES
 VAC              R1-9                 $(SUPPORT)/vac                           vac                      NO               NO               NO
 VME              R2-9                 $(SUPPORT)/vme                           vme                      NO               NO               NO
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO               NO
 XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 YES              NO               YES
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
-MCA              R7-8                 $(SUPPORT)/mca                           mca                      YES              YES              NO
+QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   YES              YES              YES
+
+WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
+
+SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES              YES
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
@@ -83,23 +78,19 @@ GALIL            V3-6                 $(SUPPORT)/galil                         G
 
 GIT_URL=https://github.com/areaDetector/
 
-AREA_DETECTOR    R3-8                 $(SUPPORT)/areaDetector                  areaDetector             YES              YES              NO
+AREA_DETECTOR    R3-7                 $(SUPPORT)/areaDetector                  areaDetector             YES              YES              NO
 ADSUPPORT        R1-9                 $(AREA_DETECTOR)/ADSupport               ADSupport                YES              YES              YES
+ADCORE           R3-7                 $(AREA_DETECTOR)/ADCore                  ADCore                   YES              YES              YES
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADCORE           master               $(AREA_DETECTOR)/ADCore                  ADCore                   YES              YES              YES
 ADCOMPVISION     master               $(AREA_DETECTOR)/ADCompVision            ADCompVision             YES              YES              YES
-ADPLUGINBAR      master               $(AREA_DETECTOR)/ADPluginBar             ADPluginBar              YES              YES              YES
+ADPLUGINBAR      R2-1                 $(AREA_DETECTOR)/ADPluginBar             ADPluginBar              YES              YES              YES
 ADPLUGINDMTX     master               $(AREA_DETECTOR)/ADPluginDmtx            ADPluginDmtx             YES              YES              YES
 
 GIT_URL=https://github.com/areaDetector/
 
 ADPLUGINEDGE     master               $(AREA_DETECTOR)/ADPluginEdge            ADPluginEdge             YES              YES              YES
-
-GIT_URL=https://github.com/epics-modules/
-
-QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   YES              YES              YES
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
@@ -113,11 +104,11 @@ ADPERKINELMER    master               $(AREA_DETECTOR)/ADPerkinElmer           A
 GIT_URL=https://github.com/areaDetector/
 
 ADPROSILICA      R2-5                 $(AREA_DETECTOR)/ADProsilica             ADProsilica              YES              YES              YES
-ADSIMDETECTOR    R2-10                $(AREA_DETECTOR)/ADSimDetector           ADSimDetector            YES              YES              YES
+ADSIMDETECTOR    R2-9                 $(AREA_DETECTOR)/ADSimDetector           ADSimDetector            YES              YES              YES
 ADPILATUS        R2-7                 $(AREA_DETECTOR)/ADPilatus               ADPilatus                YES              YES              YES
 ADMERLIN         master               $(AREA_DETECTOR)/ADMerlin                ADMerlin                 YES              YES              YES
 ADARAVIS         R3-0                 $(AREA_DETECTOR)/aravisGigE              aravisGigE               NO               NO               NO
-ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 ADEiger                  NO               NO               NO
+ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 ADEiger                  YES              NO               NO
 ADVIMBA          master               $(AREA_DETECTOR)/ADVimba                 ADVimba                  NO               NO               NO
 ADGENICAM        master               $(AREA_DETECTOR)/ADGenICam               ADGenICam                NO               NO               NO
 ADMMPAD          master               $(AREA_DETECTOR)/ADMMPAD                 ADMMPAD                  NO               NO               NO

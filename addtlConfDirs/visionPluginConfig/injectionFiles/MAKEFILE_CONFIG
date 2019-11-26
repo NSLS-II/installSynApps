@@ -1,4 +1,4 @@
-# Saved by installSynApps on 2019-10-08 12:33:31.118285
+# Saved by installSynApps on 2019-11-21 15:12:31.722838
 __TARGET_LOC__=$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile
 
 ifdef ADPLUGINDMTX

@@ -2,6 +2,23 @@
 
 <!--RELEASE START-->
 
+## R2-3 (12-November-2019)
+
+* Features Added
+    * Automatic dependency detection. Modules are now reordered prior to building to account for dependencies
+    * Improved logging. Dedicated module that gives for several degrees of granularity
+    * Ability to select between flat/non-flat binaries
+    * Ability to print bash/batch commands as they are printed
+
+* Bug Fixes/Improvements
+    * Greatly simplified build_driver module code.
+    * Simplified packager. Packager now pulls from module.version for wget modules
+    * Improved failure conditions. installSynApps should now better respond to non-critical errors.
+
+* Future Plans
+    * Improve documentation
+    * Integrate with database for install configuration storage.
+
 ## R2-2 (21-August-2019)
 
 * Features Added

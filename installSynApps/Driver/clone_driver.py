@@ -6,12 +6,12 @@
 
 
 import os
-import subprocess
+from subprocess import Popen, PIPE
 import shutil
 from sys import platform
 import installSynApps.DataModel.install_config as IC
 import installSynApps.DataModel.install_module as IM
-
+import installSynApps.IO.logger as LOG
 
 class CloneDriver:
     """
@@ -57,7 +57,7 @@ class CloneDriver:
         self.install_config = install_config
 
 
-    def clone_module(self, module, recursive = False, print_commands=False):
+    def clone_module(self, module, recursive = False):
         """
         Function responsible for cloning each module into the appropriate location
 
@@ -72,38 +72,48 @@ class CloneDriver:
             Flag that decides if git clone should be done recursively
         """
 
+        LOG.debug('Cloning module {}'.format(module.name))
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
                 ret = -1
                 if os.path.exists(module.abs_path):
                     shutil.rmtree(module.abs_path)
                 if not recursive and module.url_type == "GIT_URL":
-                    if print_commands:
-                        print('git clone {} {}'.format(module.url + module.repository, module.abs_path))
-                    ret = subprocess.call(["git", "clone", module.url + module.repository , module.abs_path])
+                    command = "git clone {} {}".format(module.url + module.repository, module.abs_path)
                 elif recursive and module.url_type == "GIT_URL":
-                    if print_commands:
-                        print('git clone --recursive {} {}'.format(module.url + module.repository, module.abs_path))
-                    ret = subprocess.call(["git", "clone", "--recursive", module.url + module.repository , module.abs_path])
+                    command = "git clone --recursive {} {}".format(module.url + module.repository, module.abs_path)
                 elif module.url_type == "WGET_URL":
                     if platform == "win32":
-                        if print_commands:
-                            print('wget --no-check-certificate -P {} {}'.format(module.abs_path, module.url + module.repository))
-                        ret = subprocess.call(["wget", "--no-check-certificate", "-P", module.abs_path, module.url + module.repository])
+                        command = "wget --no-check-certificate -P {} {}".format(module.abs_path, module.url + module.repository)
                     else:
-                        if print_commands:
-                            print('wget -P {} {}'.format(module.abs_path, module.url + module.repository))
-                        ret = subprocess.call(["wget", "-P", module.abs_path, module.url + module.repository])
+                        command = 'wget -P {} {}'.format(module.abs_path, module.url + module.repository)
 
+                LOG.print_command(command)
+                proc = Popen(command.split(' '))
+                proc.wait()
+                ret = proc.returncode
+                if ret == 0:
+                    LOG.write('Cloned module {} successfully.'.format(module.name))
+                else:
+                    LOG.write('Failed to clone module {}.'.format(module.name))
+                    return -1
+
+                if module.url_type == "WGET_URL":
+                    
                     if (module.repository.endswith(".tar.gz") or module.repository.endswith(".tgz")) and ret == 0:
-                        if print_commands:
-                            print('tar -xzf {} -C {} --strip-components=1'.format(module.abs_path + "/" + module.repository, module.abs_path))
-                        ret = subprocess.call(["tar", "-xzf", module.abs_path + "/" + module.repository, "-C", module.abs_path, "--strip-components=1"])
+                        command = "tar -xzf {} -C {} --strip-components=1".format(os.path.join(module.abs_path, module.repository), module.abs_path)
                     elif module.repository.endswith(".zip") and ret == 0:
-                        if print_commands:
-                            print('unzip {} -C {}'.format(module.abs_path + "/" + module.repository, module.abs_path))
-                        ret = subprocess.call(["unzip", module.abs_path + "/" + module.repository, "-C", module.abs_path])
-                
+                        command = "unzip {} -C {}".format(os.path.join(module.abs_path, module.repository), module.abs_path)
+                    
+                    LOG.print_command(command)
+                    proc = Popen(command.split(' '))
+                    proc.wait()
+                    ret = proc.returncode
+                    if ret == 0:
+                        LOG.write('Unpacked module {} successfully.'.format(module.name))
+                    else:
+                        LOG.write('Failed to unpack module {}.'.format(module.name))
+
                 if ret == 0:
                     return ret
 
@@ -112,7 +122,7 @@ class CloneDriver:
         return -3
 
 
-    def checkout_module(self, module, print_commands=False):
+    def checkout_module(self, module):
         """
         Function responsible for checking out selected tagged versions of modules.
 
@@ -127,26 +137,28 @@ class CloneDriver:
             -3 if input was not an InstallModule, -2 if the absolute path is not known, -1 if checkout fails, 0 if success
         """
 
+        ret = -1
+        LOG.debug('Checking out version for module {}'.format(module.name))
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
                 ret = 0
                 if module.version != "master" and module.url_type == "GIT_URL":
                     current_loc = os.getcwd()
                     os.chdir(module.abs_path)
-                    if print_commands:
-                        print('git checkout -q {}'.format(module.version))
-                    ret = subprocess.call(["git", "checkout", "-q", module.version])
+                    command = "git checkout -q {}".format(module.version)
+                    LOG.print_command(command)
+                    proc = Popen(command.split(' '))
+                    proc.wait()
+                    ret = proc.returncode
                     os.chdir(current_loc)
-
-                if ret == 0:
-                    return ret
-                
-                return -1
-            return -2
-        return -3
+                    if ret == 0:
+                        LOG.write('Checked out version {}'.format(module.version))
+                    else:
+                        LOG.write('Checkout of version {} failed for module {}.'.format(module.version, module.name))
+        return ret
 
 
-    def update_submodule(self, module, submodule_name, print_commands=False):
+    def update_submodule(self, module, submodule_name):
         """
         Function that updates submodules given that the input module is in the self.submodule_list array
 
@@ -158,15 +170,27 @@ class CloneDriver:
             name of submodule to update
         """
 
+        LOG.debug('Updating git submodules for {}'.format(module.name))
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
                 submodule_path = module.abs_path + "/" + submodule_name
                 if os.path.exists(submodule_path):
-                    if print_commands:
-                        print('git -C {} submodule init'.format(submodule_path))
-                        print('git -C {} submodule update'.format(submodule_path))
-                    subprocess.call(["git", "-C", submodule_path, "submodule", "init"])
-                    subprocess.call(["git", "-C", submodule_path, "submodule", "update"])
+                    LOG.print_command('git -C {} submodule init'.format(submodule_path))
+                    p1 = Popen(["git", "-C", submodule_path, "submodule", "init"])
+                    p1.wait()
+                    ret1 = p1.returncode
+                    if ret1 == 0:
+                        LOG.debug('Submodules initialized for module {}.'.format(module.name))
+                    else:
+                        LOG.debug('Failed to initialize submodules for module {}.'.format(module.name))
+                    LOG.print_command('git -C {} submodule update'.format(submodule_path))
+                    p2 = Popen(["git", "-C", submodule_path, "submodule", "update"])
+                    p2.wait()
+                    ret2 = p2.returncode
+                    if ret2 == 0:
+                        LOG.debug('Submodules updated for module {}.'.format(module.name))
+                    else:
+                        LOG.debug('Failed to update submodules for module {}.'.format(module.name))
 
 
     def cleanup_modules(self):
@@ -176,16 +200,16 @@ class CloneDriver:
             for module in self.install_config.modules:
                 if isinstance(module, IM.InstallModule):
                     if module.clone == "NO" and os.path.exists(module.abs_path):
+                        LOG.debug('Removing unused repo {}'.format(module.name))
                         shutil.rmtree(module.abs_path)
 
 
-    def clone_and_checkout(self, show_commands = False):
-        """
-        Top level function that clones and checks out all modules in the current install configuration
+    def clone_and_checkout(self):
+        """Top level function that clones and checks out all modules in the current install configuration.
 
         Returns
         -------
-        List of InstallModules
+        List of str
             List of all modules that failed to be correctly cloned and checked out
         """
 
@@ -195,18 +219,18 @@ class CloneDriver:
                 if module.clone == "YES":
                     ret = 0
                     if module.name in self.recursive_modules:
-                        ret = self.clone_module(module, recursive=True, print_commands=show_commands)
+                        ret = self.clone_module(module, recursive=True)
                     else:
-                        ret = self.clone_module(module, print_commands=show_commands)
+                        ret = self.clone_module(module)
                     if ret < 0:
-                        failed_modules.append(module)
+                        failed_modules.append(module.name)
                     else:
-                        ret = self.checkout_module(module, print_commands=show_commands)
+                        ret = self.checkout_module(module)
                         if ret < 0:
-                            failed_modules.append(module)
+                            failed_modules.append(module.name)
                         else:
                             if module.name in self.submodule_list:
-                                self.update_submodule(module, self.submodule_names[module.name], print_commands=show_commands)
+                                self.update_submodule(module, self.submodule_names[module.name])
             self.cleanup_modules()
 
             return failed_modules
