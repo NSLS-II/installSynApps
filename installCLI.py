@@ -294,7 +294,7 @@ else:
     if clone == "y":
         print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
         print("----------------------------------------------")
-        unsuccessful = cloner.clone_and_checkout(show_commands=print_commands)
+        unsuccessful = cloner.clone_and_checkout()
         if len(unsuccessful) > 0:
             for module in unsuccessful:
                 print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
@@ -314,7 +314,7 @@ else:
         print("Updating all RELEASE and configuration files...")
         updater.run_update_config()
         
-    dep_errors = updater.perform_dependency_valid_check(print_info=print_commands)
+    dep_errors = updater.perform_dependency_valid_check()
     for dep_error in dep_errors:
         print(dep_error)
 
