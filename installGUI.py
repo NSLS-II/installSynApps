@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 
-""" GUI class for the installSynApps module
+"""GUI class for the installSynApps module
 
 This GUI solution allows for much easier use of the installSynApps module 
 to clone, update, and build the EPICS and synApps software stack.
 """
-
-__author__      = "Jakub Wlodek"
-__copyright__   = "Copyright June 2019, Brookhaven Science Associates"
-__version__     = "R2-2"
-
 
 # Tkinter imports
 import tkinter as tk
@@ -38,6 +33,7 @@ import subprocess
 from sys import platform
 
 # installSynApps module imports
+import installSynApps
 import installSynApps.DataModel as DataModel
 import installSynApps.IO as IO
 import installSynApps.Driver as Driver
@@ -116,13 +112,26 @@ class InstallSynAppsGUI:
         frame = Frame(self.master)
         frame.pack()
 
-        # version and popups toggle
+        IO.logger.assign_write_function(self.writeToLog)
+
+        # core count, dependency install, and popups toggles
         self.showPopups = tk.BooleanVar()
         self.showPopups.set(False)
         self.installDep = tk.BooleanVar()
         self.installDep.set(False)
         self.singleCore = tk.BooleanVar()
         self.singleCore.set(False)
+
+        # Debug togges
+        self.showDebug = tk.BooleanVar()
+        self.showDebug.set(False)
+        self.showCommands = tk.BooleanVar()
+        self.showCommands.set(False)
+        self.generateLogFile = tk.BooleanVar()
+        self.generateLogFile.set(False)
+
+        self.binariesFlatToggle = tk.BooleanVar()
+        self.binariesFlatToggle.set(True)
 
         menubar = Menu(self.master)
 
@@ -158,6 +167,9 @@ class InstallSynAppsGUI:
         debugmenu.add_command(label='Clear Log',                command=self.resetLog)
         debugmenu.add_command(label='Recheck Dependancies',     command=self.recheckDeps)
         debugmenu.add_command(label='Print Path Information',   command=self.printPathInfo)
+        debugmenu.add_checkbutton(label='Show Debug Messages',  onvalue=True, offvalue=False, variable=self.showDebug)
+        debugmenu.add_checkbutton(label='Show Commands',        onvalue=True, offvalue=False, variable=self.showCommands)
+        debugmenu.add_checkbutton(label='Auto-Generate Log File',    onvalue=True, offvalue=False, variable=self.generateLogFile)
         menubar.add_cascade(label='Debug', menu=debugmenu)
 
         # Build Menu
@@ -178,6 +190,7 @@ class InstallSynAppsGUI:
         packagemenu.add_command(label='Package Modules',            command=lambda : self.initBuildProcess('package'))
         packagemenu.add_command(label='Copy and Unpack',            command=lambda : self.initBuildProcess('moveunpack'))
         packagemenu.add_command(label='Set Output Pacakge Name',    command=self.setOutputPackageName)
+        packagemenu.add_checkbutton(label='Toggle Flat Binaries',   onvalue=True, offvalue=False, variable=self.binariesFlatToggle)
         menubar.add_cascade(label='Package', menu=packagemenu)
 
         # InitIOCs Menu
@@ -200,10 +213,6 @@ class InstallSynAppsGUI:
         self.master.config(menu=menubar)
 
         self.msg = "Welcome to installSynApps!"
-
-        # Because EPICS versioning is not as standardized as it should be, certain modules cannot be properly auto updated.
-        # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
-        self.update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
         # title label
         self.topLabel       = Label(frame, text = self.msg, width = '25', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
@@ -258,7 +267,7 @@ class InstallSynAppsGUI:
                 self.install_loaded = True
             self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
 
-        self.metacontroller.metadata['isa_version'] = __version__
+        self.metacontroller.metadata['isa_version'] = installSynApps.__version__
         self.metacontroller.metadata['platform']    = platform
         self.metacontroller.metadata['last_used']   = '{}'.format(datetime.datetime.now())
 
@@ -321,15 +330,10 @@ class InstallSynAppsGUI:
 
 
     def initLogText(self):
-        """ Function that initializes log text """
+        """Function that initializes log text
+        """
 
-        text = "+----------------------------------------------------------------+\n"
-        text = text + "+ installSynApps, version: {:<38}+\n".format(__version__)
-        text = text +"+ Author: Jakub Wlodek                                           +\n"
-        text = text +"+ Copyright (c): Brookhaven National Laboratory 2018-2019        +\n"
-        text = text +"+ This software comes with NO warranty!                          +\n"
-        text = text +"+----------------------------------------------------------------+\n\n"
-        return text
+        return installSynApps.get_welcome_text() + '\n'
 
 
     def resetLog(self):
@@ -410,6 +414,7 @@ class InstallSynAppsGUI:
             self.showWarningMessage('Warning', 'Qutting while process is running may result in invalid installation!', force_popup=True)
         if messagebox.askokcancel('Quit', 'Do you want to quit?'):
             self.master.destroy()
+        IO.logger.close_logger()
         self.metacontroller.save_metadata()
 
 
@@ -492,46 +497,10 @@ class InstallSynAppsGUI:
             github password
         """
     
-        try:
-            self.showMessage('Syncing...', 'Please wait while tags are synced - this may take a while...', force_popup=True)
-            g = Github(user, passwd)
-            for module in self.install_config.get_module_list():
-                if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in self.update_tags_blacklist:
-                    account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
-                    repo = g.get_repo(account_repo)
-                    if repo is not None:
-                        tags = repo.get_tags()
-                        if tags.totalCount > 0 and module.name != 'EPICS_BASE':
-                            tag_found = False
-                            for tag in tags:
-                                #print('{} - {}'.format(account_repo, tag))
-                                if tag.name.startswith('R') and tag.name[1].isdigit():
-                                    if tag.name == module.version:
-                                        tag_found = True
-                                        break
-                                    self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
-                                    module.version = tag.name
-                                    tag_found = True
-                                    break
-                            if not tag_found:
-                                for tag in tags:
-                                    if tag.name[0].isdigit() and tag.name != module.version:
-                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
-                                        module.version = tags[0].name
-                                        break
-                                    elif tag.name[0].isdigit():
-                                        break
-                        elif module.name == 'EPICS_BASE':
-                            for tag in tags:
-                                if tag.name.startswith('R7'):
-                                    if tag.name != module.version:
-                                        self.writeToLog('Updating {} from version {} to version {}\n'.format(module.name, module.version, tag.name))
-                                        module.version = tag.name
-                                        break
-            self.updateAllRefs(self.install_config)
-            self.updateConfigPanel()
-        except:
-            self.showErrorMessage('Error', 'ERROR - Invalid Github credentials.', force_popup=True)
+        installSynApps.sync_github_tags(user, passwd, self.install_config)
+        self.updateAllRefs(self.install_config)
+        self.updateConfigPanel()
+
 
 # ----------------------- Loading/saving Functions -----------------------------
 
@@ -879,9 +848,22 @@ class InstallSynAppsGUI:
 
 
     def initBuildProcess(self, action):
+        """Event function that starts a thread on the appropriate build process function
+
+        Parameters
+        ----------
+        action : str
+            a string key on the async action to perform
         """
-        Event function that starts a thread on the appropriate build process function
-        """
+
+        if self.generateLogFile.get() and IO.logger._LOG_FILE is None:
+            IO.logger.initialize_logger()
+
+        if self.showCommands.get() != IO.logger._PRINT_COMMANDS:
+            IO.logger.toggle_command_printing()
+
+        if self.showDebug.get() != IO.logger._DEBUG:
+            IO.logger.toggle_debug_logging()
 
         if self.install_config is None:
             self.showErrorMessage("Start Error", "ERROR - No loaded install config.", force_popup=True)
@@ -935,59 +917,26 @@ class InstallSynAppsGUI:
     def cloneConfigProcess(self):
         """ Function that clones all specified modules """
 
-        status = 0
-        self.writeToLog('-----------------------------------\n')
-        self.writeToLog('Beginning module cloning process...\n')
-        if self.install_config is not None:
-            for module in self.install_config.get_module_list():
-                if module.clone == 'YES':
-                    self.writeToLog('Cloning module: {}, to location: {}.\n'.format(module.name, module.rel_path))
-                    if module.name in self.cloner.recursive_modules:
-                        ret = self.cloner.clone_module(module, recursive=True)
-                    else:
-                        ret = self.cloner.clone_module(module)
-                    
-                    if ret == -2:
-                        self.showErrorMessage('Clone Error' 'ERROR - Module {} has an invaild absolute path.'.format(module.name))
-                        status = -1
-                    elif ret == -1:
-                        self.showErrorMessage('Clone Error', 'ERROR - Module {} was not cloned successfully.'.format(module.name))
-                        status = -1
-
-                    self.writeToLog('Checking out version {}\n'.format(module.version))
-                    self.cloner.checkout_module(module)
-            self.writeToLog('Cleaning up clone directories\n')
-            self.cloner.cleanup_modules()
-            self.showMessage('Success', 'Finished Cloning process')
-        else:
-            self.showErrorMessage('Load Error', 'ERROR - Install Config is not loaded correctly')
-            status = -1
-
-        return status
+        failed = self.cloner.clone_and_checkout()
+        if len(failed) > 0:
+            for elem in failed:
+                self.writeToLog('Module {} was not cloned successfully.\n'.format(elem))
+            return -1
+        return 0
 
 
     def updateConfigProcess(self):
         """ Function that updates RELEASE and configuration files """
         
-        self.writeToLog('-----------------------------------\n')
-        self.writeToLog('Fixing any modules that require specific RELEASE files...\n')
-        for target in self.updater.fix_release_list:
-            self.writeToLog('Fixing {} RELEASE file\n'.format(target))
-            self.updater.fix_target_release(target)
-        self.writeToLog('Updating all macros and paths for areaDetector...\n')
-        self.updater.update_ad_macros()
-        self.writeToLog('Updating all paths in support...\n')
-        self.updater.update_support_macros()
-        self.writeToLog('Adding any additional support paths...\n')
-        self.updater.add_missing_support_macros()
-        self.writeToLog('Commenting non-auto-build paths...\n')
-        self.updater.comment_non_build_macros()
-        #self.injectFilesProcess()
-        self.writeToLog("Checking module dependancies...\n")
+        self.writeToLog('----------------------------\n')
+        self.writeToLog('Updating all RELEASE and configuration files...')
+        self.updater.run_update_config(with_injection=False)
         dep_errors = self.updater.perform_dependency_valid_check()
         for error in dep_errors:
-            self.writeToLog('ERROR - {}\n'.format(error))
-        self.showMessage('Update RELEASE', 'Finished update RELEASE + configure process.')
+            self.writeToLog('{}\n'.format(error))
+        self.writeToLog('Reordering module build order to account for intra-module dependencies...\n')
+        self.updater.perform_fix_out_of_order_dependencies()
+        self.writeToLog('Done.\n')
         return 0
 
 
@@ -995,8 +944,6 @@ class InstallSynAppsGUI:
         """ Function that injects settings into configuration files """
 
         self.writeToLog('Starting file injection process.\n')
-        for injector in self.install_config.injector_files:
-            self.writeToLog('Injecting {} into {}\n'.format(injector.name, injector.target))
         self.updater.perform_injection_updates()
         self.writeToLog('Done.\n')
         return 0
@@ -1008,53 +955,14 @@ class InstallSynAppsGUI:
         status = 0
         self.writeToLog('-----------------------------------\n')
         self.writeToLog('Beginning build process...\n')
-        self.writeToLog('Compiling EPICS base at location {}...\n'.format(self.install_config.base_path))
-        status = self.builder.build_base()
-        if status < 0:
-            self.showErrorMessage('Build Error', 'ERROR - Failed to build base, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
-            return status
+        status, failed = self.builder.build_all()
+        if status != 0:
+            for module in failed:
+                self.writeToLog('Failed building module {}\n'.format(module))
+            self.showErrorMessage('Build Error', 'Some modules failed to build.')
+        else:
+            self.writeToLog('Auto-Build completed successfully.')
         self.writeToLog('Done.\n')
-        self.writeToLog('Compiling EPICS support modules at location {}...\n'.format(self.install_config.support_path))
-        self.builder.make_support_releases_consistent()
-        for module in self.install_config.get_module_list():
-            if module.build == 'YES':
-                status, built = self.builder.build_support_module(module)
-                if built:
-                    if status == 0:
-                        self.writeToLog('Built support module {}\n'.format(module.name))
-                    else:
-                        self.writeToLog('Failed to build support module {}\n'.format(module.name))
-        if status < 0:
-            self.showErrorMessage('Build Error', 'ERROR - Failed to build support modules, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
-            return status
-        self.writeToLog('Done.\n')
-        if self.install_config.ad_path is not None:
-            self.writeToLog('Compiling selected areaDetector modules at location {}...\n'.format(self.install_config.ad_path))
-            self.writeToLog('Compiling ADSupport...\n')
-            status = self.builder.build_ad_support()
-            if status != 0:
-                self.showErrorMessage('Build Error', 'ERROR - Failed to build ADSupport, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
-                return status
-            self.writeToLog('Compiling ADCore...\n')
-            status = self.builder.build_ad_core()
-            if status != 0:
-                self.showErrorMessage('Build Error', 'ERROR - Failed to build ADCore, aborting...\nCheck dependencies or INSTALL_CONFIG file.')
-                return status
-            for module in self.install_config.get_module_list():
-                if module.build == 'YES':
-                    # Process any custom builds now
-                    if module.custom_build_script_path is not None:
-                        self.writeToLog('Detected custom build script for module {}\n'.format(module.name))
-                        out = self.builder.build_via_custom_script(module)
-                        self.writeToLog('Custom build script for {} exited with code {}\n'.format(module.name, out))
-                    else:
-                        # Also build any areaDetector plugins/drivers
-                        status, was_ad = self.builder.build_ad_module(module)
-                        if was_ad and status == 0:
-                            self.writeToLog("Built AD module {}\n".format(module.name))
-                        elif was_ad and status != 0:
-                            self.writeToLog("Failed to build AD module {}\n".format(module.name))
-            self.writeToLog('Done.\n')
         self.writeToLog('Autogenerating install/uninstall scripts...\n')
         self.autogenerator.initialize_dir()
         self.autogenerator.generate_install()
@@ -1091,6 +999,7 @@ class InstallSynAppsGUI:
                         self.showErrorMessage('Build Error', 'ERROR - Build error occurred, aborting...')
 
         self.showMessage('Alert', 'You may wish to save a copy of this log file for later use.')
+        self.writeToLog('To generate a bundle from the build, select the Package option.\n')
         self.writeToLog('Autorun completed.\n')
 
 
@@ -1099,17 +1008,13 @@ class InstallSynAppsGUI:
 
         self.writeToLog('Starting packaging...\n')
         self.package_output_filename = self.packager.create_bundle_name()
-        self.writeToLog('Tarring...\n')
-        output = self.packager.create_package(self.package_output_filename)
+        output = self.packager.create_package(self.package_output_filename, flat_format=self.binariesFlatToggle.get())
         self.package_output_filename = self.package_output_filename + '.tgz'
         self.metacontroller.metadata['package_output_filename'] = self.package_output_filename
-        if output < 0:
+        if output != 0:
             self.showErrorMessage('Package Error', 'ERROR - Was unable to package areaDetector successfully. Aborting.', force_popup=True)
         else:
-            self.writeToLog('Package saved to {}\n'.format(self.packager.output_location))
-            self.writeToLog('Bundle Name: {}\n'.format(self.package_output_filename))
-            self.writeToLog('Done. Completed in {} seconds.\n'.format(output))
-
+            self.writeToLog('Done.\n')
 
 
     def copyAndUnpackProcess(self):
