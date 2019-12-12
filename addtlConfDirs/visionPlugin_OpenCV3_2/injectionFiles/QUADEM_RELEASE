@@ -1,4 +1,4 @@
-# Saved by installSynApps on 2019-11-12 11:42:39.327888
+# Saved by installSynApps on 2019-11-26 15:32:10.606729
 __TARGET_LOC__=$(SUPPORT)/quadEM/configure/RELEASE
 
 -include $(AREA_DETECTOR)/configure/RELEASE_PRODS.local

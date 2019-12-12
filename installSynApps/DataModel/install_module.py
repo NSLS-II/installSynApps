@@ -1,8 +1,9 @@
-#
-# Class that will represent a single install module
-#
-# Author: Jakub Wlodek
-#
+"""Class that will represent a single install module
+
+The building block of the install configuration, InstallModule objects
+are used to represent each module defined in the configuration. It stores all module-specific
+information pertinent to building and cloning it.
+"""
 
 import os
 

@@ -1,10 +1,11 @@
-#
-# A class representing an install configuration.
-# This will potentially allow for multiple install configurations in
-# the future.
-#
-# Author: Jakub Wlodek
-#
+"""A file containing representations of install configurations.
+
+The core Data representation for installSynApps. An InstallConfiguration object
+is parsed from a configuration, and is then used throughout the build process.
+
+InjectorFile objects are used for representing text that need to be injected
+into configuration files prior to builds.
+"""
 
 
 import os
@@ -256,10 +257,12 @@ class InstallConfiguration:
         index_A = self.get_module_build_index(module_A)
         index_B = self.get_module_build_index(module_B)
         if index_A >= 0 and index_B >= 0:
-            self.modules[index_A] = module_B
-            self.modules[index_B] = module_A
-            self.module_map[module_A.name] = index_B
-            self.module_map[module_B.name] = index_A
+            temp_A = self.get_module_by_name(module_B)
+            temp_B = self.get_module_by_name(module_A)
+            self.modules[index_A] = temp_A
+            self.modules[index_B] = temp_B
+            self.module_map[module_A] = index_B
+            self.module_map[module_B] = index_A
 
 
     def convert_path_abs(self, rel_path):
@@ -290,14 +293,13 @@ class InstallConfiguration:
         elif "$(MOTOR)" in rel_path and self.motor_path != None:
             return os.path.join(self.motor_path, temp)
         elif "$(" in rel_path:
-            macro_path = rel_path.split(')')[0]
+            macro_part = rel_path.split(')')[0]
             rel_to = macro_part.split('(')[1]
-            if self.get_module_by_name(rel_to) is not None:
-                return os.path.join(self.get_module_by_name(rel_to).abs_path, temp)
-            else:
-                return rel_path
-        else:
-            return rel_path
+            rel_to_module = self.get_module_by_name(rel_to)
+            if rel_to_module is not None:
+                return os.path.join(rel_to_module.abs_path, temp)
+
+        return rel_path
 
 
     def print_installation_info(self, fp = None):
@@ -335,11 +337,29 @@ class InstallConfiguration:
         return out
 
 
+    def get_module_names_list(self):
+        """Function that gets list of modules being built
+
+        Returns
+        -------
+        list of str
+            list of module names that are set to build
+        """
+
+        out = []
+        for module in self.modules:
+            if module.build == 'YES':
+                out.append(module.name)
+        return out
+
+
 class InjectorFile:
     """Class that represents an injector file and stores its name, contents, and target
 
     Injector file classes are used to represent data that needs to be appended to target files 
     at build time. Used to add to commonPlugins, commonPlugin_settings, etc.
+
+    TODO: This class can probably be abstracted into a simpler data structure (since its used as a struct anyway)
 
     Attributes
     ----------
