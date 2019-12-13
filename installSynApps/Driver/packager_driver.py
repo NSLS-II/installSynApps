@@ -273,7 +273,7 @@ class Packager:
         return isa_version, commit_hash
 
 
-    def grab_configuration_used(self, top_location, readme_fp):
+    def grab_configuration_used(self, top_location, readme_fp, module):
         """Function that includes the install configuration into the bundle for reuse.
         
         Parameters
@@ -283,12 +283,19 @@ class Packager:
         """
 
         try:
-            LOG.write('Copying build configuration into bundle.')
-            writer = Writer.ConfigWriter(self.install_config)
-            build_config_dir = os.path.join(top_location, 'build-config')
-            writer.write_install_config(filepath=build_config_dir)
             isa_version, isa_commit_hash = self.find_isa_version()
-            self.write_readme_heading('Build environment version information', readme_fp)
+            if module is None:
+                LOG.write('Copying build configuration into bundle.')
+                writer = Writer.ConfigWriter(self.install_config)
+                build_config_dir = os.path.join(top_location, 'build-config')
+                writer.write_install_config(filepath=build_config_dir)
+                self.write_readme_heading('Build environment version information', readme_fp)
+            else:
+                self.write_readme_heading('Implementing add on in exisitng bundle', readme_fp)
+                readme_fp.write('This add on tarball contains a folder with a compiled version of {}.\n'.format(module.name))
+                readme_fp.write('To use it with an existing bundle, please copy the folder into {} in the target bundle.\n'.format(module.rel_path))
+                readme_fp.write('It is also recommended to edit the build-config for the bundle to reflect the inclusion of this module.\n\n')
+            readme_fp.write('Build configuration:')
             readme_fp.write('installSynApps Version: {}\n\n'.format(isa_version))
             if isa_commit_hash is not None:
                 readme_fp.write('To grab this version:\n\n\tgit clone https://github.com/epicsNSLS2-deploy/installSynApps\n')
@@ -305,6 +312,13 @@ class Packager:
             readme_fp.write('{:<20}{}\n'.format('Build Date:', datetime.datetime.now()))
         except:
             LOG.debug('Failed to copy install configuration into bundle.')
+
+
+    def add_versions_from_install_config(self, readme_fp, target):
+
+        for module in self.install_config.get_module_list():
+            if module.name != target.name and module.package == 'YES':
+                readme_fp.write('{:<16}- {}\n'.format(module.name, module.version))
 
 
     def create_opi_folder(self, epics_dir):
@@ -353,6 +367,64 @@ class Packager:
         return out
 
 
+    def setup_tar_staging(self, filename, readme_fp, module=None):
+
+        if os.path.exists('__temp__'):
+            shutil.rmtree('__temp__')
+        os.mkdir('__temp__')
+        
+        if module is not None:
+            self.write_readme_heading('{} - Add-On Package'.format(module.name), readme_fp)
+        else:
+            self.write_readme_heading('Bundle - {}'.format(filename), readme_fp)
+        isa_version, commit_hash = self.find_isa_version()
+        readme_fp.write('Module package generated using installSynApps version: {}\n'.format(isa_version))
+        readme_fp.write('See below for detailed build tool version information.\n')
+        readme_fp.write('Module versions used in this deployment:\n')
+        if module is not None:
+            readme_fp.write('To add module to existing deployment, place it in the {} directory of the bundle.\n'.format(module.rel_path))
+        readme_fp.write('[folder name] - [git tag]\n\n')
+
+
+    def cleanup_tar_staging(self, filename, readme_fp, module=None):
+        
+        readme_fp.write('\n\n')
+        self.grab_configuration_used('__temp__', readme_fp, module)
+        LOG.debug('Generating README file with module version and append instructions...')
+        shutil.copy(os.path.join(self.output_location, 'README_{}.txt'.format(filename)), os.path.join('__temp__', 'README_{}.txt'.format(filename)))
+
+        LOG.write('Tarring...')
+        out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', '__temp__', '.'])
+        if out < 0:
+            return out
+        os.rename(filename + '.tgz', os.path.join(self.output_location, filename + '.tgz'))
+        LOG.write('Done. Wrote tarball to {}.'.format(self.output_location))
+        LOG.write('Name of tarball: {}'.format(os.path.join(self.output_location, filename + '.tgz')))
+        shutil.rmtree('__temp__')
+        return out
+
+
+    def create_single_module_tarball(self, filename, module):
+        """Function responsible for creating a tarball for a single module.
+
+        Used to add modules to existing distributions.
+
+        Parameters
+        ----------
+        module : InstallModule
+            The module to add to the package
+        """
+
+        readme_fp = open(self.output_location + '/README_{}.txt'.format(filename), 'w')
+        self.setup_tar_staging(filename, readme_fp, module=module)
+        self.grab_module('__temp__', module, readme_fp)
+        readme_fp.write('\nThe module was built against the following versions:\n\n')
+        self.add_versions_from_install_config(readme_fp, module)
+        result = self.cleanup_tar_staging(filename, readme_fp, module=module)
+        readme_fp.close()
+        return result
+        
+
     def create_tarball(self, filename, flat_format):
         """Function responsible for creating the tarball given a filename.
 
@@ -369,16 +441,8 @@ class Packager:
             0 if success <0 if failure
         """
 
-        if os.path.exists('__temp__'):
-            shutil.rmtree('__temp__')
-        os.mkdir('__temp__')
         readme_fp = open(self.output_location + '/README_{}.txt'.format(filename), 'w')
-        self.write_readme_heading('Bundle - {}'.format(filename), readme_fp)
-        isa_version, commit_hash = self.find_isa_version()
-        readme_fp.write('Bundle generated using installSynApps version: {}\n'.format(isa_version))
-        readme_fp.write('See below for detailed build tool version information.\n')
-        readme_fp.write('Module versions used in this deployment:\n')
-        readme_fp.write('[folder name] - [git tag]\n\n')
+        self.setup_tar_staging(filename, readme_fp)
 
         self.grab_base('__temp__', readme_fp)
 
@@ -398,24 +462,13 @@ class Packager:
                 else:
                     self.grab_module(support_top, module, readme_fp)
 
-        readme_fp.write('\n\n')
-        self.grab_configuration_used('__temp__', readme_fp)
+
+        result = self.cleanup_tar_staging(filename, readme_fp)
         readme_fp.close()
-        LOG.debug('Generating README file with module versions...')
-        shutil.copy(os.path.join(self.output_location, 'README_{}.txt'.format(filename)), os.path.join('__temp__', 'README_{}.txt'.format(filename)))
-
-        LOG.write('Tarring...')
-        out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', '__temp__', '.'])
-        if out < 0:
-            return out
-        os.rename(filename + '.tgz', os.path.join(self.output_location, filename + '.tgz'))
-        LOG.write('Done. Wrote bundle to {}.'.format(self.output_location))
-        LOG.write('Name of bundle: {}'.format(os.path.join(self.output_location, filename + '.tgz')))
-        shutil.rmtree('__temp__')
-        return out
+        return result
 
 
-    def create_bundle_name(self):
+    def create_bundle_name(self, module_name=None):
         """Helper function for creating output filename
 
         Returns
@@ -424,8 +477,16 @@ class Packager:
             An output filename describing architecture and ADCore version
         """
 
+        if module_name is not None:
+            module = self.install_config.get_module_by_name(module_name)
+            if module is None:
+                return None
+
         date_str = datetime.date.today()
-        output_filename = '{}_AD_{}_Bin_{}_{}'.format(self.institution, self.install_config.get_core_version(), self.OS, date_str)
+        if module is None:
+            output_filename = '{}_AD_{}_Bin_{}_{}'.format(self.institution, self.install_config.get_core_version(), self.OS, date_str)
+        else:
+            output_filename = '{}_AD_{}_Bin_{}_{}_addon'.format(self.institution, self.install_config.get_core_version(), self.OS, module.name)
         temp = output_filename
         counter = 1
         while os.path.exists(self.output_location + '/' + temp + '.tgz'):
@@ -480,6 +541,36 @@ class Packager:
 
         # Generate the bundle
         status = self.create_tarball(filename, flat_format)
+
+        # Stop the timer
+        elapsed = self.stop_timer()
+        LOG.write('Tarring took {} seconds'.format(elapsed))
+
+        self.create_bundle_cleanup_tool()
+
+        return status
+
+
+    def create_add_on_package(self, filename, module_name):
+
+        module = self.install_config.get_module_by_name(module_name)
+        if module is None:
+            return -1
+        
+        # Make sure output path exists
+        if not os.path.exists(self.output_location):
+            try:
+                os.mkdir(self.output_location)
+            except OSError:
+                return -1
+        
+        # Start the timer
+        self.start_timer()
+
+        LOG.write('Beginning construction of {} add on...'.format(module.name))
+
+        # Generate the bundle
+        status = self.create_single_module_tarball(filename, module)
 
         # Stop the timer
         elapsed = self.stop_timer()

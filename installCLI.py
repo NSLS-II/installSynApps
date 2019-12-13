@@ -46,6 +46,13 @@ import installSynApps.DataModel as DataModel
 import installSynApps.Driver as Driver
 import installSynApps.IO as IO
 
+# pygithub for github autosync tags integration.
+WITH_PYGITHUB=True
+try:
+    from github import Github
+except ImportError:
+    WITH_PYGITHUB=False
+
 
 # -------------- Some helper functions ------------------
 
@@ -400,6 +407,20 @@ if create_tarball == 'y':
         clean_exit()
     else:
         print('Bundle generated at: {}'.format(output_filename))
+
+
+print()
+if not yes:
+    create_add_on_tarball = input('Would you like to create an add-on tarball to add a module to an existing bundle? (y/n) > ')
+else:
+    create_add_on_tarball = 'n'
+if create_add_on_tarball == 'y':
+    module_name = input('Please enter name of the module you want packaged (All capitals - Ex. ADPROSILICA) > ')
+    output_filename = packager.create_bundle_name(module_name=module_name)
+    if output_filename is None:
+        print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
+        clean_exit()
+    ret = packager.create_add_on_package(output_filename, module_name)
 
 print()
 if not yes:
