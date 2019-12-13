@@ -1,5 +1,5 @@
 #
-# INSTALL_CONFIG file saved by installSynApps on 2019-11-03 18:39:27.569259
+# INSTALL_CONFIG file saved by installSynApps on 2019-12-12 14:46:56.322056
 #
 
 INSTALL=/epics
@@ -21,7 +21,7 @@ UTILS            R6-1                 $(SUPPORT)/utils                         u
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES              YES
+SNCSEQ           2.2.8                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES              YES
 
 GIT_URL=https://github.com/epics-modules/
 
