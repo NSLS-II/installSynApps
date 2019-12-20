@@ -11,7 +11,7 @@ jobs:
   include:
     - if: branch = master
       python: "3.6"
-      script: python3 -u installCLI.py -y -c addtlConfDirs/minConfigureLinux -i /epics -p
+      script: python3 -u installCLI.py -y -c addtlConfDirs/minConfigureLinux -i $(pwd)/epics -p
 
 install: pip install -r requirements_dev.txt
 
