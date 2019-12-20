@@ -94,7 +94,7 @@ class ConfigWriter:
                     LOG.debug('Could not find build script at: {}'.format(old_script))
 
 
-    def write_install_config(self, filepath='addtlConfDirs/config{}'.format(datetime.date.today())):
+    def write_install_config(self, filepath='addtlConfDirs/config{}'.format(datetime.date.today()), overwrite_existing=False):
         """Function that saves loaded install configuration
 
         Main saving function for writing install config. Can create a save directory, then saves 
@@ -112,6 +112,12 @@ class ConfigWriter:
         str
             None if successfull, otherwise error message
         """
+
+        if overwrite_existing and os.path.exists(filepath):
+            try:
+                shutil.rmtree(filepath)
+            except PermissionError:
+                return False, 'Insufficeint Permissions'
 
         # Check if path exists, create it if it doesn't
         if not os.path.exists(filepath):
@@ -132,7 +138,7 @@ class ConfigWriter:
             os.mkdir(os.path.join(filepath, 'injectionFiles'))
             os.mkdir(os.path.join(filepath, 'macroFiles'))
             os.mkdir(os.path.join(filepath, 'customBuildScripts'))
-        except:
+        except OSError:
             LOG.write('Failed to make configuration directories!')
             return False, 'Unknown Error'
 

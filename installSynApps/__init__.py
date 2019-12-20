@@ -5,7 +5,10 @@ clone build and package specified modules.
 """
 
 import sys
+import re
+import os
 from sys import platform
+from subprocess import Popen, PIPE
 import installSynApps.IO.logger as LOG
 
 if platform == 'win32':
@@ -24,14 +27,6 @@ else:
 # Because EPICS versioning is not as standardized as it should be, certain modules cannot be properly auto updated.
 # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
-
-
-# pygithub for github autosync tags integration.
-WITH_PYGITHUB=True
-try:
-    from github import Github
-except ImportError:
-    WITH_PYGITHUB=False
 
 __version__     = "R2-3"
 __author__      = "Jakub Wlodek"
@@ -57,63 +52,152 @@ def get_welcome_text():
     return text
 
 
-def sync_github_tags(user, passwd, install_config, save_path=None):
+def sync_module_tag(module_name, install_config, save_path = None):
     """Function that syncs module version tags with those found on github.
 
     This function is still buggy, and certain modules do not update correctly
 
     Parameters
     ----------
-    user : str
-        github username
-    passwd : str
-        github password
+    module_name : str
+        The name of the module to sync
     install_config : InstallConfiguration
         instance of install configuration for which to update tags
     save_path : str
         None by default. If set, will save the install configuration to the given location after updating.
     """
 
-    try:
-        LOG.write('Syncing...', 'Please wait while tags are synced - this may take a while...')
-        g = Github(user, passwd)
-        for module in install_config.get_module_list():
-            if module.url_type == 'GIT_URL' and 'github' in module.url and module.version != 'master' and module.name not in update_tags_blacklist:
-                account_repo = '{}/{}'.format(module.url.split('/')[-2], module.repository)
-                repo = g.get_repo(account_repo)
-                if repo is not None:
-                    tags = repo.get_tags()
-                    if tags.totalCount > 0 and module.name != 'EPICS_BASE':
-                        tag_found = False
-                        for tag in tags:
-                            if tag.name.startswith('R') and tag.name[1].isdigit():
-                                if tag.name == module.version:
-                                    tag_found = True
-                                    break
-                                LOG.write('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
-                                module.version = tag.name
-                                tag_found = True
-                                break
-                        if not tag_found:
-                            for tag in tags:
-                                if tag.name[0].isdigit() and tag.name != module.version:
-                                    LOG.write('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
-                                    module.version = tags[0].name
-                                    break
-                                elif tag.name[0].isdigit():
-                                    break
-                    elif module.name == 'EPICS_BASE':
-                        for tag in tags:
-                            if tag.name.startswith('R7'):
-                                if tag.name != module.version:
-                                    LOG.write('Updating {} from version {} to version {}'.format(module.name, module.version, tag.name))
-                                    module.version = tag.name
-                                    break
-        if save_path is not None:
-            writer = IO.config_writer.ConfigWriter(install_config)
-            writer.write_install_config(save_path)
-            LOG.write('Updated install config saved to {}'.format(save_path))
-    except:
-        LOG.write('ERROR - Possibly invalid Github credentials')
+    module = install_config.get_module_by_name(module_name)
+    if module.url_type == 'GIT_URL' and module.version != 'master' and module.name not in update_tags_blacklist:
+        account_repo = '{}{}'.format(module.url, module.repository)
+        LOG.print_command("git ls-remote --tags {}".format(account_repo))
+        sync_tags_proc = Popen(['git', 'ls-remote', '--tags', account_repo], stdout=PIPE, stderr=PIPE)
+        out, err = sync_tags_proc.communicate()
+        ret = out.decode('utf-8')
+        tags_temp = ret.splitlines()
+        tags = []
+        for tag in tags_temp:
+            tags.append(tag.rsplit('/')[-1])
+
+        if len(tags) > 0:
+
+            best_tag = tags[0]
+            best_tag_ver_str_list = re.split(r'\D+', tags[0])
+            best_tag_ver_str_list = [num for num in best_tag_ver_str_list if num.isnumeric()]
+            best_tag_version_numbers = list(map(int, best_tag_ver_str_list))
+            for tag in tags:
+                tag_ver_str_list = re.split(r'\D+', tag)
+                tag_ver_str_list = [num for num in tag_ver_str_list if num.isnumeric()]
+                tag_version_numbers = list(map(int, tag_ver_str_list))
+                for i in range(len(tag_version_numbers)):
+                    if best_tag.startswith('R') and not tag.startswith('R'):
+                        break
+                    elif not best_tag.startswith('R') and tag.startswith('R'):
+                        best_tag = tag
+                        best_tag_version_numbers = tag_version_numbers
+                        break
+                    elif i == len(best_tag_version_numbers) or tag_version_numbers[i] > best_tag_version_numbers[i]:
+                        best_tag = tag
+                        best_tag_version_numbers = tag_version_numbers
+                        break
+                    elif tag_version_numbers[i] < best_tag_version_numbers[i]:
+                        break
+
+            tag_updated = False
+            module_ver_str_list = re.split(r'\D+', module.version)
+            module_ver_str_list = [num for num in module_ver_str_list if num.isnumeric()]
+            module_version_numbers = list(map(int, module_ver_str_list))
+            for i in range(len(best_tag_version_numbers)):
+                if i == len(module_version_numbers) or best_tag_version_numbers[i] > module_version_numbers[i]:
+                    tag_updated = True
+                    LOG.write('Updating {} from version {} to version {}'.format(module.name, module.version, best_tag))
+                    module.version = best_tag
+                    break
+                elif best_tag_version_numbers[i] < module_version_numbers[i]:
+                    break
+            if not tag_updated:
+                LOG.debug('Module {} already at latest version: {}'.format(module.name, module.version))
+
+    if save_path is not None:
+        writer = IO.config_writer.ConfigWriter(install_config)
+        ret, message = writer.write_install_config(save_path, overwrite_existing=True)
+        LOG.write('Updated install config saved to {}'.format(save_path))
+        return ret
+    else:
+        return True
 
 
+def sync_all_module_tags(install_config, save_path=None, overwrite_existing=True):
+    """Function that syncs module version tags with those found in git repositories.
+
+    Parameters
+    ----------
+    install_config : InstallConfiguration
+        instance of install configuration for which to update tags
+    save_path : str
+        None by default. If set, will save the install configuration to the given location after updating.
+    """
+
+    LOG.write('Syncing...')
+    LOG.write('Please wait while tags are synced - this may take a while...')
+    for module in install_config.get_module_list():
+        sync_module_tag(module.name, install_config)
+
+    if save_path is not None:
+        writer = IO.config_writer.ConfigWriter(install_config)
+        ret, message = writer.write_install_config(save_path, overwrite_existing=overwrite_existing)
+        LOG.write('Updated install config saved to {}'.format(save_path))
+        return ret
+    else:
+        return True
+
+
+def create_new_install_config(install_location, configuration_type, update_versions = True, save_path=None):
+    """Helper function for creating new install configurations
+
+    Parameters
+    ----------
+    install_location : str
+        The path to the install location
+    configuration_type : str
+        The type of new install configuration
+    update_versions : bool
+        Flag to tell config to update versions from git remotes.
+    save_path : str
+        If defined, save config to specified path.
+    """
+
+    if configuration_type.lower() == 'ad':
+        install_template = 'NEW_CONFIG_AD'
+    elif configuration_type.lower() == 'motor':
+        install_template = 'NEW_CONFIG_MOTOR'
+    else:
+        install_template = 'NEW_CONFIG_ALL'
+    if save_path is not None:
+        LOG.write('\nCreating new install configuration with template: {}'.format(install_template))
+        write_loc = os.path.abspath(save_path)
+        LOG.write('Target output location set to {}'.format(write_loc))
+    parser = IO.config_parser.ConfigParser('resources')
+    install_config, message = parser.parse_install_config(config_filename=install_template, force_location=install_location, allow_illegal=True)
+    if install_config is None:
+        LOG.write('Parse Error - {}'.format(message))
+    elif message is not None:
+        LOG.write('Warning - {}'.format(message))
+    else:
+        LOG.write('Loaded template install configuration.')
+    if update_versions and save_path is not None:
+        ret = sync_all_module_tags(install_config, save_path=write_loc, overwrite_existing=False)
+    elif update_versions and save_path is None:
+        ret = sync_all_module_tags(install_config, overwrite_existing=False)
+    elif not update_versions and save_path is not None:
+        writer = IO.config_writer.ConfigWriter(install_config)
+        ret, message = writer.write_install_config(filepath=write_loc)
+    else:
+        ret = True
+    if not ret:
+        LOG.write('Write Error - {}'.format(message))
+    elif save_path is not None:
+        LOG.write('\nWrote new install configuration to {}.'.format(write_loc))
+        LOG.write('Please edit INSTALL_CONFIG file to specify build specifications.')
+        LOG.write('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
+    return install_config, message

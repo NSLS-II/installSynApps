@@ -46,18 +46,12 @@ import installSynApps.DataModel as DataModel
 import installSynApps.Driver as Driver
 import installSynApps.IO as IO
 
-# pygithub for github autosync tags integration.
-WITH_PYGITHUB=True
-try:
-    from github import Github
-except ImportError:
-    WITH_PYGITHUB=False
-
-
 # -------------- Some helper functions ------------------
 
 def print_welcome_message():
-    # Welcome message
+    """Returns welcome message
+    """
+
     print(installSynApps.get_welcome_text())
     
     print("Welcome to the installSynApps module.")
@@ -69,50 +63,40 @@ def print_welcome_message():
 
 # Make sure we close logger before exiting
 def clean_exit():
+    """Shuts down logger and exits script
+    """
+
     IO.logger.close_logger()
     exit()
 
 
 def create_new_install_config():
-    print_welcome_message()
+    """Creates new install configuration
+    """
+
     print("You have selected to create a new install configuration.\n")
     install_type = input("Would you like a coprehensive config, an areaDetector config, or a motor config? (AD/Motor/All) > ")
     if install_type.lower() == 'ad':
-        install_template = 'NEW_CONFIG_AD'
         print('AreaDetector config selected.\n')
     elif install_type.lower() == 'motor':
-        install_template = 'NEW_CONFIG_MOTOR'
         print('Motor config selected.\n')
     else:
-        install_template = 'NEW_CONFIG_ALL'
         print('Coprehensive config selected.\n')
 
     write_loc = input('Where would you like the install configuration to be written? > ')
-    write_loc = os.path.abspath(write_loc)
-    print('Target output location set to {}'.format(write_loc))
     install_loc = input('What should be the target install location for the config? > ')
-    print('Attempting to load default config with install location {}...'.format(install_loc))
-    parser = IO.config_parser.ConfigParser('resources')
-    install_config, message = parser.parse_install_config(config_filename=install_template, force_location=install_loc, allow_illegal=True)
-    if install_config is None:
-        print('Parse Error - {}'.format(message))
-    elif message is not None:
-        print('Warning - {}'.format(message))
-    else:
-        print('Done.')
-    print('Writing...')
-    writer = IO.config_writer.ConfigWriter(install_config)
-    ret, message = writer.write_install_config(filepath=write_loc)
-    if not ret:
-        print('Write Error - {}'.format(message))
-    else:
-        print()
-        print('Wrote new install configuration to {}.'.format(write_loc))
-        print('Please edit INSTALL_CONFIG file to specify build specifications.')
-        print('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
+    update_ver = input('\nWould you like installSynApps to automatically sync version tags for new config?\nRequires git and network connection. (y/n) > ')
+
+    vers = False
+    if update_ver.lower()=='y':
+        vers = True
+    installSynApps.create_new_install_config(install_loc, install_type, update_versions=vers, save_path=write_loc)
 
 
 def parse_user_input():
+    """Parses user's command line flags
+    """
+
     path_to_configure = "configure"
 
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
@@ -137,36 +121,45 @@ def parse_user_input():
 
     arguments = vars(parser.parse_args())
 
+    # Initialize logging first
+    if arguments['printcommands']:
+        IO.logger.toggle_command_printing()
+
+    # For a CLI client, we simply sys.stdout.write for logging.
+    IO.logger.assign_write_function(sys.stdout.write)
+    if arguments['savelog']:
+        IO.logger.initialize_logger()
+
+    if arguments['debugmessages']:
+        IO.logger.toggle_debug_logging()
+
     print_welcome_message()
 
     # Two cases where build will not happen, creating new config, and updating versions.
     if arguments['newconfig']:
         create_new_install_config()
         clean_exit()
-    if arguments['customconfigure'] is not None:
+
+    elif arguments['customconfigure'] is not None and arguments['updateversions']:
         path_to_configure = arguments['customconfigure']
-        if arguments['updateversions']:
-            print('Updating module versions for configuration {}'.format(path_to_configure))
-            if not os.path.exists(os.path.join(path_to_configure, 'INSTALL_CONFIG')):
-                print("**INSTALL_CONFIG file not found in specified directory!**\nAborting...")
-                clean_exit()
-            if not WITH_PYGITHUB:
-                print("**PyGithub module required for version updates.**")
-                print("**Install with pip install pygithub**")
-                print("Exiting...")
-                clean_exit()
-            parser = IO.config_parser.ConfigParser(path_to_configure)
-            install_config, message = parser.parse_install_config(allow_illegal=True)
-            print('Please enter your github credentials.')
-            user = input('Username: ')
-            passwd = getpass.getpass()
-            sync_tags(user, passwd, install_config, path_to_configure)
-            print('Done.')
+        print('Updating module versions for configuration {}'.format(path_to_configure))
+        if not os.path.exists(os.path.join(path_to_configure, 'INSTALL_CONFIG')):
+            print("**INSTALL_CONFIG file not found in specified directory!**\nAborting...")
             clean_exit()
+        if not WITH_PYGITHUB:
+            print("**PyGithub module required for version updates.**")
+            print("**Install with pip install pygithub**")
+            print("Exiting...")
+            clean_exit()
+        parser = IO.config_parser.ConfigParser(path_to_configure)
+        install_config, message = parser.parse_install_config(allow_illegal=True)
+        installSynApps.sync_github_tags(install_config, path_to_configure)
+        print('Done.')
+        clean_exit()
 
     elif arguments['updateversions']:
         print('ERROR - Update versions flag selected but no configure directory given.')
-        print('Rerun with the -c flag')
+        print('Rerun with the -c INSTALL_CONFIG_PATH flag')
         print('Aborting...')
         clean_exit()
 
@@ -180,18 +173,6 @@ path_to_configure = os.path.abspath(path_to_configure)
 yes             = args['forceyes']
 dep             = args['dependency']
 single_thread   = False
-save_log        = args['savelog']
-show_debug      = args['debugmessages']
-
-if args['printcommands']:
-    IO.logger.toggle_command_printing()
-
-
-# For a CLI client, we simply sys.stdout.write for logging.
-IO.logger.assign_write_function(sys.stdout.write)
-if save_log:
-    IO.logger.initialize_logger()
-
 
 threads         = args['threads']
 if threads is None:
@@ -202,6 +183,13 @@ elif threads == 1:
 
 print('Reading install configuration directory located at: {}...'.format(path_to_configure))
 print()
+
+
+#########################################################################
+#                                                                       #
+# Parse install configuration directory                                 #
+#                                                                       #
+#########################################################################
 
 
 # Parse base config file, make sure that it is valid - ask for user input until it is valid
@@ -278,6 +266,13 @@ if not status:
     print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
     print("Critical dependancy error, abort.")
     clean_exit()
+
+
+#########################################################################
+#                                                                       #
+# Execute Build Process Here                                            #
+#                                                                       #
+#########################################################################
 
 
 # Ask useer to proceed
@@ -394,6 +389,12 @@ else:
         clean_exit()
 
 
+#########################################################################
+#                                                                       #
+# Bundle Generation Process Here                                        #
+#                                                                       #
+#########################################################################
+
 print()
 if not yes:
     create_tarball = input('Would you like to create a tarball binary bundle now? (y/n) > ')
@@ -424,11 +425,11 @@ if create_add_on_tarball == 'y':
 
 print()
 if not yes:
-    create_opi_dir = input('Whould you like to create opi_dir now? (y/n) > ')
+    create_opi_dir = input('Would you like to create opi_dir now? (y/n) > ')
 else:
     create_opi_dir = 'y'
 if create_opi_dir == 'y':
-    ret = packager.create_opi_folder(install_config.install_location)
+    ret = packager.create_opi_package()
     if ret != 0:
         print('ERROR - Failed to create opi bundle.')
         clean_exit()

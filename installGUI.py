@@ -15,13 +15,6 @@ from tkinter import simpledialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
-# pygithub for github autosync tags integration.
-WITH_PYGITHUB=True
-try:
-    from github import Github
-except ImportError:
-    WITH_PYGITHUB=False
-
 # Some python utility libs
 import os
 import time
@@ -463,41 +456,23 @@ class InstallSynAppsGUI:
 
 
     def syncTags(self):
-        """ Function that automatically updates all of the github tags for the install configuration git modules """
+        """Function that automatically updates all of the github tags for the install configuration git modules
+        """
 
-        global WITH_PYGITHUB
-        if not WITH_PYGITHUB:
-            self.showErrorMessage('Error', 'ERROR - PyGithub not found. Install with pip install pygithub, and restart', force_popup=True)
+        if not self.thread.is_alive():
+            self.thread = threading.Thread(target=self.syncTagsProcess)
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+            self.thread.start()
+            self.loadingIconThread.start()
         else:
-            user = simpledialog.askstring('Please enter your github username.', 'Username')
-            if user is None or len(user) == 0:
-                return
-            passwd = simpledialog.askstring('Please enter your github password.', 'Password', show='*')
-            if passwd is None or len(passwd) == 0:
-                return
-            if user is not None and passwd is not None:
-                if not self.thread.is_alive():
-                    self.thread = threading.Thread(target=lambda : self.syncTagsProcess(user, passwd))
-                    self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-                    self.thread.start()
-                    self.loadingIconThread.start()
-                else:
-                    self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
+            self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
 
 
-    def syncTagsProcess(self, user, passwd):
-        """
-        Function meant to synchronize tags for each github based module.
-    
-        Parameters
-        ----------
-        user : str
-            github username
-        passwd : str
-            github password
+    def syncTagsProcess(self):
+        """Function meant to synchronize tags for each github based module.
         """
     
-        installSynApps.sync_github_tags(user, passwd, self.install_config)
+        installSynApps.sync_github_tags(self.install_config)
         self.updateAllRefs(self.install_config)
         self.updateConfigPanel()
 
@@ -505,8 +480,10 @@ class InstallSynAppsGUI:
 # ----------------------- Loading/saving Functions -----------------------------
 
     def newConfig(self, template_type):
-        """
-        Will load a new blank config and allow user to edit/save it
+        """Will load a new blank config and allow user to edit/save it
+
+        template_type : str
+            The template type to create the configuration with
         """
 
         template_filename = 'NEW_CONFIG_ALL'
@@ -521,26 +498,47 @@ class InstallSynAppsGUI:
             self.showWarningMessage('Warning', 'Operation cancelled')
         else:
             self.writeToLog("Trying to load new default config with install location {}...\n".format(temp))
-            old_config = self.configure_path
-            self.configure_path = 'resources'
-            self.parser.configure_path = self.configure_path
-            loaded_install_config, message = self.parser.parse_install_config(config_filename=template_filename, force_location=temp, allow_illegal=True)
-            if message is not None:
-                self.valid_install = False
+            update_tags = messagebox.askyesno('Update versions', 'Would you like installSynApps to auto-update tags?')
+            if not self.thread.is_alive():
+                self.thread = threading.Thread(target=lambda : self.newConfigProcess(temp, template_type, update_tags))
+                self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+                self.thread.start()
+                self.loadingIconThread.start()
             else:
-                self.valid_install = True
+                self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
 
-            if loaded_install_config is None:
-                self.showErrorMessage('Error', 'ERROR - {}.'.format(message), force_popup=True)
-                self.parser.configure_path = old_config
-                self.configure_path = old_config
-            elif not self.valid_install:
-                self.showWarningMessage('Warning', 'WARNING - {}.'.format(message), force_popup=True)
-                self.updateAllRefs(loaded_install_config)
-                self.updateConfigPanel()
-            else:
-                self.updateAllRefs(loaded_install_config)
-                self.updateConfigPanel()
+
+    def newConfigProcess(self, install_loc, template_type, update_tags):
+        """Async creation of new install configuration. Must be done async since syncing tags may be long
+
+        Parameters
+        ----------
+        install_loc : str
+            Path to install location
+        template_type : str
+            The template name
+        update_tags : bool
+            The update tags flag
+        """
+
+        loaded_install_config, message = installSynApps.create_new_install_config(install_loc, template_type, update_versions=update_tags)
+
+        if message is not None:
+            self.valid_install = False
+        else:
+            self.valid_install = True
+
+        if loaded_install_config is None:
+            self.showErrorMessage('Error', 'ERROR - {}.'.format(message), force_popup=True)
+            self.parser.configure_path = old_config
+            self.configure_path = old_config
+        elif not self.valid_install:
+            self.showWarningMessage('Warning', 'WARNING - {}.'.format(message), force_popup=True)
+            self.updateAllRefs(loaded_install_config)
+            self.updateConfigPanel()
+        else:
+            self.updateAllRefs(loaded_install_config)
+            self.updateConfigPanel()
         self.install_loaded = False
 
 

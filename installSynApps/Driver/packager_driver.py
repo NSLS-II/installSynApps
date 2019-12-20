@@ -159,12 +159,12 @@ class Packager:
         self.grab_folder(base_path + '/startup',            top + '/base/startup')
         try:
             current_loc = os.getcwd()
-            LOG.print_command('cd {}'.format(base_path))
+            LOG.debug('cd {}'.format(base_path))
             os.chdir(base_path)
-            LOG.print_command('git describe --tags')
+            LOG.debug('git describe --tags')
             out = subprocess.check_output(['git', 'describe', '--tags'])
             LOG.debug('Checked version for EPICS base.')
-            LOG.print_command('cd {}'.format(current_loc))
+            LOG.debug('cd {}'.format(current_loc))
             os.chdir(current_loc)
             LOG.debug('Detected version git tag {} for EPICS_BASE'.format(out.decode("utf-8").strip()))
             readme_fp.write('{:<16}- {}'.format('base', out.decode("utf-8")))
@@ -224,11 +224,11 @@ class Packager:
         try:
             if module.url_type == 'GIT_URL':
                 current_loc = os.getcwd()
-                LOG.print_command('cd {}'.format(module.abs_path))
+                LOG.debug('cd {}'.format(module.abs_path))
                 os.chdir(module.abs_path)
-                LOG.print_command('git describe --tags')
+                LOG.debug('git describe --tags')
                 out = subprocess.check_output(['git', 'describe', '--tags'])
-                LOG.print_command('cd {}'.format(current_loc))
+                LOG.debug('cd {}'.format(current_loc))
                 os.chdir(current_loc)
                 LOG.debug('Detected git tag/version: {} for module {}'.format(out.decode("utf-8").strip(), module.name))
                 readme_fp.write('{:<16}- {}'.format(module_name, out.decode("utf-8")))
@@ -261,10 +261,10 @@ class Packager:
         commit_hash = None
 
         try:
-            LOG.print_command('git describe --tags')
+            LOG.debug('git describe --tags')
             out = subprocess.check_output(['git', 'describe', '--tags'])
             isa_version = out.decode('utf-8').strip()
-            LOG.print_command('git rev-parse HEAD')
+            LOG.debug('git rev-parse HEAD')
             out = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
             commit_hash = out.decode('utf-8')
         except:
@@ -319,52 +319,6 @@ class Packager:
         for module in self.install_config.get_module_list():
             if module.name != target.name and module.package == 'YES':
                 readme_fp.write('{:<16}- {}\n'.format(module.name, module.version))
-
-
-    def create_opi_folder(self, epics_dir):
-        """Function that collects autoconverted .opi files from epics_dir.
-
-        OPI screens are saved  in output_location/ad_opis and creats a tarball.
-        
-        Parameters
-        ----------
-        epics_dir : str
-            from where .opi files are collected
-
-        Returns
-        -------
-        int
-            0 if suceeded, nonzero otherwise
-        """
-
-        opi_base_dir = os.path.join(self.output_location, '__opis_temp__')
-        opi_dir = os.path.join(opi_base_dir, 'opis')
-        try:
-            os.mkdir(opi_base_dir)
-            os.mkdir(opi_dir)
-        except OSError:
-            LOG.write('Error creating ' + opi_dir + ' directory', )
-
-        for (root, dirs, files) in os.walk(epics_dir, topdown=True):
-            for name in files:
-                if '.opi' in name and 'autoconvert' in root:
-                    file_name = os.path.join(root, name)
-                    try:
-                        shutil.copy(file_name, opi_dir)
-                    except OSError:
-                        LOG.debug("Can't copy {} to {}".format(file_name, opi_dir))
-
-        opi_tarball_basename = 'opis_{}'.format(self.install_config.get_core_version())
-        opi_tarball = opi_tarball_basename
-        counter = 1
-        while os.path.exists(os.path.join(self.output_location, opi_tarball + '.tgz')):
-            opi_tarball = opi_tarball_basename + '_({})'.format(counter)
-            counter = counter + 1
-
-        out = subprocess.call(['tar', 'czf', opi_tarball + '.tgz', '-C', opi_base_dir, '.'])
-        shutil.rmtree(opi_base_dir)
-        os.rename(opi_tarball + '.tgz', os.path.join(self.output_location, opi_tarball + '.tgz'))
-        return out
 
 
     def setup_tar_staging(self, filename, readme_fp, module=None):
@@ -423,6 +377,47 @@ class Packager:
         result = self.cleanup_tar_staging(filename, readme_fp, module=module)
         readme_fp.close()
         return result
+
+
+    def create_opi_tarball(self):
+        """Function that collects autoconverted .opi files from epics_dir.
+
+        OPI screens are saved  in output_location/ad_opis and creats a tarball.
+
+        Returns
+        -------
+        int
+            0 if suceeded, nonzero otherwise
+        """
+
+        opi_base_dir = os.path.join(self.output_location, '__opis_temp__')
+        opi_dir = os.path.join(opi_base_dir, 'opis')
+        try:
+            os.mkdir(opi_base_dir)
+            os.mkdir(opi_dir)
+        except OSError:
+            LOG.write('Error creating ' + opi_dir + ' directory', )
+
+        for (root, dirs, files) in os.walk(self.install_config.install_location, topdown=True):
+            for name in files:
+                if '.opi' in name and 'autoconvert' in root:
+                    file_name = os.path.join(root, name)
+                    try:
+                        shutil.copy(file_name, opi_dir)
+                    except OSError:
+                        LOG.debug("Can't copy {} to {}".format(file_name, opi_dir))
+
+        opi_tarball_basename = 'opis_{}'.format(self.install_config.get_core_version())
+        opi_tarball = opi_tarball_basename
+        counter = 1
+        while os.path.exists(os.path.join(self.output_location, opi_tarball + '.tgz')):
+            opi_tarball = opi_tarball_basename + '_({})'.format(counter)
+            counter = counter + 1
+
+        out = subprocess.call(['tar', 'czf', opi_tarball + '.tgz', '-C', opi_base_dir, '.'])
+        shutil.rmtree(opi_base_dir)
+        os.rename(opi_tarball + '.tgz', os.path.join(self.output_location, opi_tarball + '.tgz'))
+        return out
         
 
     def create_tarball(self, filename, flat_format):
@@ -483,7 +478,7 @@ class Packager:
                 return None
 
         date_str = datetime.date.today()
-        if module is None:
+        if module_name is None:
             output_filename = '{}_AD_{}_Bin_{}_{}'.format(self.institution, self.install_config.get_core_version(), self.OS, date_str)
         else:
             output_filename = '{}_AD_{}_Bin_{}_{}_addon'.format(self.institution, self.install_config.get_core_version(), self.OS, module.name)
@@ -571,6 +566,32 @@ class Packager:
 
         # Generate the bundle
         status = self.create_single_module_tarball(filename, module)
+
+        # Stop the timer
+        elapsed = self.stop_timer()
+        LOG.write('Tarring took {} seconds'.format(elapsed))
+
+        self.create_bundle_cleanup_tool()
+
+        return status
+
+
+    def create_opi_package(self):
+
+        # Make sure output path exists
+        if not os.path.exists(self.output_location):
+            try:
+                os.mkdir(self.output_location)
+            except OSError:
+                return -1
+
+        # Start the timer
+        self.start_timer()
+
+        LOG.write('Beginning construction of opi tarball...')
+
+        # Generate the bundle
+        status = self.create_opi_tarball()
 
         # Stop the timer
         elapsed = self.stop_timer()
