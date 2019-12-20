@@ -40,7 +40,7 @@ DEVLIB2          2.10                 $(SUPPORT)/devlib2                       d
 DXP              R6-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
 DXPSITORO        R1-2                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
 DEVIOCSTATS      3.1.16               $(SUPPORT)/iocStats                      iocStats                 YES              YES              YES
-IP               R2-20                $(SUPPORT)/ip                            ip                       NO               NO               NO
+IP               R2-20                $(SUPPORT)/ip                            ip                       YES              YES              YES
 IP330            R2-9                 $(SUPPORT)/ip330                         ip330                    NO               NO               NO
 IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 NO               NO               NO
 LOVE             R3_13_base           $(SUPPORT)/love                          love                     NO               NO               NO
@@ -58,7 +58,7 @@ VME              R2-9                 $(SUPPORT)/vme                           v
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO               NO
 XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 NO               NO               NO
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
-QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   YES              YES              YES
+QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   NO               NO               NO
 
 GIT_URL=https://github.com/paulscherrerinstitute/
 

@@ -38,6 +38,7 @@ import subprocess
 import argparse
 import getpass
 import sys
+import time
 from sys import platform
 
 # InstallSynAppsModules
@@ -120,6 +121,8 @@ def parse_user_input():
     debug_group.add_argument('-p', '--printcommands',    action='store_true', help='Add this flag to print bash/batch commands run by installSynApps.')
 
     arguments = vars(parser.parse_args())
+    if arguments['customconfigure'] is not None:
+        path_to_configure = arguments['customconfigure']
 
     # Initialize logging first
     if arguments['printcommands']:
@@ -141,7 +144,6 @@ def parse_user_input():
         clean_exit()
 
     elif arguments['customconfigure'] is not None and arguments['updateversions']:
-        path_to_configure = arguments['customconfigure']
         print('Updating module versions for configuration {}'.format(path_to_configure))
         if not os.path.exists(os.path.join(path_to_configure, 'INSTALL_CONFIG')):
             print("**INSTALL_CONFIG file not found in specified directory!**\nAborting...")
@@ -167,6 +169,8 @@ def parse_user_input():
 
 
 # ----------------- Run the script ------------------------
+
+script_start_time = time.time()
 
 path_to_configure, force_install_path, args = parse_user_input()
 path_to_configure = os.path.abspath(path_to_configure)
@@ -383,6 +387,7 @@ else:
             print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
         else:
             print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
+        print('Build step completed in {} seconds'.format(time.time() - script_start_time))
 
     else:
         print("Build aborted... Exiting.")
@@ -409,9 +414,8 @@ if create_tarball == 'y':
     else:
         print('Bundle generated at: {}'.format(output_filename))
 
-
-print()
 if not yes:
+    print()
     create_add_on_tarball = input('Would you like to create an add-on tarball to add a module to an existing bundle? (y/n) > ')
 else:
     create_add_on_tarball = 'n'
