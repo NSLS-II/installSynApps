@@ -146,7 +146,6 @@ ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMe
 ADARAVIS            master      $(AREA_DETECTOR)/ADAravis                   ADAravis                        YES             YES             YES
 aravisGigE          R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO              NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO              NO
-ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         YES             YES             YES
 ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO              NO
 ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO              NO
 ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             YES             YES

@@ -14,3 +14,4 @@ Below is a list of additional `configure` directories included here:
 * `minConfigureWindows` -  a minimum required install config for compiling EPICS base, support, areaDetector, and ADSimDetector on windows in the `C:\epics` default dir
 * `visionPluginConfig` - a configure directory that adds all NSLS2 developed computer vision plugins as enabled by default. (Note that this config will build OpenCV from source, and so will take a significantly longer duration than most other configurations)
 * `fullConfigureLinux` - a configure directory that contains AreaDetector and Motor modules
+* `configTravis` - an install configuration used by the Travis-CI automated testing to ensure builds can complete OK.

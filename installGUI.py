@@ -34,8 +34,7 @@ import installSynApps.ViewModel as ViewModel
 
 
 class InstallSynAppsGUI:
-    """
-    Class representing GUI for using installSynApps
+    """Class representing GUI for using installSynApps
 
     Attributes
     ----------
@@ -95,7 +94,8 @@ class InstallSynAppsGUI:
     """
 
     def __init__(self, master):
-        """ Constructor for InstallSynAppGUI """
+        """Constructor for InstallSynAppGUI
+        """
 
         # Initialize the frame and window
         self.master = master
@@ -307,8 +307,7 @@ class InstallSynAppsGUI:
 
 
     def loadingLoop(self):
-        """
-        Simple function for playing animation when main process thread is executing
+        """Simple function for playing animation when main process thread is executing
         """
 
         icons = ['\\', '|', '/', '-']
@@ -330,15 +329,15 @@ class InstallSynAppsGUI:
 
 
     def resetLog(self):
-        """ Function that resets the log """
+        """Function that resets the log
+        """
 
         self.log.delete('1.0', END)
         self.writeToLog(self.initLogText())
 
 
     def updateConfigPanel(self):
-        """
-        Function that refreshes the config panel contents if a new InstallConfiguration is loaded
+        """Function that refreshes the config panel contents if a new InstallConfiguration is loaded
         """
 
         self.configPanel.delete('1.0', END)
@@ -371,7 +370,8 @@ class InstallSynAppsGUI:
 
 
     def updateAllRefs(self, install_config):
-        """ Function that updates all references to install config and configure path """
+        """Function that updates all references to install config and configure path
+        """
 
         self.install_config = install_config
         self.writer.install_config = self.install_config
@@ -385,7 +385,8 @@ class InstallSynAppsGUI:
 
 
     def recheckDeps(self):
-        """ Wrapper function for checking for installed dependancies """
+        """Wrapper function for checking for installed dependancies
+        """
 
         self.writeToLog('Checking for installed dependancies...\n')
         inPath, missing = self.builder.check_dependencies_in_path()
@@ -401,7 +402,8 @@ class InstallSynAppsGUI:
 
 
     def close_cleanup(self):
-        """ Function that asks user if he/she wants to close, and cleans up threads """
+        """Function that asks user if he/she wants to close, and cleans up threads
+        """
 
         if self.thread.is_alive():
             self.showWarningMessage('Warning', 'Qutting while process is running may result in invalid installation!', force_popup=True)
@@ -415,20 +417,23 @@ class InstallSynAppsGUI:
 
 
     def writeToLog(self, text):
-        """ Function that writes to log """
+        """Function that writes to log
+        """
 
         self.log.insert(INSERT, text)
         self.log.see(END)
 
 
     def writeToConfigPanel(self, text):
-        """ Function that writes to the config panel """
+        """Function that writes to the config panel
+        """
 
         self.configPanel.insert(INSERT, text)
 
 
     def showErrorMessage(self, title, text, force_popup = False):
-        """ Function that displays error popup and log message """
+        """Function that displays error popup and log message
+        """
 
         if self.showPopups.get() or force_popup:
             messagebox.showerror(title, text)
@@ -436,7 +441,8 @@ class InstallSynAppsGUI:
 
 
     def showWarningMessage(self, title, text, force_popup = False):
-        """ Function that displays warning popup and log message """
+        """Function that displays warning popup and log message
+        """
 
         if self.showPopups.get() or force_popup:
             messagebox.showwarning(title, text)
@@ -444,7 +450,8 @@ class InstallSynAppsGUI:
 
 
     def showMessage(self, title, text, force_popup = False):
-        """ Function that displays info popup and log message """
+        """Function that displays info popup and log message
+        """
 
         if self.showPopups.get() or force_popup:
             messagebox.showinfo(title, text)
@@ -472,7 +479,7 @@ class InstallSynAppsGUI:
         """Function meant to synchronize tags for each github based module.
         """
     
-        installSynApps.sync_github_tags(self.install_config)
+        installSynApps.sync_all_module_tags(self.install_config, save_path=self.configure_path)
         self.updateAllRefs(self.install_config)
         self.updateConfigPanel()
 
@@ -482,6 +489,8 @@ class InstallSynAppsGUI:
     def newConfig(self, template_type):
         """Will load a new blank config and allow user to edit/save it
 
+        Parameters
+        ----------
         template_type : str
             The template type to create the configuration with
         """
@@ -543,8 +552,9 @@ class InstallSynAppsGUI:
 
 
     def loadConfig(self):
-        """
-        Function that opens file dialog asking for configure directory,
+        """Function that loads a new configure directory
+        
+        Opens file dialog asking for configure directory,
         then if it is valid, loads it into an InstallConfiguration object,
         and updates the config panel.
         """
@@ -585,7 +595,8 @@ class InstallSynAppsGUI:
 
 
     def saveConfig(self):
-        """ Function that saves an existing config, or opens save as if it was not previously saved. """
+        """Function that saves an existing config, or opens save as if it was not previously saved.
+        """
 
         self.writeToLog("Saving...\n")
         if not self.install_loaded:
@@ -595,7 +606,13 @@ class InstallSynAppsGUI:
 
 
     def saveConfigAs(self, force_loc = None):
-        """ Function that opens a save as Dialog for saving currently loaded confguration """
+        """Function that opens a save as Dialog for saving currently loaded confguration
+        
+        Parameters
+        ----------
+        force_loc : str
+            Force save location, otherwise overwrite existing one.
+        """
 
         if self.install_config is None:
             self.showErrorMessage('Save error', 'No loaded install config to save.', force_popup=True)
@@ -635,8 +652,7 @@ class InstallSynAppsGUI:
 
 
     def saveLog(self, saveDir = None):
-        """
-        Function that saves the contents of the log to a file.
+        """Function that saves the contents of the log to a file.
 
         Parameters
         ----------
@@ -659,7 +675,8 @@ class InstallSynAppsGUI:
 
 
     def selectPackageDestination(self):
-        """ Function that asks the user to select an output destination for the created tarball """
+        """Function that asks the user to select an output destination for the created tarball
+        """
 
         package_output = filedialog.askdirectory(initialdir = '.', title = 'Select output package directory')
         if len(package_output) < 1:
@@ -674,7 +691,8 @@ class InstallSynAppsGUI:
 
 
     def setOutputPackageName(self):
-        """ Function that sets the output package name """
+        """Function that sets the output package name
+        """
 
         self.writeToLog('Setting output package name...\n')
         package_name = simpledialog.askstring('Enter an output name', 'Output Package Name - typically OS/Distro.')
@@ -686,7 +704,8 @@ class InstallSynAppsGUI:
 
 
     def getInitIOCs(self):
-        """ Function that gets initIOCs from github. """
+        """Function that gets initIOCs from github.
+        """
 
         self.writeToLog('Fetching the initIOC script...\n')
         out = subprocess.Popen(['git', 'clone', 'https://github.com/epicsNSLS2-deploy/initIOC'])
@@ -694,7 +713,8 @@ class InstallSynAppsGUI:
 
 
     def launchInitIOCs(self):
-        """ Function that launches the GUI version of initIOCs """
+        """Function that launches the GUI version of initIOCs
+        """
 
         if os.path.exists('./initIOC/initIOCs.py'):
             self.writeToLog('Launching initIOC GUI...\n')
@@ -714,7 +734,8 @@ class InstallSynAppsGUI:
 
 
     def openEditWindow(self, edit_window_str):
-        """ Function that opens up an Edit Config window """
+        """Function that opens up an Edit Config window
+        """
 
         window = None
 
@@ -744,7 +765,8 @@ class InstallSynAppsGUI:
 
 
     def editCoreCount(self):
-        """ Function that prompts the user to enter a core count """
+        """Function that prompts the user to enter a core count
+        """
 
         if self.singleCore.get():
             self.showMessage('Message', 'Currently single core mode is enabled, please toggle off to set core count', force_popup=True)
@@ -775,7 +797,8 @@ class InstallSynAppsGUI:
 #--------------------------------- Help/Documentation Functions -----------------------------
 
     def loadHelp(self):
-        """ Simple function that displays a help message """
+        """Simple function that displays a help message
+        """
 
         helpMessage = "---------------------------------------------\n"
         helpMessage = helpMessage + "Welcome to the installSynApps GUI.\nThis program is designed to help you rapidly build EPICS and synApps.\n\n"
@@ -789,7 +812,8 @@ class InstallSynAppsGUI:
 
 
     def printDependencies(self):
-        """ Prints some information regarding required dependencies for installSynApps """
+        """Prints some information regarding required dependencies for installSynApps
+        """
 
         self.writeToLog('---------------------------------------------------\n')
         self.writeToLog('Dependencies required for installSynApps:\n')
@@ -798,20 +822,21 @@ class InstallSynAppsGUI:
         self.writeToLog(' * Linux - gcc/g++ (install with package manager)\n')
         self.writeToLog(' * Windows - MSVC/MSVC++ (install with Visual Studio 2015+)\n\n')
         self.writeToLog('Additional optional python3 modules used, install with pip:\n')
-        self.writeToLog(' * distro\n') 
-        self.writeToLog(' * pygithub\n\n')
+        self.writeToLog(' * distro\n\n') 
         self.writeToLog('All dependencies must be in system path during build time.\n')
         self.writeToLog('---------------------------------------------------\n')
 
 
     def showAbout(self):
-        """ Simple function that shows about message """
+        """Simple function that shows about message
+        """
 
         self.showMessage('About', self.initLogText())
 
 
     def printLoadedConfigInfo(self):
-        """ Simple function that prints all info about a loaded configuration """
+        """Simple function that prints all info about a loaded configuration
+        """
 
         if self.install_config is None:
             self.showErrorMessage('Error', 'ERROR - No loaded install config found', force_popup=True)
@@ -820,7 +845,8 @@ class InstallSynAppsGUI:
 
 
     def depScriptHelp(self):
-        """ Function that displays help message for adding dependancy script """
+        """Function that displays help message for adding dependancy script
+        """
 
         self.writeToLog('Use the Edit -> Edit Custom Build Scripts menu to add/remove\n')
         self.writeToLog('custom build scripts for each module.\nOn windows they will be saved as')
@@ -831,7 +857,8 @@ class InstallSynAppsGUI:
 
 
     def printPathInfo(self):
-        """ Function that prints a series of paths that are currently loaded. """
+        """Function that prints a series of paths that are currently loaded.
+        """
 
         self.writeToLog('-----------------------------------------\n')
         self.writeToLog('Install Location: {}\n'.format(self.install_config.install_location))
@@ -896,7 +923,8 @@ class InstallSynAppsGUI:
 
 
     def installDependenciesProcess(self):
-        """ Function that calls a dependency script if required """
+        """Function that calls a dependency script if required
+        """
 
         self.writeToLog('Running dependency script...\n')
         if platform == 'win32':
@@ -913,7 +941,13 @@ class InstallSynAppsGUI:
 
 
     def cloneConfigProcess(self):
-        """ Function that clones all specified modules """
+        """Function that clones all specified modules
+        
+        Returns
+        -------
+        int
+            Return code
+        """
 
         failed = self.cloner.clone_and_checkout()
         if len(failed) > 0:
@@ -924,7 +958,13 @@ class InstallSynAppsGUI:
 
 
     def updateConfigProcess(self):
-        """ Function that updates RELEASE and configuration files """
+        """Function that updates RELEASE and configuration files
+
+        Returns
+        -------
+        int
+            Return code
+        """
         
         self.writeToLog('----------------------------\n')
         self.writeToLog('Updating all RELEASE and configuration files...')
@@ -939,7 +979,13 @@ class InstallSynAppsGUI:
 
 
     def injectFilesProcess(self):
-        """ Function that injects settings into configuration files """
+        """Function that injects settings into configuration files
+        
+        Returns
+        -------
+        int
+            Return code
+        """
 
         self.writeToLog('Starting file injection process.\n')
         self.updater.perform_injection_updates()
@@ -948,7 +994,13 @@ class InstallSynAppsGUI:
 
 
     def buildConfigProcess(self):
-        """ Function that builds all specified modules """
+        """Function that builds all specified modules
+        
+        Returns
+        -------
+        int
+            Return code
+        """
 
         status = 0
         self.writeToLog('-----------------------------------\n')
@@ -972,7 +1024,8 @@ class InstallSynAppsGUI:
 
 
     def autorunProcess(self):
-        """ Function that performs all other processes sequentially """
+        """Function that performs all other processes sequentially
+        """
 
         self.showMessage('Start Autorun', 'Start Autorun - Deps -> Clone -> Checkout -> Update -> Build -> Generate')
         if self.installDep.get():
@@ -1002,7 +1055,8 @@ class InstallSynAppsGUI:
 
 
     def packageConfigProcess(self):
-        """ Function that packages the specified modules into a tarball """
+        """Function that packages the specified modules into a tarball
+        """
 
         self.writeToLog('Starting packaging...\n')
         self.package_output_filename = self.packager.create_bundle_name()
@@ -1016,7 +1070,8 @@ class InstallSynAppsGUI:
 
 
     def copyAndUnpackProcess(self):
-        """ Function that allows user to move their packaged tarball and unpack it. """
+        """Function that allows user to move their packaged tarball and unpack it.
+        """
 
         self.writeToLog('Starting move + unpack operation...\n')
         if self.package_output_filename is None:
