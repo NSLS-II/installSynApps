@@ -3,12 +3,15 @@ language: python
 python:
  - "3.4"
  - "3.5"
- - "3.5-dev"
  - "3.6"
- - "3.6-dev"
  - "3.7"
- - "3.7-dev"
+ - "3.8"
 
+jobs:
+  include:
+    - if: branch = master
+      python: "3.6"
+      script: python3 -u installCLI.py -y -c addtlConfDirs/minConfigureLinux -i /epics -p
 
 install: pip install -r requirements_dev.txt
 

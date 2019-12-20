@@ -2,6 +2,25 @@
 
 <!--RELEASE START-->
 
+## R2-4 (???-January-2020)
+
+* Features Added
+    * OPI directory generation - Creates OPI bundle from all modules in configuration
+    * Add-On Generation. Create an add on package to add new modules to existing bundles.
+    * Parser now can update module path macros in macro files prior to configure update step.
+
+* Bug Fixes/Improvements
+    * Removed pygithub dependancy. Versions are now updated using `git ls-remote`
+    * Improved version detection. Tags are now better analyzed to avoid false positives.
+    * Fix bug on version sync in `installCLI` where updated versions wouldn't save
+    * Moved printing of commands to logging module
+    * Reorganize packager to remove redundant code
+    * In-code documentation improved for `installGUI`
+
+* Future Plans
+    * Improve automation for version updates (So Docker-Builder can perform these itself)
+    * Add error handling for an expanded set of edge-cases
+
 ## R2-3 (12-November-2019)
 
 * Features Added

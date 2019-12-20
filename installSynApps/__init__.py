@@ -28,7 +28,7 @@ else:
 # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
-__version__     = "R2-3"
+__version__     = "R2-4"
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright (c) Brookhaven National Laboratory 2018-2019"
 __environment__ = "Python Version: {}, OS Class: {}".format(sys.version.split()[0], OS_class)
