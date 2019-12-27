@@ -148,11 +148,6 @@ def parse_user_input():
         if not os.path.exists(os.path.join(path_to_configure, 'INSTALL_CONFIG')):
             print("**INSTALL_CONFIG file not found in specified directory!**\nAborting...")
             clean_exit()
-        if not WITH_PYGITHUB:
-            print("**PyGithub module required for version updates.**")
-            print("**Install with pip install pygithub**")
-            print("Exiting...")
-            clean_exit()
         parser = IO.config_parser.ConfigParser(path_to_configure)
         install_config, message = parser.parse_install_config(allow_illegal=True)
         installSynApps.sync_github_tags(install_config, path_to_configure)
