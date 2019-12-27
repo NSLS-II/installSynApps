@@ -179,6 +179,11 @@ class ConfigParser:
                         elif install_config.is_install_valid() == 0:
                             try:
                                 os.mkdir(install_config.install_location)
+                            except PermissionError:
+                                if not allow_illegal:
+                                    return None, 'Permission denied to create install location'
+                                else:
+                                    message = 'Permission denied to create install location'
                             except FileNotFoundError:
                                 if not allow_illegal:
                                     return None, 'Install filepath not valid'

@@ -12,7 +12,7 @@ jobs:
     - stage: Update Version Tags
       if: branch = master
       python: "3.6"
-      script: python3 -u installCLI.py -v -c addtlConfDirs/configureTravis -i $(pwd)/epics
+      script: python3 -u installCLI.py -v -c addtlConfDirs/configureTravis
     - stage: Execute Test Build
       if: branch = master
       python: "3.6"
