@@ -1,10 +1,6 @@
-# Saved by installSynApps on 2019-11-21 15:12:31.723300
+# Saved by installSynApps on 2019-12-27 11:45:06.268636
 
 JPEG_EXTERNAL=YES
 WITH_OPENCV_VIDEO=YES
 WITH_OPENCV=YES
 OPENCV_EXTERNAL=YES
-#STATIC_BUILD=NO
-#OPENCV=$(ADCOMPVISION)/adcvSupport/os/linux-x86_64
-#OPENCV_LIB=$(ADCOMPVISION)/adcvSupport/os/linux-x86_64/lib
-#OPENCV_INCLUDE=$(ADCOMPVISION)/adcvSupport/os/linux-x86_64/include

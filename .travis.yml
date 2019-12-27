@@ -11,6 +11,7 @@ jobs:
   include:
     - if: branch = master
       python: "3.6"
+      script: python3 -u installCLI.py -v -c addtlConfDirs/configureTravis
       script: python3 -u installCLI.py -y -c addtlConfDirs/configureTravis -i $(pwd)/epics -p -t 2
 
 install: pip install -r requirements_dev.txt
