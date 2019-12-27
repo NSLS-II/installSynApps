@@ -84,7 +84,7 @@ class ConfigWriter:
         for module in self.install_config.get_module_list():
             old_script = module.custom_build_script_path
             if old_script is not None:
-                if os.path.exists(old_script):
+                if os.path.exists(old_script) and not os.path.exists(os.path.join(build_script_out, os.path.basename(old_script))):
                     LOG.debug('Copying module custom build script: {}'.format(old_script))
                     try:
                         shutil.copyfile(old_script, os.path.join(build_script_out, os.path.basename(old_script)))
@@ -115,9 +115,11 @@ class ConfigWriter:
 
         if overwrite_existing and os.path.exists(filepath):
             try:
-                shutil.rmtree(filepath)
+                shutil.rmtree(os.path.join(filepath, 'injectionFiles'))
+                shutil.rmtree(os.path.join(filepath, 'macroFiles'))
+                os.remove(os.path.join(filepath, 'INSTALL_CONFIG'))
             except PermissionError:
-                return False, 'Insufficeint Permissions'
+                return False, 'Insufficient Permissions'
 
         # Check if path exists, create it if it doesn't
         if not os.path.exists(filepath):
@@ -131,13 +133,15 @@ class ConfigWriter:
                 elif err.errno == errno.ENOSPC:
                     return False, 'No space on device!'
                 elif err.errno == errno.EROFS:
-                    return False, 'Read Only File System!'
+                    return False, 'Read-Only File System!'
                 else:
                     return False, 'Unknown Error'
         try:
             os.mkdir(os.path.join(filepath, 'injectionFiles'))
             os.mkdir(os.path.join(filepath, 'macroFiles'))
-            os.mkdir(os.path.join(filepath, 'customBuildScripts'))
+            if not os.path.exists(os.path.join(filepath, 'customBuildScripts')):
+                os.mkdir(os.path.join(filepath, 'customBuildScripts'))
+
         except OSError:
             LOG.write('Failed to make configuration directories!')
             return False, 'Unknown Error'

@@ -71,6 +71,15 @@ def clean_exit():
     exit()
 
 
+# Exit with an error code
+def err_exit(error_code):
+    """Shuts down logger, exits script with error code
+    """
+    
+    IO.logger.close_logger()
+    exit(error_code)
+
+
 def create_new_install_config():
     """Creates new install configuration
     """
@@ -158,7 +167,7 @@ def parse_user_input():
         print('ERROR - Update versions flag selected but no configure directory given.')
         print('Rerun with the -c INSTALL_CONFIG_PATH flag')
         print('Aborting...')
-        clean_exit()
+        err_exit(1)
 
     return path_to_configure, arguments['installpath'], arguments
 
@@ -264,7 +273,7 @@ if not status:
     print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
     print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
     print("Critical dependancy error, abort.")
-    clean_exit()
+    err_exit(2)
 
 
 #########################################################################
@@ -301,7 +310,7 @@ else:
                 print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
                 if module.name in builder.critical_modules:
                     print("Critical clone error... abort.")
-                    clean_exit()
+                    err_exit(3)
             print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
 
     print("----------------------------------------------")
@@ -369,7 +378,7 @@ else:
                     print("**ERROR - Build failed - {}**".format(message))
                     print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
                     print('**Critical build error - abort...**')
-                    clean_exit()
+                    err_exit(4)
                 else:
                     install_config.get_module_by_name(failed).package = "NO"
 
@@ -386,7 +395,7 @@ else:
 
     else:
         print("Build aborted... Exiting.")
-        clean_exit()
+        err_exit(5)
 
 
 #########################################################################
@@ -405,7 +414,7 @@ if create_tarball == 'y':
     ret = packager.create_package(output_filename, flat_format=args['flatbinaries'])
     if ret != 0:
         print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
-        clean_exit()
+        err_exit(6)
     else:
         print('Bundle generated at: {}'.format(output_filename))
 
@@ -419,7 +428,7 @@ if create_add_on_tarball == 'y':
     output_filename = packager.create_bundle_name(module_name=module_name)
     if output_filename is None:
         print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
-        clean_exit()
+        err_exit(7)
     ret = packager.create_add_on_package(output_filename, module_name)
 
 print()
@@ -431,7 +440,7 @@ if create_opi_dir == 'y':
     ret = packager.create_opi_package()
     if ret != 0:
         print('ERROR - Failed to create opi bundle.')
-        clean_exit()
+        err_exit(8)
     else:
         print('OPI screen tarball generated.')
 
