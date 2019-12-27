@@ -150,7 +150,7 @@ def parse_user_input():
             clean_exit()
         parser = IO.config_parser.ConfigParser(path_to_configure)
         install_config, message = parser.parse_install_config(allow_illegal=True)
-        installSynApps.sync_github_tags(install_config, path_to_configure)
+        installSynApps.sync_all_module_tags(install_config, path_to_configure)
         print('Done.')
         clean_exit()
 
