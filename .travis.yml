@@ -9,14 +9,15 @@ python:
 
 jobs:
   include:
-    - if: branch = master
+    - stage: Update Version Tags
+      if: branch = master
       python: "3.6"
-      - stage: Update version tags
-        script: python3 -u installCLI.py -v -c addtlConfDirs/configureTravis
-      - stage: Execute test build
-        script: python3 -u installCLI.py -y -c addtlConfDirs/configureTravis -i $(pwd)/epics -p -t 2
+      script: python3 -u installCLI.py -v -c addtlConfDirs/configureTravis
+    - stage: Execute Test Build
+      if: branch = master
+      python: "3.6"
+      script: python3 -u installCLI.py -y -c addtlConfDirs/configureTravis -i $(pwd)/epics -p -t 2
 
 install: pip install -r requirements_dev.txt
 
 script: pytest
-
