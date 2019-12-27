@@ -315,6 +315,15 @@ class Packager:
 
 
     def add_versions_from_install_config(self, readme_fp, target):
+        """Gets version number from install config for module.
+
+        Parameters
+        ----------
+        readme_fp : open file
+            The opened readme file pointer
+        target : InstallModule
+            install module to get the version number from
+        """
 
         for module in self.install_config.get_module_list():
             if module.name != target.name and module.package == 'YES':
@@ -322,6 +331,17 @@ class Packager:
 
 
     def setup_tar_staging(self, filename, readme_fp, module=None):
+        """Function that creates tar staging point, and writes initial readme info.
+
+        Parameters
+        ----------
+        filename : str
+            file path string
+        readme_fp : open file
+            The opened readme file pointer
+        module : InstallModule
+            Optional install module to create single module add-on package
+        """
 
         if os.path.exists('__temp__'):
             shutil.rmtree('__temp__')
@@ -341,9 +361,26 @@ class Packager:
 
 
     def cleanup_tar_staging(self, filename, readme_fp, module=None):
+        """Function that cleans up tar staging point, and closes readme file.
+
+        Parameters
+        ----------
+        filename : str
+            file path string
+        readme_fp : open file
+            The opened readme file pointer
+        module : InstallModule
+            Optional install module to create single module add-on package
+        
+        Returns
+        -------
+        int
+            Return code of tar creation call.
+        """
         
         readme_fp.write('\n\n')
         self.grab_configuration_used('__temp__', readme_fp, module)
+        readme_fp.close()
         LOG.debug('Generating README file with module version and append instructions...')
         shutil.copy(os.path.join(self.output_location, 'README_{}.txt'.format(filename)), os.path.join('__temp__', 'README_{}.txt'.format(filename)))
 
@@ -375,7 +412,6 @@ class Packager:
         readme_fp.write('\nThe module was built against the following versions:\n\n')
         self.add_versions_from_install_config(readme_fp, module)
         result = self.cleanup_tar_staging(filename, readme_fp, module=module)
-        readme_fp.close()
         return result
 
 
@@ -459,7 +495,6 @@ class Packager:
 
 
         result = self.cleanup_tar_staging(filename, readme_fp)
-        readme_fp.close()
         return result
 
 
@@ -513,13 +548,20 @@ class Packager:
 
     def create_package(self, filename, flat_format=True):
         """Top level packager driver function.
-        
+
         Creates output directory, generates filename, creates the tarball, and measures time.
+
+        Parameters
+        ----------
+        filename : str
+            filename of output bundle
+        flat_format : bool
+            Flag to specify flat vs. non-flat binaries
 
         Returns
         -------
-        double
-            elapsed time if success, error code otherwise
+        int
+            status of tar creation command
         """
 
         # Make sure output path exists
@@ -547,6 +589,23 @@ class Packager:
 
 
     def create_add_on_package(self, filename, module_name):
+        """Top level packager driver function for creating addon packages.
+
+        Creates output directory, generates filename, creates the tarball, and measures time.
+
+
+        Parameters
+        ----------
+        filename : str
+            filename of output bundle
+        module_name : str
+            name of module to create an add-on package for
+
+        Returns
+        -------
+        int
+            status of tar creation command
+        """
 
         module = self.install_config.get_module_by_name(module_name)
         if module is None:
@@ -577,6 +636,13 @@ class Packager:
 
 
     def create_opi_package(self):
+        """Function that creates bundle of all opi files.
+
+        Returns
+        -------
+        int
+            status of tar creation command
+        """
 
         # Make sure output path exists
         if not os.path.exists(self.output_location):

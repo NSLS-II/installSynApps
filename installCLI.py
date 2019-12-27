@@ -2,34 +2,44 @@
 
 """Python script for running the installSynApps module through the CLI
 
-usage: installCLI.py [-h] [-y] [-d] [-c CUSTOMCONFIGURE] [-t THREADS] [-s]
-                     [-i INSTALLPATH] [-n] [-p] [-v]
+usage: installCLI.py [-h] [-i INSTALLPATH] [-c CUSTOMCONFIGURE] [-n] [-v] [-y]
+                     [-d] [-f] [-t THREADS] [-l] [-m] [-p]
 
 installSynApps for CLI EPICS and synApps auto-compilation
 
 optional arguments:
   -h, --help            show this help message and exit
-  -y, --forceyes        Add this flag to automatically go through all of the
-                        installation steps without prompts
-  -d, --dependency      Add this flag to install dependencies via a dependency
-                        script.
-  -c CUSTOMCONFIGURE, --customconfigure CUSTOMCONFIGURE
-                        Use an external configuration directory. Note that it
-                        must have the same structure as the default one
-  -t THREADS, --threads THREADS
-                        Define a limit on the number of threads that make is
-                        allowed to use
-  -s, --singlethread    Flag that forces make to run on only one thread. Use
-                        this for low power devices.
+
+configuration options:
   -i INSTALLPATH, --installpath INSTALLPATH
                         Define an override install location to use instead of
-                        the one read from INSTALL_CONFIG
+                        the one read from INSTALL_CONFIG.
+  -c CUSTOMCONFIGURE, --customconfigure CUSTOMCONFIGURE
+                        Use an external configuration directory. Note that it
+                        must have the same structure as the default one.
   -n, --newconfig       Add this flag to use installCLI to create a new
                         install configuration.
-  -p, --printcommands   Add this flag for installCLI to print commands run
-                        during the build process.
   -v, --updateversions  Add this flag to update module versions based on
                         github tags. Must be used with -c flag.
+
+build options:
+  -y, --forceyes        Add this flag to automatically go through all of the
+                        installation steps without prompts.
+  -d, --dependency      Add this flag to install dependencies via a dependency
+                        script.
+  -f, --flatbinaries    Add this flag if you wish for output binary bundles to
+                        have a flat format.
+  -t THREADS, --threads THREADS
+                        Define a limit on the number of threads that make is
+                        allowed to use.
+
+logging options:
+  -l, --savelog         Add this flag to save the build log to a file in the
+                        logs/ directory.
+  -m, --debugmessages   Add this flag to enable printing verbose debug
+                        messages.
+  -p, --printcommands   Add this flag to print bash/batch commands run by
+                        installSynApps.
 """
 
 # Support python modules
