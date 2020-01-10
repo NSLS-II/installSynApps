@@ -295,7 +295,7 @@ class Packager:
                 readme_fp.write('This add on tarball contains a folder with a compiled version of {}.\n'.format(module.name))
                 readme_fp.write('To use it with an existing bundle, please copy the folder into {} in the target bundle.\n'.format(module.rel_path))
                 readme_fp.write('It is also recommended to edit the build-config for the bundle to reflect the inclusion of this module.\n\n')
-            readme_fp.write('Build configuration:')
+            readme_fp.write('Build configuration:\n\n')
             readme_fp.write('installSynApps Version: {}\n\n'.format(isa_version))
             if isa_commit_hash is not None:
                 readme_fp.write('To grab this version:\n\n\tgit clone https://github.com/epicsNSLS2-deploy/installSynApps\n')
