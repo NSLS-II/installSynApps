@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""GUI class for the installSynApps module
+"""GUI client for the installSynApps module
 
 This GUI solution allows for much easier use of the installSynApps module 
 to clone, update, and build the EPICS and synApps software stack.
@@ -105,6 +105,7 @@ class InstallSynAppsGUI:
         frame = Frame(self.master)
         frame.pack()
 
+        # We want log messages to display in the log window.
         IO.logger.assign_write_function(self.writeToLog)
 
         # core count, dependency install, and popups toggles
@@ -115,7 +116,7 @@ class InstallSynAppsGUI:
         self.singleCore = tk.BooleanVar()
         self.singleCore.set(False)
 
-        # Debug togges
+        # Debug toggles
         self.showDebug = tk.BooleanVar()
         self.showDebug.set(False)
         self.showCommands = tk.BooleanVar()
@@ -123,9 +124,11 @@ class InstallSynAppsGUI:
         self.generateLogFile = tk.BooleanVar()
         self.generateLogFile.set(False)
 
+        # Toggle for generating flat/non-flat bundles.
         self.binariesFlatToggle = tk.BooleanVar()
         self.binariesFlatToggle.set(True)
 
+        # Initialize the menubar
         menubar = Menu(self.master)
 
         # File menu
@@ -205,10 +208,11 @@ class InstallSynAppsGUI:
 
         self.master.config(menu=menubar)
 
-        self.msg = "Welcome to installSynApps!"
+        # Welcome message
+        self.msg = "installSynApps GUI - {}".format(installSynApps.__version__)
 
         # title label
-        self.topLabel       = Label(frame, text = self.msg, width = '25', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
+        self.topLabel       = Label(frame, text = self.msg, width = '40', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
         self.topLabel.grid(row = 0, column = 0, padx = 10, pady = 10, columnspan = 2)
 
         # Control buttons
@@ -253,6 +257,7 @@ class InstallSynAppsGUI:
         self.deps_found = True
         self.install_loaded = False
 
+        # Configure metadata, read from existing saved metadata
         self.metacontroller = ViewModel.meta_pref_control.MetaDataController()
         if 'configure_path' in self.metacontroller.metadata.keys():
             self.configure_path = self.metacontroller.metadata['configure_path']
@@ -266,7 +271,6 @@ class InstallSynAppsGUI:
 
         # installSynApps options, initialzie + read default configure files
         self.parser = IO.config_parser.ConfigParser(self.configure_path)
-
         self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
 
         if message is not None:
@@ -285,6 +289,8 @@ class InstallSynAppsGUI:
         self.updater        = Driver.update_config_driver.UpdateConfigDriver(self.configure_path, self.install_config)
         self.builder        = Driver.build_driver.BuildDriver(self.install_config, 0)
         self.packager       = Driver.packager_driver.Packager(self.install_config)
+
+        # Check package location against saved metadata
         if 'package_location' in self.metacontroller.metadata.keys():
             self.packager.output_location = self.metacontroller.metadata['package_location']
             self.writeToLog('Loaded package output location: {}\n'.format(self.packager.output_location))
@@ -294,6 +300,7 @@ class InstallSynAppsGUI:
 
         self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
 
+        # Check for all required dependencies
         self.recheckDeps()
 
         if self.install_config is not None:
@@ -371,17 +378,22 @@ class InstallSynAppsGUI:
 
     def updateAllRefs(self, install_config):
         """Function that updates all references to install config and configure path
+
+        Parameters
+        ----------
+        install_config : InstallConfiguration
+            the new install config that was loaded.
         """
 
-        self.install_config = install_config
-        self.writer.install_config = self.install_config
-        self.cloner.install_config = self.install_config
-        self.updater.install_config = self.install_config
-        self.updater.path_to_configure = self.configure_path
+        self.install_config             = install_config
+        self.writer.install_config      = self.install_config
+        self.cloner.install_config      = self.install_config
+        self.updater.install_config     = self.install_config
+        self.updater.path_to_configure  = self.configure_path
+        self.builder.install_config     = self.install_config
+        self.packager.install_config    = self.install_config
+        self.autogenerator.install_config           = self.install_config
         self.updater.config_injector.install_config = self.install_config
-        self.builder.install_config = self.install_config
-        self.packager.install_config = self.install_config
-        self.autogenerator.install_config = self.install_config
 
 
     def recheckDeps(self):
@@ -402,7 +414,7 @@ class InstallSynAppsGUI:
 
 
     def close_cleanup(self):
-        """Function that asks user if he/she wants to close, and cleans up threads
+        """Function that asks user if he/she wants to close, and cleans up threads, logger, and saves metadata
         """
 
         if self.thread.is_alive():
@@ -418,6 +430,11 @@ class InstallSynAppsGUI:
 
     def writeToLog(self, text):
         """Function that writes to log
+
+        Parameters
+        ----------
+        text : str
+            The text to write to the log
         """
 
         self.log.insert(INSERT, text)
@@ -426,13 +443,27 @@ class InstallSynAppsGUI:
 
     def writeToConfigPanel(self, text):
         """Function that writes to the config panel
+
+        Parameters
+        ----------
+        text : str
+            The text to write to the loaded install config panel
         """
 
         self.configPanel.insert(INSERT, text)
 
 
-    def showErrorMessage(self, title, text, force_popup = False):
+    def showErrorMessage(self, title, text, force_popup=False):
         """Function that displays error popup and log message
+
+        Parameters
+        ----------
+        title : str
+            Message title
+        text : str
+            Message text
+        force_popup : bool
+            Flag that forces popup even if show popups is set to NO.
         """
 
         if self.showPopups.get() or force_popup:
@@ -440,8 +471,17 @@ class InstallSynAppsGUI:
         self.writeToLog(text + "\n")
 
 
-    def showWarningMessage(self, title, text, force_popup = False):
+    def showWarningMessage(self, title, text, force_popup=False):
         """Function that displays warning popup and log message
+        
+        Parameters
+        ----------
+        title : str
+            Message title
+        text : str
+            Message text
+        force_popup : bool
+            Flag that forces popup even if show popups is set to NO.
         """
 
         if self.showPopups.get() or force_popup:
@@ -449,8 +489,17 @@ class InstallSynAppsGUI:
         self.writeToLog(text + "\n")
 
 
-    def showMessage(self, title, text, force_popup = False):
+    def showMessage(self, title, text, force_popup=False):
         """Function that displays info popup and log message
+
+        Parameters
+        ----------
+        title : str
+            Message title
+        text : str
+            Message text
+        force_popup : bool
+            Flag that forces popup even if show popups is set to NO.
         """
 
         if self.showPopups.get() or force_popup:
@@ -463,7 +512,7 @@ class InstallSynAppsGUI:
 
 
     def syncTags(self):
-        """Function that automatically updates all of the github tags for the install configuration git modules
+        """Function that automatically updates all of the tags for the install configuration git modules
         """
 
         if not self.thread.is_alive():
@@ -561,7 +610,7 @@ class InstallSynAppsGUI:
 
         self.writeToLog("Opening load install config file dialog...\n")
         temp = self.configure_path
-        self.configure_path = filedialog.askdirectory(initialdir = '.')
+        self.configure_path = filedialog.askdirectory(initialdir='.')
         if len(self.configure_path) == 0:
             self.writeToLog('Operation cancelled.\n')
             self.configure_path = temp
@@ -605,7 +654,7 @@ class InstallSynAppsGUI:
             self.saveConfigAs(force_loc = self.configure_path)
 
 
-    def saveConfigAs(self, force_loc = None):
+    def saveConfigAs(self, force_loc=None):
         """Function that opens a save as Dialog for saving currently loaded confguration
         
         Parameters
@@ -619,7 +668,7 @@ class InstallSynAppsGUI:
             return
         
         if force_loc is None:
-            dirpath = filedialog.asksaveasfilename(initialdir = '.')
+            dirpath = filedialog.asksaveasfilename(initialdir='.')
             if len(dirpath) < 1:
                 self.writeToLog('Operation Cancelled.\n')
                 return
@@ -651,7 +700,7 @@ class InstallSynAppsGUI:
             self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
 
 
-    def saveLog(self, saveDir = None):
+    def saveLog(self, saveDir=None):
         """Function that saves the contents of the log to a file.
 
         Parameters
@@ -735,6 +784,11 @@ class InstallSynAppsGUI:
 
     def openEditWindow(self, edit_window_str):
         """Function that opens up an Edit Config window
+
+        Parameters
+        ----------
+        edit_window_str : str
+            String specifying which edit window to launch
         """
 
         window = None
@@ -853,7 +907,7 @@ class InstallSynAppsGUI:
         self.writeToLog('.bat files, on linux as .sh files,\nand they will be run from the module')
         self.writeToLog(' root directory.\nIf no custom script is found, the module will just be\n')
         self.writeToLog('built with make. If you have a sudo call in your script,\nnote that you')
-        self.writeToLog('will need to enter it in the terminal to proceed.\n')
+        self.writeToLog('will need to enter it in the terminal to proceed.\n\n')
 
 
     def printPathInfo(self):
@@ -863,7 +917,7 @@ class InstallSynAppsGUI:
         self.writeToLog('-----------------------------------------\n')
         self.writeToLog('Install Location: {}\n'.format(self.install_config.install_location))
         self.writeToLog('Install config directory: {}\n'.format(self.configure_path))
-        self.writeToLog('Package output path: {}\n'.format(self.packager.output_location))
+        self.writeToLog('Package output path: {}\n\n'.format(self.packager.output_location))
 
 #--------------------------------- Build Process Functions ------------------------------------------#
 #                                                                                                    #
@@ -1097,7 +1151,7 @@ class InstallSynAppsGUI:
 # ---------------- Start the GUI ---------------
 
 root = Tk()
-root.title("installSynApps")
+root.title("installSynApps - {}".format(installSynApps.__version__))
 try:
     root.iconbitmap('docs/assets/isaIcon.ico')
 except:

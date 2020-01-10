@@ -2,7 +2,7 @@
 
 <!--RELEASE START-->
 
-## R2-4 (???-January-2020)
+## R2-4 (10-January-2020)
 
 * Features Added
     * OPI directory generation - Creates OPI bundle from all modules in configuration

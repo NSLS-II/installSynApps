@@ -11,6 +11,7 @@ from sys import platform
 from subprocess import Popen, PIPE
 import installSynApps.IO.logger as LOG
 
+# Only support 64 bit windows
 if platform == 'win32':
     OS_class = 'windows-x64'
 else:
@@ -28,9 +29,10 @@ else:
 # Ex. Calc version R3-7-3 is most recent, but R5-* exists?
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
+# Module version, author, copyright
 __version__     = "R2-4"
 __author__      = "Jakub Wlodek"
-__copyright__   = "Copyright (c) Brookhaven National Laboratory 2018-2019"
+__copyright__   = "Copyright (c) Brookhaven National Laboratory 2018-2020"
 __environment__ = "Python Version: {}, OS Class: {}".format(sys.version.split()[0], OS_class)
 
 
@@ -44,7 +46,7 @@ def get_welcome_text():
     """
 
     text = "+----------------------------------------------------------------+\n"
-    text = text + "+ installSynApps, version: {:<38}+\n".format(__version__)
+    text = text + "+ installSynApps, Version: {:<38}+\n".format(__version__)
     text = text + "+ {:<63}+\n".format(__environment__)
     text = text + "+ {:<63}+\n".format(__copyright__)
     text = text + "+ This software comes with NO warranty!                          +\n"
@@ -53,7 +55,7 @@ def get_welcome_text():
 
 
 def sync_module_tag(module_name, install_config, save_path = None):
-    """Function that syncs module version tags with those found on github.
+    """Function that syncs module version tags with those hosted with git.
 
     This function is still buggy, and certain modules do not update correctly
 
@@ -136,6 +138,8 @@ def sync_all_module_tags(install_config, save_path=None, overwrite_existing=True
         instance of install configuration for which to update tags
     save_path : str
         None by default. If set, will save the install configuration to the given location after updating.
+    overwrite_existing : bool
+        Flag that tells installSynApps to overwrite or not the existing module tags. Default: True
     """
 
     LOG.write('Syncing...')

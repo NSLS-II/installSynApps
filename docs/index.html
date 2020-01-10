@@ -118,6 +118,35 @@
     <h4>installSynApps Releases:</h4>
     <!--RELEASE START-->
 
+<h4>R2-4 (10-January-2020)</h4>
+<ul>
+<li>
+<p>Features Added</p>
+<ul>
+<li>OPI directory generation - Creates OPI bundle from all modules in configuration</li>
+<li>Add-On Generation. Create an add on package to add new modules to existing bundles.</li>
+<li>Parser now can update module path macros in macro files prior to configure update step.</li>
+</ul>
+</li>
+<li>
+<p>Bug Fixes/Improvements</p>
+<ul>
+<li>Removed pygithub dependancy. Versions are now updated using <code>git ls-remote</code></li>
+<li>Improved version detection. Tags are now better analyzed to avoid false positives.</li>
+<li>Fix bug on version sync in <code>installCLI</code> where updated versions wouldn't save</li>
+<li>Moved printing of commands to logging module</li>
+<li>Reorganize packager to remove redundant code</li>
+<li>In-code documentation improved for <code>installGUI</code></li>
+</ul>
+</li>
+<li>
+<p>Future Plans</p>
+<ul>
+<li>Improve automation for version updates (So Docker-Builder can perform these itself)</li>
+<li>Add error handling for an expanded set of edge-cases</li>
+</ul>
+</li>
+</ul>
 <h4>R2-3 (12-November-2019)</h4>
 <ul>
 <li>
