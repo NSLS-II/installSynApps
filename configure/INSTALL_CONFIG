@@ -74,7 +74,7 @@ QUADEM              R9-1        $(SUPPORT)/quadEM                           quad
 # Stream module is maintained by PSI as of 2019
 GIT_URL=https://github.com/paulscherrerinstitute/
 
-STREAM              2.8.9       $(SUPPORT)/stream                           StreamDevice                    YES             YES             NO
+STREAM              2.8.9       $(SUPPORT)/stream                           StreamDevice                    YES             YES             YES
 
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
@@ -112,14 +112,14 @@ ADCORE              R3-7        $(AREA_DETECTOR)/ADCore                     ADCo
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    NO              NO              NO
-ADPLUGINBAR         R2-1        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     NO              NO              NO
-ADPLUGINDMTX        master      $(AREA_DETECTOR)/ADPluginDmtx               ADPluginDmtx                    NO              NO              NO
+ADCOMPVISION        master      $(AREA_DETECTOR)/ADCompVision               ADCompVision                    YES             NO              NO
+ADPLUGINBAR         R2-1        $(AREA_DETECTOR)/ADPluginBar                ADPluginBar                     YES             NO              NO
+ADPLUGINDMTX        master      $(AREA_DETECTOR)/ADPluginDmtx               ADPluginDmtx                    YES             NO              NO
 
 
 GIT_URL=https://github.com/areaDetector/
 
-ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    NO             NO             NO
+ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPluginEdge                    YES            NO             NO
 
 
 ######################################
@@ -129,11 +129,10 @@ ADPLUGINEDGE        master      $(AREA_DETECTOR)/ADPluginEdge               ADPl
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
 ADUVC               R1-2        $(AREA_DETECTOR)/ADUVC                      ADUVC                           YES             NO              YES
-ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                NO              NO              NO
-#ADSPINNAKER         u18_compile $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO              NO
-ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        NO              NO              NO
+ADEMERGENTVISION    master      $(AREA_DETECTOR)/ADEmergentVision           ADEmergentVision                YES              NO              NO
+ADLAMBDA            dual_threshold_feature  $(AREA_DETECTOR)/ADLambda       ADLambda                        YES              NO              NO
 ADANDOR3            master      $(AREA_DETECTOR)/ADAndor3                   ADAndor3                        YES             YES             YES
-ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   NO              NO              NO
+ADPERKINELMER       master      $(AREA_DETECTOR)/ADPerkinElmer              ADPerkinElmer                   YES              NO              NO
 
 
 GIT_URL=https://github.com/areaDetector/
@@ -141,43 +140,43 @@ GIT_URL=https://github.com/areaDetector/
 ADGENICAM           master      $(AREA_DETECTOR)/ADGenICam                  ADGenICam                       YES             YES             YES
 ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADProsilica                     YES             YES             YES
 ADSIMDETECTOR       R2-9        $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES             YES
-ADPILATUS           R2-7        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES             YES
+ADPILATUS           R2-8        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES             YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             YES             YES
 ADARAVIS            master      $(AREA_DETECTOR)/ADAravis                   ADAravis                        YES             YES             YES
-aravisGigE          R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      NO              NO              NO
+aravisGigE          R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      YES             NO              NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO              NO
-ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         NO              NO              NO
-ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       NO              NO              NO
-ADPOINTGREY         R2-8        $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             YES             YES
-ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPICam                         NO              NO              NO
-ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         NO              NO              NO
-ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO              NO              NO
-ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        NO              NO              NO
-ADMYTHEN            R2-0        $(AREA_DETECTOR)/ADMythen                   ADMythen                        NO              NO              NO
-ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO              NO
-ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO              NO              NO
-ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO              NO              NO
-FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO              NO
+ADMMPAD             master      $(AREA_DETECTOR)/ADMMPAD                    ADMMPAD                         YES             NO              NO
+ADFASTCCD           R1-0        $(AREA_DETECTOR)/ADFastCCD                  ADFastCCD                       YES             NO              NO
+ADPOINTGREY         master      $(AREA_DETECTOR)/ADPointGrey                ADPointGrey                     YES             YES             YES
+ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPICam                         YES             NO              NO
+ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         YES             NO              NO
+ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       YES             NO              NO
+ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        YES             NO              NO
+ADMYTHEN            master      $(AREA_DETECTOR)/ADMythen                   ADMythen                        YES             NO              NO
+ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         YES             NO              NO
+ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           YES             NO              NO
+ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    YES             NO              NO
+FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    YES             NO              NO
 ADURL               master      $(AREA_DETECTOR)/ADURL                      ADURL                           YES             YES             YES
-ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        NO              NO              NO
-ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    NO              NO              NO
-ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       NO              NO              NO
-ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         NO              NO              NO
-ADCSIMDETECTOR      R2-5        $(AREA_DETECTOR)/ADCSimDetector             ADCSimDetector                  NO              NO              NO
-ADNED               master      $(AREA_DETECTOR)/ADnED                      ADnED                           NO              NO              NO
-ADMAR345            R2-2        $(AREA_DETECTOR)/ADmar345                   ADmar345                        NO              NO              NO
-ADQIMAGING          master      $(AREA_DETECTOR)/ADQImaging                 ADQImaging                      NO              NO              NO
-ADPHOTONII          master      $(AREA_DETECTOR)/ADPhotonII                 ADPhotonII                      NO              NO              NO
-ADPSL               R2-1        $(AREA_DETECTOR)/ADPSL                      ADPSL                           NO              NO              NO
-ADBRUKER            R2-2        $(AREA_DETECTOR)/ADBruker                   ADBruker                        NO              NO              NO
-ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRoper                         NO              NO              NO
-ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          NO              NO              NO
-ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          NO              NO              NO
-FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    NO              NO              NO
-ADRIXSCAM           master      $(AREA_DETECTOR)/ADRIXSCam                  ADRIXSCam                       NO              NO              NO
-ADVIEWERS           master      $(AREA_DETECTOR)/ADViewers                  ADViewers                       NO              NO              NO
-ADSPINNAKER         R2-0        $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     NO              NO              NO
-ADFIREWIREWIN       master      $(AREA_DETECTOR)/ADFireWireWin              ADFireWireWin                   NO              NO              NO
+ADMARCCD            R2-3        $(AREA_DETECTOR)/ADmarCCD                   ADmarCCD                        YES             NO              NO
+ADLIGHTFIELD        R2-6        $(AREA_DETECTOR)/ADLighField                ADLightField                    YES             NO              NO
+ADPIXIRAD           R2-2        $(AREA_DETECTOR)/ADPixirad                  ADPixirad                       YES             NO              NO
+ADPVCAM             R2-2        $(AREA_DETECTOR)/ADPvCam                    ADPvCam                         YES             NO              NO
+ADCSIMDETECTOR      R2-5        $(AREA_DETECTOR)/ADCSimDetector             ADCSimDetector                  YES             NO              NO
+ADNED               master      $(AREA_DETECTOR)/ADnED                      ADnED                           YES             NO              NO
+ADMAR345            R2-2        $(AREA_DETECTOR)/ADmar345                   ADmar345                        YES             NO              NO
+ADQIMAGING          master      $(AREA_DETECTOR)/ADQImaging                 ADQImaging                      YES             NO              NO
+ADPHOTONII          master      $(AREA_DETECTOR)/ADPhotonII                 ADPhotonII                      YES             NO              NO
+ADPSL               R2-1        $(AREA_DETECTOR)/ADPSL                      ADPSL                           YES             NO              NO
+ADBRUKER            R2-2        $(AREA_DETECTOR)/ADBruker                   ADBruker                        YES             NO              NO
+ADROPER             R2-3        $(AREA_DETECTOR)/ADRoper                    ADRoper                         YES             NO              NO
+ADADSC              R2-1        $(AREA_DETECTOR)/ADADSC                     ADADSC                          YES             NO              NO
+ADSBIG              master      $(AREA_DETECTOR)/ADSBIG                     ADSBIG                          YES             NO              NO
+FFMPEGVIEWER        master      $(AREA_DETECTOR)/ffmpegViewer               ffmpegViewer                    YES             NO              NO
+ADRIXSCAM           master      $(AREA_DETECTOR)/ADRIXSCam                  ADRIXSCam                       YES             NO              NO
+ADVIEWERS           master      $(AREA_DETECTOR)/ADViewers                  ADViewers                       YES             NO              NO
+ADSPINNAKER         R2-0        $(AREA_DETECTOR)/ADSpinnaker                ADSpinnaker                     YES             NO              NO
+ADFIREWIREWIN       master      $(AREA_DETECTOR)/ADFireWireWin              ADFireWireWin                   YES             NO              NO
 
 
 ####################################################

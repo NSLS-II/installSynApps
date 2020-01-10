@@ -119,7 +119,7 @@ class InstallSynAppsGUI:
         self.showDebug = tk.BooleanVar()
         self.showDebug.set(False)
         self.showCommands = tk.BooleanVar()
-        self.showCommands.set(False)
+        self.showCommands.set(True)
         self.generateLogFile = tk.BooleanVar()
         self.generateLogFile.set(False)
 
