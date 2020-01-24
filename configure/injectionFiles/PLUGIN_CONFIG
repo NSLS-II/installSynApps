@@ -11,3 +11,5 @@ dbLoadRecords("NDPva.template",  "P=$(PREFIX),R=Pva1:, PORT=PVA1,ADDR=0,TIMEOUT=
 startPVAServer
 
 dbLoadRecords("$(DEVIOCSTATS)/db/iocAdminSoft.db", "IOC=$(PREFIX)")
+
+set_requestfile_path("$(CALC)/calcApp/Db")
