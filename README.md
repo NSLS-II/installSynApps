@@ -7,7 +7,7 @@ A python3 module meant for cloning, building, and packaging EPICS, synApps, and 
 Author: Jakub Wlodek  
 Corresponding author: Kazimierz Gofron
 
-This development is based on bash EPICS distribution scripts developed primarly for building on the UNIX/Linux environment, and prior work related to synApps packaging which is utilized by installSynApps is currently hosted at https://github.com/EPICS-synApps
+This development is based on bash EPICS distribution scripts developed primarly for building on the UNIX/Linux environment, and prior work related to synApps packaging which is utilized by `installSynApps` is currently hosted at https://github.com/EPICS-synApps
 
 ### Installation
 
@@ -15,7 +15,7 @@ installSynApps depends `python3`, and is tested with python 3.4+. To install pyt
 ```
 sudo apt install python3
 ```
-In order to use the GUI version of `installSynApps, tkinter is required as well. This can be installed with:
+In order to use the GUI version of `installSynApps`, tkinter is required as well. This can be installed with:
 ```
 sudo apt install python3-tk
 ```
@@ -26,7 +26,7 @@ Furthermore, install the python pip Python Package Installer. This can be instal
 sudo apt install python3-pip
 ```
 
-In addition, installSynApps uses some additional python3 modules: `distro` for labelling output tarballs, and `pygithub` for auto-syncing of module versions with github. `installSynApps` will start and run without these modules, but you will lose access to the features that depend on them. To install these packages, first clone this repository, and then install using pip:
+In addition, `installSynApps` uses some additional python3 modules: `distro` for labelling output tarballs, and `pygithub` for auto-syncing of module versions with github. `installSynApps` will start and run without these modules, but you will lose access to the features that depend on them. To install these packages, first clone this repository, and then install using pip:
 ```
 git clone https://github.com/epicsNSLS2-deploy/installSynApps
 cd installSynApps
