@@ -153,7 +153,7 @@ ADPICAM             master      $(AREA_DETECTOR)/ADPICam                    ADPI
 ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAndor                         NO              NO              NO
 ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO              NO              NO
 ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        NO              NO              NO
-ADMYTHEN            master      $(AREA_DETECTOR)/ADMythen                   ADMythen                        NO              NO              NO
+ADMYTHEN            master      $(AREA_DETECTOR)/ADMythen                   ADMythen                        YES             YES             YES
 ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO              NO
 ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO              NO              NO
 ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO              NO              NO
