@@ -30,7 +30,8 @@ class ConfigWriter:
     """
 
     def __init__(self, install_config):
-        """ constructor for ConfigWriter """
+        """Constructor for ConfigWriter object
+        """
 
         self.install_config = install_config
 

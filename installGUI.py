@@ -371,7 +371,7 @@ class InstallSynAppsGUI:
                 if module.package == "YES":
                     self.writeToConfigPanel("Name: {},\t\t\t Version: {}\n".format(module.name, module.version))
 
-            self.writeToLog("Done.\n")
+            self.writeToLog("Done.\n\n")
         else:
             self.showErrorMessage("Config Error", "ERROR - Could not display Install Configuration: not loaded correctly")
 
@@ -528,7 +528,8 @@ class InstallSynAppsGUI:
         """Function meant to synchronize tags for each github based module.
         """
     
-        installSynApps.sync_all_module_tags(self.install_config, save_path=self.configure_path)
+        installSynApps.sync_all_module_tags(self.install_config, save_path=self.configure_path, overwrite_existing=False)
+        self.writeToLog('\nModule versions updated.\nPlease use File -> Save to save updated config.\n')
         self.updateAllRefs(self.install_config)
         self.updateConfigPanel()
 
