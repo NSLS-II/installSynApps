@@ -55,21 +55,34 @@ class Packager:
         starts the tar timer
     stop_timer()
         stops the timer and returns the elapsed time
-    grab_folder(src : str, dest : str)
+    grab_folder()
         helper function that copies a specified dir if it exists
-    grab_base(top : str, readme_fp : FILE*)
+    grab_base()
         grabs all required base directories
-    grab_module(top : str, module : InstallModule, readme_fp : FILE*)
+    grab_module()
         Function that grabs all of the required folders from each individual module.
-    create_tarball(filename : str, flat_format : bool)
+    setup_tar_staging()
+        Function that creates tar staging point.
+    cleanup_tar_staging()
+        Function that cleans up tar staging point, and creates readme file.
+    create_single_module_tarball()
+        Function responsible for creating a tarball for a single module.
+    create_opi_tarball()
+        Function that collects autoconverted .opi files from epics_dir.
+    create_tarball()
         top level generator that creates tarball in DEPLOTMENTS/tarball
     create_bundle_name()
         Helper function for creating output filename
     create_bundle_cleanup_tool()
         Simple function that spawns basic scripts used to remove unused bundles.
-    create_package():
+    create_package()
         function that should be called to use packager. Generates a unique package name, creates tarball, and measures time
+    create_add_on_package()
+        Top level packager driver function for creating addon packages.
+    create_opi_package()
+        Function that creates bundle of all opi files.
     """
+
 
     def __init__(self, install_config, output_location='DEPLOYMENTS', force_arch=None):
         """Constructor for Packager Driver
@@ -148,8 +161,6 @@ class Packager:
         ----------
         top : str
             resulting location - __temp__
-        readme_fp : FILE*
-            output readme file
         """
 
         base_path = self.install_config.base_path
@@ -172,10 +183,6 @@ class Packager:
             folder name for the module
         module_location : str
             path to dir of location of module
-        readme_fp : FILE*
-            output readme file
-        is_ad_module : bool
-            default false. if true search for iocs directory as well.
         """
 
         module_name = os.path.basename(module.abs_path)
@@ -227,8 +234,6 @@ class Packager:
         ----------
         filename : str
             file path string
-        readme_fp : open file
-            The opened readme file pointer
         module : InstallModule
             Optional install module to create single module add-on package
         
@@ -259,6 +264,8 @@ class Packager:
 
         Parameters
         ----------
+        filename : str
+            Name of output file
         module : InstallModule
             The module to add to the package
         """
