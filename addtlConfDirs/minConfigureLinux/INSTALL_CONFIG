@@ -1,8 +1,8 @@
 #
-# INSTALL_CONFIG file saved by installSynApps on 2019-11-01 13:06:27.197006
+# INSTALL_CONFIG file saved by installSynApps on 2020-02-05 12:43:28.552037
 #
 
-INSTALL=/epics
+INSTALL=/epics/src-dev/temp
 
 
 #MODULE_NAME    MODULE_VERSION          MODULE_PATH                             MODULE_REPO         CLONE_MODULE    BUILD_MODULE    PACKAGE_MODULE
@@ -10,7 +10,7 @@ INSTALL=/epics
 
 GIT_URL=https://github.com/epics-base/
 
-EPICS_BASE       R7.0.2.2             $(INSTALL)/base                          epics-base               YES              YES              YES
+EPICS_BASE       R7.0.3.1             $(INSTALL)/base                          epics-base               YES              YES              YES
 
 GIT_URL=https://github.com/EPICS-synApps/
 
@@ -26,13 +26,13 @@ SNCSEQ           2.2.6                $(SUPPORT)/seq                           s
 GIT_URL=https://github.com/epics-modules/
 
 IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              YES
-ASYN             R4-37                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
+ASYN             R4-38                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
 AUTOSAVE         R5-10                $(SUPPORT)/autosave                      autosave                 YES              YES              YES
 ALIVE            R1-1-1               $(SUPPORT)/alive                         alive                    NO               NO               NO
-BUSY             R1-7                 $(SUPPORT)/busy                          busy                     YES              YES              YES
+BUSY             R1-7-2               $(SUPPORT)/busy                          busy                     YES              YES              YES
 SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES              YES
 CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES              YES
-CAMAC            R2-7                 $(SUPPORT)/camac                         camac                    NO               NO               NO
+CAMAC            R2-7-1               $(SUPPORT)/camac                         camac                    NO               NO               NO
 CAPUTRECORDER    R3-1                 $(SUPPORT)/caputRecorder                 caputRecorder            NO               NO               NO
 DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  NO               NO               NO
 DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 NO               NO               NO
@@ -40,25 +40,25 @@ DEVLIB2          2.10                 $(SUPPORT)/devlib2                       d
 DXP              R6-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
 DXPSITORO        R1-2                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
 DEVIOCSTATS      3.1.16               $(SUPPORT)/iocStats                      iocStats                 YES              YES              YES
-IP               R2-20                $(SUPPORT)/ip                            ip                       YES              YES              YES
+IP               R2-20-1              $(SUPPORT)/ip                            ip                       YES              YES              YES
 IP330            R2-9                 $(SUPPORT)/ip330                         ip330                    NO               NO               NO
 IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 NO               NO               NO
 LOVE             R3_13_base           $(SUPPORT)/love                          love                     NO               NO               NO
 LUA              R2-1                 $(SUPPORT)/lua                           lua                      NO               NO               NO
 MCA              R7-8                 $(SUPPORT)/mca                           mca                      NO               NO               NO
 MEASCOMP         R2-4                 $(SUPPORT)/measComp                      measComp                 NO               NO               NO
-MODBUS           R3-0                 $(SUPPORT)/modbus                        modbus                   NO               NO               NO
+MODBUS           R3-0-RC1             $(SUPPORT)/modbus                        modbus                   NO               NO               NO
 MOTOR            R7-1                 $(SUPPORT)/motor                         motor                    NO               NO               NO
-OPTICS           R2-13                $(SUPPORT)/optics                        optics                   NO               NO               NO
-SOFTGLUE         R2-8                 $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
+OPTICS           R2-13-3              $(SUPPORT)/optics                        optics                   NO               NO               NO
+SOFTGLUE         R2-8-2               $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO               NO
-STD              R3-6                 $(SUPPORT)/std                           std                      NO               NO               NO
+STD              R3-6-1               $(SUPPORT)/std                           std                      NO               NO               NO
 VAC              R1-9                 $(SUPPORT)/vac                           vac                      NO               NO               NO
-VME              R2-9                 $(SUPPORT)/vme                           vme                      NO               NO               NO
+VME              R2-9-2               $(SUPPORT)/vme                           vme                      NO               NO               NO
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO               NO
 XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 NO               NO               NO
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
-QUADEM           R9-2                 $(SUPPORT)/quadEM                        quadEM                   NO               NO               NO
+QUADEM           R9-2-1               $(SUPPORT)/quadEM                        quadEM                   NO               NO               NO
 
 GIT_URL=https://github.com/paulscherrerinstitute/
 
@@ -105,7 +105,7 @@ GIT_URL=https://github.com/areaDetector/
 
 ADPROSILICA      R2-5                 $(AREA_DETECTOR)/ADProsilica             ADProsilica              NO               NO               NO
 ADSIMDETECTOR    R2-10                $(AREA_DETECTOR)/ADSimDetector           ADSimDetector            YES              YES              YES
-ADPILATUS        R2-7                 $(AREA_DETECTOR)/ADPilatus               ADPilatus                NO               NO               NO
+ADPILATUS        R2-8                 $(AREA_DETECTOR)/ADPilatus               ADPilatus                NO               NO               NO
 ADMERLIN         master               $(AREA_DETECTOR)/ADMerlin                ADMerlin                 NO               NO               NO
 ADARAVIS         R3-0                 $(AREA_DETECTOR)/aravisGigE              aravisGigE               NO               NO               NO
 ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 ADEiger                  NO               NO               NO
@@ -117,7 +117,7 @@ ADPICAM          master               $(AREA_DETECTOR)/ADPICam                 A
 ADANDOR          R2-8                 $(AREA_DETECTOR)/ADAndor                 ADAndor                  NO               NO               NO
 ADTIMEPIX        master               $(AREA_DETECTOR)/ADTimePix               ADTimePix                NO               NO               NO
 ADDEXELA         R2-3                 $(AREA_DETECTOR)/ADDexela                ADDexela                 NO               NO               NO
-ADMYTHEN         R2-0                 $(AREA_DETECTOR)/ADMythen                ADMythen                 NO               NO               NO
+ADMYTHEN         R2-1                 $(AREA_DETECTOR)/ADMythen                ADMythen                 NO               NO               NO
 ADVIMBA          master               $(AREA_DETECTOR)/ADVimba                 ADVimba                  NO               NO               NO
 ADPCO            R1-0                 $(AREA_DETECTOR)/ADPCO                   ADPCO                    NO               NO               NO
 ADCAMERALINK     master               $(AREA_DETECTOR)/ADCameraLink            ADCameraLink             NO               NO               NO

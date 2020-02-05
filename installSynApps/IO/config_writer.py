@@ -47,7 +47,7 @@ class ConfigWriter:
 
         # for each injector file write it with its target location
         for injector_file in self.install_config.injector_files:
-            LOG.debug('Saving injector file {} with target {}'.format(injector_file, injector_file.target))
+            LOG.debug('Saving injector file {} with target {}'.format(injector_file.name, injector_file.target))
             new_fp = open(filepath + "/injectionFiles/" + injector_file.name, 'w')
             new_fp.write('# Saved by installSynApps on {}\n'.format(datetime.datetime.now()))
             new_fp.write('__TARGET_LOC__={}\n\n'.format(injector_file.target))

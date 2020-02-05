@@ -53,8 +53,8 @@ from sys import platform
 
 # InstallSynAppsModules
 import installSynApps
-import installSynApps.DataModel as DataModel
-import installSynApps.Driver as Driver
+import installSynApps.DataModel as DATA_MODEL
+import installSynApps.Driver as DRIVER
 import installSynApps.IO as IO
 
 # -------------- Some helper functions ------------------
@@ -261,10 +261,10 @@ if not loc_ok:
 
 
 # Driver Objects for running through build process
-cloner      = Driver.clone_driver.CloneDriver(install_config)
-updater     = Driver.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
-builder     = Driver.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
-packager    = Driver.packager_driver.Packager(install_config)
+cloner      = DRIVER.clone_driver.CloneDriver(install_config)
+updater     = DRIVER.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
+builder     = DRIVER.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
+packager    = DRIVER.packager_driver.Packager(install_config)
 if not packager.found_distro and platform != 'win32':
     print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
     print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
@@ -273,7 +273,7 @@ if not packager.found_distro and platform != 'win32':
         if custom_output == 'y':
             custom_os = input('Please enter a suitable output package name: > ')
             packager.OS = custom_os
-autogenerator = IO.script_generator.ScriptGenerator(install_config)
+autogenerator = IO.file_generator.FileGenerator(install_config)
 
 
 # Check to make sure that all dependencies are found
@@ -395,7 +395,8 @@ else:
 
         print("----------------------------------------------")
         print("Autogenerating scripts and README file...")
-        autogenerator.autogenerate_all()
+        autogenerator.autogenerate_all(create_simple_readme=False)
+        autogenerator.generate_readme('{}'.format(install_config.install_location))
         print("Done.")
         if ret == 0:
             print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
@@ -428,18 +429,27 @@ if create_tarball == 'y':
     else:
         print('Bundle generated at: {}'.format(output_filename))
 
-if not yes:
-    print()
-    create_add_on_tarball = input('Would you like to create an add-on tarball to add a module to an existing bundle? (y/n) > ')
-else:
-    create_add_on_tarball = 'n'
-if create_add_on_tarball == 'y':
-    module_name = input('Please enter name of the module you want packaged (All capitals - Ex. ADPROSILICA) > ')
-    output_filename = packager.create_bundle_name(module_name=module_name)
-    if output_filename is None:
-        print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
-        err_exit(7)
-    ret = packager.create_add_on_package(output_filename, module_name)
+ask_create_add_on_tarball = True
+while ask_create_add_on_tarball:
+    if not yes:
+        print()
+        create_add_on_tarball = input('Would you like to create an add-on tarball to add a module to an existing bundle? (y/n) > ')
+    else:
+        create_add_on_tarball = 'n'
+        ask_create_add_on_tarball = False
+    if create_add_on_tarball == 'y':
+        module_name = input('Please enter name of the module you want packaged (All capitals - Ex. ADPROSILICA) > ')
+        if install_config.get_module_by_name(module_name) is None or install_config.get_module_by_name(module_name).build == 'NO':
+            print('ERROR - Selected module not built, cannot create add on tarball!')
+            err_exit(7)
+        output_filename = packager.create_bundle_name(module_name=module_name)
+        if output_filename is None:
+            print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
+            err_exit(7)
+        ret = packager.create_add_on_package(output_filename, module_name)
+        make_another_tarball = input('Would you like to create another add on tarball? (y/n) > ')
+        if make_another_tarball != 'y':
+            ask_create_add_on_tarball = False
 
 print()
 if not yes:

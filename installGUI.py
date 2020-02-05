@@ -27,10 +27,10 @@ from sys import platform
 
 # installSynApps module imports
 import installSynApps
-import installSynApps.DataModel as DataModel
+import installSynApps.DataModel as DATA_MODEL
 import installSynApps.IO as IO
-import installSynApps.Driver as Driver
-import installSynApps.ViewModel as ViewModel
+import installSynApps.Driver as DRIVER
+import installSynApps.ViewModel as VIEW_MODEL
 
 
 class InstallSynAppsGUI:
@@ -123,6 +123,8 @@ class InstallSynAppsGUI:
         self.showCommands.set(True)
         self.generateLogFile = tk.BooleanVar()
         self.generateLogFile.set(False)
+        self.showPackageInfo = tk.BooleanVar()
+        self.showPackageInfo.set(False)
 
         # Toggle for generating flat/non-flat bundles.
         self.binariesFlatToggle = tk.BooleanVar()
@@ -165,6 +167,7 @@ class InstallSynAppsGUI:
         debugmenu.add_command(label='Print Path Information',   command=self.printPathInfo)
         debugmenu.add_checkbutton(label='Show Debug Messages',  onvalue=True, offvalue=False, variable=self.showDebug)
         debugmenu.add_checkbutton(label='Show Commands',        onvalue=True, offvalue=False, variable=self.showCommands)
+        debugmenu.add_checkbutton(label='Show Package Info When Built', onvalue=True, offvalue=False, variable=self.showPackageInfo)
         debugmenu.add_checkbutton(label='Auto-Generate Log File',    onvalue=True, offvalue=False, variable=self.generateLogFile)
         menubar.add_cascade(label='Debug', menu=debugmenu)
 
@@ -258,7 +261,7 @@ class InstallSynAppsGUI:
         self.install_loaded = False
 
         # Configure metadata, read from existing saved metadata
-        self.metacontroller = ViewModel.meta_pref_control.MetaDataController()
+        self.metacontroller = VIEW_MODEL.meta_pref_control.MetaDataController()
         if 'configure_path' in self.metacontroller.metadata.keys():
             self.configure_path = self.metacontroller.metadata['configure_path']
             if self.configure_path != 'configure':
@@ -285,10 +288,10 @@ class InstallSynAppsGUI:
 
         # installSynApps drivers
         self.writer         = IO.config_writer.ConfigWriter(self.install_config)
-        self.cloner         = Driver.clone_driver.CloneDriver(self.install_config)
-        self.updater        = Driver.update_config_driver.UpdateConfigDriver(self.configure_path, self.install_config)
-        self.builder        = Driver.build_driver.BuildDriver(self.install_config, 0)
-        self.packager       = Driver.packager_driver.Packager(self.install_config)
+        self.cloner         = DRIVER.clone_driver.CloneDriver(self.install_config)
+        self.updater        = DRIVER.update_config_driver.UpdateConfigDriver(self.configure_path, self.install_config)
+        self.builder        = DRIVER.build_driver.BuildDriver(self.install_config, 0)
+        self.packager       = DRIVER.packager_driver.Packager(self.install_config)
 
         # Check package location against saved metadata
         if 'package_location' in self.metacontroller.metadata.keys():
@@ -298,7 +301,7 @@ class InstallSynAppsGUI:
         if 'package_output_filename' in self.metacontroller.metadata.keys():
             self.package_output_filename = self.metacontroller.metadata['package_output_filename']
 
-        self.autogenerator  = IO.script_generator.ScriptGenerator(self.install_config)
+        self.autogenerator  = IO.file_generator.FileGenerator(self.install_config)
 
         # Check for all required dependencies
         self.recheckDeps()
@@ -799,19 +802,19 @@ class InstallSynAppsGUI:
             return
 
         if edit_window_str == 'edit_config':
-            window = ViewModel.edit_install_screen.EditConfigGUI(self, self.install_config)
+            window = VIEW_MODEL.edit_install_screen.EditConfigGUI(self, self.install_config)
         elif edit_window_str == 'add_module':
-            window = ViewModel.add_module_screen.AddModuleGUI(self, self.install_config)
+            window = VIEW_MODEL.add_module_screen.AddModuleGUI(self, self.install_config)
         elif edit_window_str == 'edit_single_mod':
-            window = ViewModel.edit_individual_module.EditSingleModuleGUI(self, self.install_config)
+            window = VIEW_MODEL.edit_individual_module.EditSingleModuleGUI(self, self.install_config)
         elif edit_window_str == 'edit_injectors':
-            window = ViewModel.edit_injector_screen.EditInjectorGUI(self, self.install_config)
+            window = VIEW_MODEL.edit_injector_screen.EditInjectorGUI(self, self.install_config)
         elif edit_window_str == 'edit_build_flags':
-            window = ViewModel.edit_macro_screen.EditMacroGUI(self, self.install_config)
+            window = VIEW_MODEL.edit_macro_screen.EditMacroGUI(self, self.install_config)
         elif edit_window_str == 'add_custom_build_script':
-            window = ViewModel.add_custom_build_screen.AddCustomBuildScriptGUI(self, self.install_config)
+            window = VIEW_MODEL.add_custom_build_screen.AddCustomBuildScriptGUI(self, self.install_config)
         elif edit_window_str == 'edit_dependency_script':
-            window = ViewModel.edit_dependency_script.EditDependencyScriptGUI(self, self.install_config)
+            window = VIEW_MODEL.edit_dependency_script.EditDependencyScriptGUI(self, self.install_config)
         else:
             self.showErrorMessage('Open Error', 'ERROR - Illegal Edit Window selection')
 
@@ -1073,8 +1076,17 @@ class InstallSynAppsGUI:
         self.autogenerator.generate_install()
         self.autogenerator.generate_uninstall()
         self.writeToLog('Autogenerating README file in {}...\n'.format(self.install_config.install_location))
-        self.autogenerator.generate_readme()
-        self.writeToLog('Done.\n')
+        self.autogenerator.generate_readme(self.install_config.install_location)
+        self.writeToLog('Done.\n\n')
+
+        if self.showPackageInfo.get():
+            readme_fp = open(os.path.join(self.install_config.install_location, 'INSTALL_README.txt'), 'r')
+            readme_info = readme_fp.readlines()
+            readme_fp.close()
+            
+            for line in readme_info:
+                self.writeToLog(line)
+
         return status
 
 
@@ -1116,12 +1128,21 @@ class InstallSynAppsGUI:
         self.writeToLog('Starting packaging...\n')
         self.package_output_filename = self.packager.create_bundle_name()
         output = self.packager.create_package(self.package_output_filename, flat_format=self.binariesFlatToggle.get())
+        filename_no_ext = self.package_output_filename
         self.package_output_filename = self.package_output_filename + '.tgz'
         self.metacontroller.metadata['package_output_filename'] = self.package_output_filename
         if output != 0:
             self.showErrorMessage('Package Error', 'ERROR - Was unable to package areaDetector successfully. Aborting.', force_popup=True)
         else:
-            self.writeToLog('Done.\n')
+            self.writeToLog('Done.\n\n')
+
+        if self.showPackageInfo.get():
+            readme_fp = open(os.path.join(self.packager.output_location, 'README_{}.txt'.format(filename_no_ext)), 'r')
+            readme_info = readme_fp.readlines()
+            readme_fp.close()
+            
+            for line in readme_info:
+                self.writeToLog(line)
 
 
     def copyAndUnpackProcess(self):

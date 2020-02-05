@@ -24,7 +24,7 @@ except ImportError:
 import installSynApps
 import installSynApps.DataModel.install_config as IC
 import installSynApps.IO.logger as LOG
-import installSynApps.IO.config_writer as Writer
+import installSynApps.IO.file_generator as FILE_GENERATOR
 
 
 class Packager:
@@ -77,6 +77,8 @@ class Packager:
 
         self.install_config     = install_config
         self.output_location    = output_location
+
+        self.file_generator     = FILE_GENERATOR.FileGenerator(install_config)
 
         self.institution = "NSLS2"
 
@@ -139,7 +141,7 @@ class Packager:
             shutil.copytree(src, dest)
 
 
-    def grab_base(self, top, readme_fp):
+    def grab_base(self, top):
         """Function that copies all of the required folders from EPICS_BASE
 
         Parameters
@@ -157,22 +159,9 @@ class Packager:
         self.grab_folder(base_path + '/configure',          top + '/base/configure')
         self.grab_folder(base_path + '/include',            top + '/base/include')
         self.grab_folder(base_path + '/startup',            top + '/base/startup')
-        try:
-            current_loc = os.getcwd()
-            LOG.debug('cd {}'.format(base_path))
-            os.chdir(base_path)
-            LOG.debug('git describe --tags')
-            out = subprocess.check_output(['git', 'describe', '--tags'])
-            LOG.debug('Checked version for EPICS base.')
-            LOG.debug('cd {}'.format(current_loc))
-            os.chdir(current_loc)
-            LOG.debug('Detected version git tag {} for EPICS_BASE'.format(out.decode("utf-8").strip()))
-            readme_fp.write('{:<16}- {}'.format('base', out.decode("utf-8")))
-        except subprocess.CalledProcessError:
-            pass
 
 
-    def grab_module(self, top, module, readme_fp):
+    def grab_module(self, top, module):
         """Function that grabs all of the required folders from each individual module.
 
         Parameters
@@ -221,146 +210,17 @@ class Packager:
                     self.grab_folder(target_folder + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
                     self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
 
-        try:
-            if module.url_type == 'GIT_URL':
-                current_loc = os.getcwd()
-                LOG.debug('cd {}'.format(module.abs_path))
-                os.chdir(module.abs_path)
-                LOG.debug('git describe --tags')
-                out = subprocess.check_output(['git', 'describe', '--tags'])
-                LOG.debug('cd {}'.format(current_loc))
-                os.chdir(current_loc)
-                LOG.debug('Detected git tag/version: {} for module {}'.format(out.decode("utf-8").strip(), module.name))
-                readme_fp.write('{:<16}- {}'.format(module_name, out.decode("utf-8")))
-            else:
-                LOG.debug('Detected version {} for module {}'.format(module.version, module.name))
-                readme_fp.write('{:<16}- {}\n'.format(module_name, module.version))
-        except subprocess.CalledProcessError:
-            pass
 
-
-    def write_readme_heading(self, text, readme_fp):
-        """Simple helper function used to write headings for README file sections
-        """
-
-        readme_fp.write('{}\n#{}#\n# {:<61}#\n#{}#\n{}\n\n'.format('#' * 64, ' '* 62, text, ' '* 62, '#' * 64))
-
-
-    def find_isa_version(self):
-        """Function that attempts to get the version of installSynApps used.
-
-        Returns
-        -------
-        str
-            The version string for installSynApps. Either hardcoded version, or git tag description
-        str
-            None if git status not available, otherwise hash of current installSynApps commit.
-        """
-
-        isa_version = installSynApps.__version__
-        commit_hash = None
-
-        try:
-            LOG.debug('git describe --tags')
-            out = subprocess.check_output(['git', 'describe', '--tags'])
-            isa_version = out.decode('utf-8').strip()
-            LOG.debug('git rev-parse HEAD')
-            out = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
-            commit_hash = out.decode('utf-8')
-        except:
-            LOG.debug('Could not find git information for installSynApps versions.')
-
-        return isa_version, commit_hash
-
-
-    def grab_configuration_used(self, top_location, readme_fp, module):
-        """Function that includes the install configuration into the bundle for reuse.
-        
-        Parameters
-        ----------
-        top : str
-            resulting location - __temp__
-        """
-
-        try:
-            isa_version, isa_commit_hash = self.find_isa_version()
-            if module is None:
-                LOG.write('Copying build configuration into bundle.')
-                writer = Writer.ConfigWriter(self.install_config)
-                build_config_dir = os.path.join(top_location, 'build-config')
-                writer.write_install_config(filepath=build_config_dir)
-                self.write_readme_heading('Build environment version information', readme_fp)
-            else:
-                self.write_readme_heading('Implementing add on in exisitng bundle', readme_fp)
-                readme_fp.write('This add on tarball contains a folder with a compiled version of {}.\n'.format(module.name))
-                readme_fp.write('To use it with an existing bundle, please copy the folder into {} in the target bundle.\n'.format(module.rel_path))
-                readme_fp.write('It is also recommended to edit the build-config for the bundle to reflect the inclusion of this module.\n\n')
-            readme_fp.write('Build configuration:\n\n')
-            readme_fp.write('installSynApps Version: {}\n\n'.format(isa_version))
-            if isa_commit_hash is not None:
-                readme_fp.write('To grab this version:\n\n\tgit clone https://github.com/epicsNSLS2-deploy/installSynApps\n')
-                readme_fp.write('\tgit checkout {}\n'.format(isa_commit_hash))
-            else:
-                readme_fp.write('To grab this version use:\n\n\tgit clone https://github.com/epicsNSLS2-deploy/installSynApps\n')
-                readme_fp.write('\tgit checkout -q {}\n'.format(isa_version))
-            readme_fp.write('To regenerate sources for this bundle, grab installSynApps as described above, and use:\n\n')
-            readme_fp.write('\t./installCLI.py -c BUILD_CONFIG -p\n\n')
-            readme_fp.write('where BUILD_CONFIG is the path to the build-config directory in this bundle.\n')
-            readme_fp.write('Make sure to specify an install location as well\n{}\n\n'.format('-' * 64))
-            readme_fp.write('{:<20}{}\n'.format('Python 3 Version:',sys.version.split()[0]))
-            readme_fp.write('{:<20}{}\n'.format('OS Class:', self.OS))
-            readme_fp.write('{:<20}{}\n'.format('Build Date:', datetime.datetime.now()))
-        except:
-            LOG.debug('Failed to copy install configuration into bundle.')
-
-
-    def add_versions_from_install_config(self, readme_fp, target):
-        """Gets version number from install config for module.
-
-        Parameters
-        ----------
-        readme_fp : open file
-            The opened readme file pointer
-        target : InstallModule
-            install module to get the version number from
-        """
-
-        for module in self.install_config.get_module_list():
-            if module.name != target.name and module.package == 'YES':
-                readme_fp.write('{:<16}- {}\n'.format(module.name, module.version))
-
-
-    def setup_tar_staging(self, filename, readme_fp, module=None):
-        """Function that creates tar staging point, and writes initial readme info.
-
-        Parameters
-        ----------
-        filename : str
-            file path string
-        readme_fp : open file
-            The opened readme file pointer
-        module : InstallModule
-            Optional install module to create single module add-on package
+    def setup_tar_staging(self):
+        """Function that creates tar staging point.
         """
 
         if os.path.exists('__temp__'):
             shutil.rmtree('__temp__')
         os.mkdir('__temp__')
-        
-        if module is not None:
-            self.write_readme_heading('{} - Add-On Package'.format(module.name), readme_fp)
-        else:
-            self.write_readme_heading('Bundle - {}'.format(filename), readme_fp)
-        isa_version, commit_hash = self.find_isa_version()
-        readme_fp.write('Module package generated using installSynApps version: {}\n'.format(isa_version))
-        readme_fp.write('See below for detailed build tool version information.\n')
-        readme_fp.write('Module versions used in this deployment:\n')
-        if module is not None:
-            readme_fp.write('To add module to existing deployment, place it in the {} directory of the bundle.\n'.format(module.rel_path))
-        readme_fp.write('[folder name] - [git tag]\n\n')
 
 
-    def cleanup_tar_staging(self, filename, readme_fp, module=None):
+    def cleanup_tar_staging(self, filename, module=None):
         """Function that cleans up tar staging point, and closes readme file.
 
         Parameters
@@ -378,9 +238,6 @@ class Packager:
             Return code of tar creation call.
         """
         
-        readme_fp.write('\n\n')
-        self.grab_configuration_used('__temp__', readme_fp, module)
-        readme_fp.close()
         LOG.debug('Generating README file with module version and append instructions...')
         shutil.copy(os.path.join(self.output_location, 'README_{}.txt'.format(filename)), os.path.join('__temp__', 'README_{}.txt'.format(filename)))
 
@@ -406,12 +263,11 @@ class Packager:
             The module to add to the package
         """
 
-        readme_fp = open(self.output_location + '/README_{}.txt'.format(filename), 'w')
-        self.setup_tar_staging(filename, readme_fp, module=module)
-        self.grab_module('__temp__', module, readme_fp)
-        readme_fp.write('\nThe module was built against the following versions:\n\n')
-        self.add_versions_from_install_config(readme_fp, module)
-        result = self.cleanup_tar_staging(filename, readme_fp, module=module)
+        readme_path = os.path.join(self.output_location, 'README_{}.txt'.format(filename))
+        self.setup_tar_staging()
+        self.grab_module('__temp__', module)
+        self.file_generator.generate_readme(filename, installation_type='addon', readme_path=readme_path, module=module)
+        result = self.cleanup_tar_staging(filename, module=module)
         return result
 
 
@@ -472,10 +328,10 @@ class Packager:
             0 if success <0 if failure
         """
 
-        readme_fp = open(self.output_location + '/README_{}.txt'.format(filename), 'w')
-        self.setup_tar_staging(filename, readme_fp)
+        readme_path = os.path.join(self.output_location, 'README_{}.txt'.format(filename))
+        self.setup_tar_staging()
 
-        self.grab_base('__temp__', readme_fp)
+        self.grab_base('__temp__')
 
         support_top = '__temp__'
         if not flat_format:
@@ -489,12 +345,13 @@ class Packager:
         for module in self.install_config.get_module_list():
             if (module.name in self.required_in_pacakge or module.package == "YES") and not module.name == "EPICS_BASE":
                 if module.rel_path.startswith('$(AREA_DETECTOR)'):
-                    self.grab_module(ad_top, module, readme_fp)
+                    self.grab_module(ad_top, module)
                 else:
-                    self.grab_module(support_top, module, readme_fp)
+                    self.grab_module(support_top, module)
 
 
-        result = self.cleanup_tar_staging(filename, readme_fp)
+        self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
+        result = self.cleanup_tar_staging(filename)
         return result
 
 
