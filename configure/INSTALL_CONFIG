@@ -154,7 +154,6 @@ ADANDOR             R2-8        $(AREA_DETECTOR)/ADAndor                    ADAn
 ADTIMEPIX           master      $(AREA_DETECTOR)/ADTimePix                  ADTimePix                       NO              NO              NO
 ADDEXELA            R2-3        $(AREA_DETECTOR)/ADDexela                   ADDexela                        NO              NO              NO
 ADMYTHEN            master      $(AREA_DETECTOR)/ADMythen                   ADMythen                        YES             YES             YES
-ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         NO              NO              NO
 ADPCO               R1-0        $(AREA_DETECTOR)/ADPCO                      ADPCO                           NO              NO              NO
 ADCAMERALINK        master      $(AREA_DETECTOR)/ADCameraLink               ADCameraLink                    NO              NO              NO
 FFMPEGSERVER        R3-1        $(AREA_DETECTOR)/ffmpegServer               ffmpegServer                    NO              NO              NO

@@ -42,6 +42,8 @@ make --version
 ```
 or something similar for each of the above dependencies and see if it displays version information. If not, and you see an error along the lines of `make command not found`, then the module is not in the system path. In addition, on windows it is required to install Visual Studio 2015+, along with the `MSVC` and `MSVC++` compilers for `C` and `C++` respectively.
 
+If running on windows, make sure to run `installSynApps` from the Visual Studio developer command prompt, not from `cmd` or `powershell`.
+
 ### Usage
 
 There are two recommended usage procedures for the module, through the use of `installCLI.py` and `installGUI.py`. The first will perform all operations through the terminal, while the other will display a GUI written in Tkinter. 
