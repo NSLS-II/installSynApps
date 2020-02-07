@@ -11,7 +11,7 @@ This development is based on bash EPICS distribution scripts developed primarly 
 
 ### Installation
 
-installSynApps depends `python3`, and is tested with python 3.4+. To install python3 on linux run:
+installSynApps depends `python3`, and is tested with python 3.4+. To install `python3` on linux run:
 ```
 sudo apt install python3
 ```
@@ -21,22 +21,26 @@ sudo apt install python3-tk
 ```
 on linux, while on windows it should be included in your python download.
 
-Furthermore, install the python pip Python Package Installer. This can be installed with:
+Furthermore, install the python `pip` Python Package Installer. This can be installed with:
 ```
 sudo apt install python3-pip
 ```
-
-In addition, `installSynApps` uses some additional python3 modules: `distro` for labelling output tarballs, and `pygithub` for auto-syncing of module versions with github. `installSynApps` will start and run without these modules, but you will lose access to the features that depend on them. To install these packages, first clone this repository, and then install using pip:
+Next, clone the repository and install helper libraries with `pip`:
 ```
 git clone https://github.com/epicsNSLS2-deploy/installSynApps
 cd installSynApps
-sudo python3 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
+You may need to run the `pip` install command as sudo depending on your python installation.  
 In addition, several external tools are used by installSynApps that must also be installed and in the system path. This can be done with:
 ```
 sudo apt install gcc g++ make git wget tar perl
 ```
-on linux, while on windows each of these should be installed from the appropriate websites. To ensure that they are in the system path, type each module into a terminal and see if it displays usage information. If not, and you see an error along the lines of `make command not found`, then the module is not in the system path. In addition, on windows it is required to install Visual Studio 2015+, along with the MSVC and MSVC++ compilers for C and C++ respectively.
+on linux, while on windows each of these should be installed from the appropriate websites. To ensure that they are in the system path, run:
+```
+make --version
+```
+or something similar for each of the above dependencies and see if it displays version information. If not, and you see an error along the lines of `make command not found`, then the module is not in the system path. In addition, on windows it is required to install Visual Studio 2015+, along with the `MSVC` and `MSVC++` compilers for `C` and `C++` respectively.
 
 ### Usage
 
@@ -44,13 +48,19 @@ There are two recommended usage procedures for the module, through the use of `i
 
 ### installCLI
 
-Before running the command line option, you must edit the install configuration which by default is stored in the `configure` directory of this program. Open the `INSTALL_CONFIG` file and you will see a large table representing all modules to clone/build/package. Make sure to set the install location as desired at the top of the file, along with any other changes. Note that the file is structured so that packages must be below their dependacies. For example, an ADDriver depends on ADCore, which means it has to be below it in the table. Be sure to take a look at the `addtlConfDirs` directory as well, which houses several additional configurations that may better fit your specification. For example the `minConfigureLinux` directory contains a configuration that will clone, build, and package only the modules required to run an areaDetector IOC. This is likely the configuration you would want to edit if you are making a binary for a single driver.
+Before running the command line option, you must identify an install configuration to use with `installSynApps`. A default config is stored in the `configure` directory of this program, and several other configurations are housed in `addtlConfDirs`. To create a new config, use:
+```
+./installCLI.py -n -v
+```
+In your selected configuration, open the `INSTALL_CONFIG` file and you will see a large table representing all modules to clone/build/package. Make sure to set the install location as desired at the top of the file, along with any other changes.
 
-In addition, in the configure directory, there are several folders: `injectionFiles`, `macroFiles`, and possibly `customBuildScripts`. In the `injectionFiles` directory, you will find files whose contents are injected into `commonPlugins.cmd`, `RELEASE_PRODS.local`, `commonPlugin_settings.req`, and `commonDriverMakefile`. These injections allow for customizing the areaDetector build past the defaults. In the `macroFiles` directory, all files located there are read and parsed for macro values, which are then used to update the areaDetector configuration. For example writing `JPEG_EXTERNAL=YES` will set the `JPEG_EXTERNAL` macro in the `CONFIG_SITE.local` file in the areaDetector configuration prior to building.
+In addition, in the configure directory, there should be several folders: 
 
-The `customBuildScripts` directory houses any custom build scripts for certain modules. For example, if I wanted a custom build script to build `ADPointGrey` instead of the standard `make`, I would make a script `ADPOINTGREY.sh` on linux and place it in `customBuildScripts`. `installSynApps` checks this directory for scripts that match the module name as defined in the `INSTALL_CONFIG` file. If any are found, these are run during the build step for the module.
-
-Note that in most cases custom build scripts are unneccessary, and unless a particularly difficult-to-compile module is in the config, you will most likely be able to avoid them.
+Directory | Description
+---------|-----------
+`injectionFiles` | Files whose contents are injected into certain target configuration files (ex. `commonPlugins.cmd`)
+`macroFiles` | Used to specify build macros. (ex. `JPEG_EXTERNAL=YES`)
+`customBuildScripts` | Shell/Batch scripts to be run instead of `make` to build a module. (ex. `ADPOINTGREY.sh` would build `ADPointGrey` on Linux instead of `make`)
 
 Once all of these configuration files are edited to your liking, you may run the script.
 
@@ -67,41 +77,53 @@ OR
 ```
 python installCLI.py
 ```
-or add any of the optional flags to further configure the build.
+or add any of the optional flags to further configure the build. A typical run will override the default configuration, and install location, along with setting some logging options, and will in some cases be automated with the `-y` flag:
+```
+./installCLI.py -c addtlConfDirs/configureDeb9 -i /epics/src -p -l -y
+```
 
-**Note that python 3.4+ is required for this script to run**
-
-For information on the available optional flags, run with the `-h` flag. After running the file, simply follow the instructions as they guide you through the build process.
+After executing the script, simply follow the instructions as they guide you through the build process, or if `-y` was used, wait for it to terminate.
 
 ### installGUI
 
-The GUI requires Tkinter to be installed for operation. Tkinter is a standard module included with python3, though if it is not it can be installed via `pip` or the package manager as `python3-tk`.
+The `installSynApps` GUI requires Tkinter to be installed for operation. Tkinter is a standard module included with python3, though if it is not it can be installed via `pip` or the package manager as `python3-tk`.
 
-Similar to `installCLI.py`, to use the GUI, simply run it with python3. You will then see the option for each individual operation, along with an autorun that will perform them all sequentially. You may also load another configuration directory, provided that it follows the same file format as the given default configure directory.
+To start the GUI, run:
+```
+./installGUI.py
+```
+This should load the default configuration, or whatever configuration was previously loaded. You can create a new configuration with `File -> New`, or edit the existing one under the `Edit` tab. Make sure to use `File -> Save` to save any changes you make.
 
-The GUI version also allows finer control of install configurations. In the open window, select the `Edit` menu, then choose an edit option. From there, a window will open allowing you to edit any portion of the install process. You may also save the install configuration with its edits by selecting the File -> Save As option. When you select File -> Save, the currently loaded config will overwrite whereever it was previously saved.
-
-In addition, the GUI keeps a log of the operations completed, which can be saved to an arbitrary location. Note that if a process is running (as indicated by the animated process status message), you will be unable to run another process.
+Once the configuration is finished, execute the build by pressing `Autorun`. You can then press `Package` to generate the binary bundle after the build terminates.
 
 For further details on using `installGUI`, please check the [documentation](https://epicsNSLS2-deploy.github.io/installSynApps).
 
-### Running on Linux vs. Windows
+### Configuration Directories
 
-The installSynApps module requires the following to be in the environment PATH in the terminal in which it is running for proper execution:
-* git
-* make
-* wget
-* tar
-* perl
-* A C/C++ compiler (gcc + g++ on linux, MSCV + MSVC++ on windows)
+`installSynApps` relies on data provided in a configuration directory to execute a build/bundle operation.
+There are several configurations included by default with `installSynApps`, and more can be found in the [Install-Configurations](https://github.com/epicsNSLS2-deploy/Install-Configurations) repository.
 
-If these packages are available, then the script should be able to run through the entirety of the build process.
+An example structure of a configuration directory is as follows:
+```
+jwlodek@HP-Z6-G4-Workstation:/epics/utils/installSynApps/configure$ tree
+.
+├── customBuildScripts
+│   └── ADUVC.sh
+├── dependencyInstall.sh
+├── injectionFiles
+│   ├── AD_RELEASE_CONFIG
+│   ├── AUTOSAVE_CONFIG
+│   ├── MAKEFILE_CONFIG
+│   ├── PLUGIN_CONFIG
+│   └── QUADEM_RELEASE
+├── INSTALL_CONFIG
+└── macroFiles
+    └── BUILD_FLAG_CONFIG
 
-Additionally, several python modules are required for some helpful functionality:
-* distro
-* pygithub
+3 directories, 9 files
+```
 
-### Included Configuration files
+Below is a description of all files that are included with a config directory by default when a new one is created.
 
 Configuration file      | Use 
 -------------------------|--------------------
@@ -111,9 +133,3 @@ MAKEFILE_CONFIG     | Injects contents into `ADCore/ADApp/commonDriverMakefile`.
 PLUGIN_CONFIG       | Injects contents into `ADCore/iocBoot/commonPlugins.cmd`. Used to load additional plugins at IOC startup
 AUTOSAVE_CONFIG     | Injects contents into `ADCore/iocBoot/commonPlugin_settings.req`. Used to configure IOC autosave feature
 BUILD_FLAG_CONFIG   | Allows for manually setting Area Detector build flags ex. `JPEG_EXTERNAL=YES`.
-
-### External Configure
-
-It is possible to use different `configure` directories when using `installSynApps`. To do so, it is required that there is an `INSTALL_CONFIG` file within the selected directory. The remaining two directories are optional, though a warning will be displayed on load if they are missing. The simplest way to create new configuration directories is to use the GUI, and selecting `File -> New`, then `File -> Sync Tags` to synchronize the configuration with the most recent module versions on github, and then `File -> Save As` after editing.
-
-**For information regarding the usage of the Legacy scripts of installSynApps, please check the LEGACY.md file in this repo**
