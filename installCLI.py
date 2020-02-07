@@ -64,6 +64,8 @@ def print_welcome_message():
     """
 
     print(installSynApps.get_welcome_text())
+
+    IO.logger.debug(installSynApps.get_debug_version_info())
     
     print("Welcome to the installSynApps module.")
     print("It is designed to automate the build process for EPICS and areaDetector.")

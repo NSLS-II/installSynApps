@@ -2,6 +2,23 @@
 
 <!--RELEASE START-->
 
+## R2-5 (???-Febuary-2020)
+
+* Features Added
+    * Utilize improved `README` file format for source bundles
+    * New Screen for creating configurations.
+    * `setup.py` file finalized and tested, provides ability to install and run from anywhere
+
+* Bug Fixes/Improvements
+    * Fixed several minor issues causing failed module building with default `configure` directory
+    * New configs should now have populated `injectionFiles` and `macroFiles` directories.
+    * Fix issue with building `QuadEM` on certain distributions. 
+
+* Future Plans
+    * Improve documentation - Use sphinx for auto-building docs from source code
+    * Work on improving support for auto-building motion IOCs.
+    * Add more support for running `installSynApps` in an automated environment (`ansible`)
+
 ## R2-4 (10-January-2020)
 
 * Features Added

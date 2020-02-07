@@ -1065,9 +1065,10 @@ class InstallSynAppsGUI:
             self.writeToLog('Auto-Build completed successfully.')
         self.writeToLog('Done.\n')
         self.writeToLog('Autogenerating install/uninstall scripts...\n')
-        self.autogenerator.initialize_dir()
-        self.autogenerator.generate_install()
-        self.autogenerator.generate_uninstall()
+        if platform != 'win32':
+            self.autogenerator.initialize_dir()
+            self.autogenerator.generate_install()
+            self.autogenerator.generate_uninstall()
         self.writeToLog('Autogenerating README file in {}...\n'.format(self.install_config.install_location))
         self.autogenerator.generate_readme(self.install_config.install_location)
         self.writeToLog('Done.\n\n')
