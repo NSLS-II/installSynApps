@@ -450,6 +450,8 @@ while ask_create_add_on_tarball:
         make_another_tarball = input('Would you like to create another add on tarball? (y/n) > ')
         if make_another_tarball != 'y':
             ask_create_add_on_tarball = False
+    else:
+        ask_create_add_on_tarball = False
 
 print()
 if not yes:
