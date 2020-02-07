@@ -537,7 +537,7 @@ class InstallSynAppsGUI:
 
 # ----------------------- Loading/saving Functions -----------------------------
 
-    def newConfig(self, template_type):
+    def newConfig(self, template_type, install_location, update_tags=True):
         """Will load a new blank config and allow user to edit/save it
 
         Parameters
@@ -547,25 +547,19 @@ class InstallSynAppsGUI:
         """
 
         template_filename = 'NEW_CONFIG_ALL'
-        if template_type == 'AD':
+        if template_type == 'AreaDetector':
             template_filename = 'NEW_CONFIG_AD'
         elif template_type == 'Motor':
             template_filename = 'NEW_CONFIG_MOTOR'
 
-        self.writeToLog("Opening new install config dialog...\n")
-        temp = simpledialog.askstring('New Install Config', 'Please enter a new desired install location.', parent = self.master)
-        if temp is None:
-            self.showWarningMessage('Warning', 'Operation cancelled')
+        self.writeToLog("Trying to load new default config with install location {}...\n".format(install_location))
+        if not self.thread.is_alive():
+            self.thread = threading.Thread(target=lambda : self.newConfigProcess(install_location, template_type, update_tags))
+            self.loadingIconThread = threading.Thread(target=self.loadingLoop)
+            self.thread.start()
+            self.loadingIconThread.start()
         else:
-            self.writeToLog("Trying to load new default config with install location {}...\n".format(temp))
-            update_tags = messagebox.askyesno('Update versions', 'Would you like installSynApps to auto-update tags?')
-            if not self.thread.is_alive():
-                self.thread = threading.Thread(target=lambda : self.newConfigProcess(temp, template_type, update_tags))
-                self.loadingIconThread = threading.Thread(target=self.loadingLoop)
-                self.thread.start()
-                self.loadingIconThread.start()
-            else:
-                self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
+            self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
 
 
     def newConfigProcess(self, install_loc, template_type, update_tags):
