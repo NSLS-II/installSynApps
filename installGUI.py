@@ -135,9 +135,7 @@ class InstallSynAppsGUI:
 
         # File menu
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label='New AD Config',         command=lambda : self.newConfig('AD'))
-        filemenu.add_command(label='New Motor Config',      command=lambda : self.newConfig('Motor'))
-        filemenu.add_command(label='New Full Config',       command=lambda: self.newConfig('All'))
+        filemenu.add_command(label='New Configuration',         command=lambda : self.openEditWindow('new_config'))
         filemenu.add_command(label='Open',      command=self.loadConfig)
         filemenu.add_command(label='Save',      command=self.saveConfig)
         filemenu.add_command(label='Save As',   command=self.saveConfigAs)
@@ -797,11 +795,12 @@ class InstallSynAppsGUI:
 
         window = None
 
-        if self.install_config is None:
+        if edit_window_str == 'new_config':
+            window = VIEW_MODEL.new_config_screen.NewConfigGUI(self)
+        elif self.install_config is None:
             self.showErrorMessage('Edit Error', 'Error - no loaded install config', force_popup=True)
             return
-
-        if edit_window_str == 'edit_config':
+        elif edit_window_str == 'edit_config':
             window = VIEW_MODEL.edit_install_screen.EditConfigGUI(self, self.install_config)
         elif edit_window_str == 'add_module':
             window = VIEW_MODEL.add_module_screen.AddModuleGUI(self, self.install_config)

@@ -1,5 +1,4 @@
-"""
-Unit test file for script + readme autogenerator
+"""Unit test file for script + readme autogenerator
 """
 
 __author__      = "Jakub Wlodek"
