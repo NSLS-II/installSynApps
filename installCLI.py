@@ -117,7 +117,7 @@ def parse_user_input():
     """Parses user's command line flags
     """
 
-    path_to_configure = "configure"
+    path_to_configure = os.path.join(os.path.dirname(__file__), "configure")
 
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
 
@@ -209,21 +209,48 @@ print()
 #                                                                       #
 #########################################################################
 
+def parse_configuration():
 
-# Parse base config file, make sure that it is valid - ask for user input until it is valid
-parser = IO.config_parser.ConfigParser(path_to_configure)
-install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
-if install_config is None:
-    print('Error parsing Install Config... {}'.format(message))
-    exit()
-elif message is not None:
-    loc_ok = False
-else:
-    if not yes and force_install_path is None:
-        new_loc = input('Install location {} OK. Do you wish to continue with this location? (y/n) > '.format(install_config.install_location))
-        if new_loc == 'n':
-            loc = input('Please enter a new install_location > ')
-            install_config.install_location = loc.strip()
+    # Parse base config file, make sure that it is valid - ask for user input until it is valid
+    parser = IO.config_parser.ConfigParser(path_to_configure)
+    install_config, message = parser.parse_install_config(allow_illegal=True, force_location=force_install_path)
+    if install_config is None:
+        print('Error parsing Install Config... {}'.format(message))
+        exit()
+    elif message is not None:
+        loc_ok = False
+    else:
+        if not yes and force_install_path is None:
+            new_loc = input('Install location {} OK. Do you wish to continue with this location? (y/n) > '.format(install_config.install_location))
+            if new_loc == 'n':
+                loc = input('Please enter a new install_location > ')
+                install_config.install_location = loc.strip()
+                for module in install_config.get_module_list():
+                    module.abs_path = install_config.convert_path_abs(module.rel_path)
+                    if module.name == 'EPICS_BASE':
+                        install_config.base_path = module.abs_path
+                    elif module.name == 'SUPPORT':
+                        install_config.support_path = module.abs_path
+                    elif module.name == 'AREA_DETECTOR':
+                        install_config.ad_path = module.abs_path
+                    elif module.name == 'MOTOR':
+                        install_config.motor_path = module.abs_path
+                loc_ok = False
+            else:
+                loc_ok = True
+        else:
+            loc_ok = True
+
+    # Loop until a valid location is selected
+    if not loc_ok:
+        while install_config.is_install_valid() != 1:
+            print('**ERROR - Given install location - {} - is not valid**'.format(install_config.install_location))
+            if install_config.is_install_valid() == 0:
+                print('**Path does not exist**')
+            elif install_config.is_install_valid() == -1:
+                print('**Permission Error**')
+            new_path = input('Please enter a new install location > ')
+            install_config.install_location = new_path.strip()
             for module in install_config.get_module_list():
                 module.abs_path = install_config.convert_path_abs(module.rel_path)
                 if module.name == 'EPICS_BASE':
@@ -232,58 +259,20 @@ else:
                     install_config.support_path = module.abs_path
                 elif module.name == 'AREA_DETECTOR':
                     install_config.ad_path = module.abs_path
-                elif module.name == 'MOTOR':
-                    install_config.motor_path = module.abs_path
-            loc_ok = False
-        else:
-            loc_ok = True
-    else:
-        loc_ok = True
 
-# Loop until a valid location is selected
-if not loc_ok:
-    while install_config.is_install_valid() != 1:
-        print('**ERROR - Given install location - {} - is not valid**'.format(install_config.install_location))
-        if install_config.is_install_valid() == 0:
-            print('**Path does not exist**')
-        elif install_config.is_install_valid() == -1:
-            print('**Permission Error**')
-        new_path = input('Please enter a new install location > ')
-        install_config.install_location = new_path.strip()
-        for module in install_config.get_module_list():
-            module.abs_path = install_config.convert_path_abs(module.rel_path)
-            if module.name == 'EPICS_BASE':
-                install_config.base_path = module.abs_path
-            elif module.name == 'SUPPORT':
-                install_config.support_path = module.abs_path
-            elif module.name == 'AREA_DETECTOR':
-                install_config.ad_path = module.abs_path
+    return install_config
 
 
-# Driver Objects for running through build process
-cloner      = DRIVER.clone_driver.CloneDriver(install_config)
-updater     = DRIVER.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
-builder     = DRIVER.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
-packager    = DRIVER.packager_driver.Packager(install_config)
-if not packager.found_distro and platform != 'win32':
-    print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
-    print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
-    if not yes:
-        custom_output = input('Would you like to manually input a name to replace the generic one? (y/n) > ')
-        if custom_output == 'y':
-            custom_os = input('Please enter a suitable output package name: > ')
-            packager.OS = custom_os
-autogenerator = IO.file_generator.FileGenerator(install_config)
+def check_deps(builder):
 
+    # Check to make sure that all dependencies are found
+    status, message = builder.check_dependencies_in_path()
 
-# Check to make sure that all dependencies are found
-status, message = builder.check_dependencies_in_path()
-
-if not status:
-    print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
-    print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
-    print("Critical dependancy error, abort.")
-    err_exit(2)
+    if not status:
+        print("** ERROR - could not find {} in environment path - is a dependancy. **".format(message))
+        print("Please install git, make, wget, and tar, and ensure that they are in the system path.")
+        print("Critical dependancy error, abort.")
+        err_exit(2)
 
 
 #########################################################################
@@ -292,121 +281,122 @@ if not status:
 #                                                                       #
 #########################################################################
 
+def execute_build(install_config, cloner, updater, builder, autogenerator):
 
-# Ask useer to proceed
-print("Ready to start build process with location: {}...".format(install_config.install_location))
-if not yes:
-    response = input("Proceed? (y/n) > ")
-else:
-    response = "y"
-
-if response == "n":
-    print("Skipping clone + build...")
-else:
-    print()
-
+    # Ask useer to proceed
+    print("Ready to start build process with location: {}...".format(install_config.install_location))
     if not yes:
-        clone = input("Would you like to clone EPICS and synApps modules? (y/n) > ")
+        response = input("Proceed? (y/n) > ")
     else:
-        clone = "y"
+        response = "y"
 
-    # Run the clone process
-    if clone == "y":
-        print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
-        print("----------------------------------------------")
-        unsuccessful = cloner.clone_and_checkout()
-        if len(unsuccessful) > 0:
-            for module in unsuccessful:
-                print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
-                if module.name in builder.critical_modules:
-                    print("Critical clone error... abort.")
-                    err_exit(3)
-            print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
-
-    print("----------------------------------------------")
-    if not yes:
-        # Update configuration files
-        update = input("Do you need installSynApps to update configuration files? (y/n) > ")
+    if response == "n":
+        print("Skipping clone + build...")
     else:
-        update = "y"
+        print()
 
-    if update == "y":
-        print("Updating all RELEASE and configuration files...")
-        updater.run_update_config()
-        
-    dep_errors = updater.perform_dependency_valid_check()
-    for dep_error in dep_errors:
-        print(dep_error)
-
-    # Here the update driver will reorder build to make sure all modules are being built after their dependencies.
-    print('Reordering module build order to account for intra-module dependencies...')
-    updater.perform_fix_out_of_order_dependencies()
-
-    print("----------------------------------------------")
-    print("Ready to build EPICS base, support and areaDetector...")
-    if not dep and not yes:
-        d = input("Do you need installSynApps to now install dependency packages on this machine? (y/n) > ")
-    elif dep:
-        d = "y"
-    elif yes:
-        d = 'n'
-
-    if d == "y":
-        print('Acquiring dependencies through dependency script...')
-        if platform == 'win32':
-            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
+        if not yes:
+            clone = input("Would you like to clone EPICS and synApps modules? (y/n) > ")
         else:
-            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
-        if not os.path.exists(dep_script_path):
-            print('Could not find script at {}, skipping...'.format(dep_script_path))
-        else:
-            builder.acquire_dependecies(dep_script_path)
+            clone = "y"
 
-    if not yes:
-        # Inform user of number of CPU cores to use and prompt to build
-        if builder.one_thread:
-            num_cores = 'one CPU core'
-        elif builder.threads == 0:
-            num_cores = 'as many CPU cores as possible'
-        else:
-            num_cores = '{} CPU cores'.format(builder.threads)
-        print("----------------------------------------------")
-        print('Builder is configured to use {} during compilation...'.format(num_cores))
-        build = input("Ready to build selected modules... Continue (y/n) > ")
-    else:
-        build = "y"
-
-    if build == "y":
-        print("Starting build...")
-        # Build all
-        ret, failed_list = builder.build_all()
-
-        if ret != 0:
-            for failed in failed_list:
-                print('Module {} failed to build, will not package'.format(failed))
-                if failed in builder.critical_modules:
-                    print("**ERROR - Build failed - {}**".format(message))
-                    print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
-                    print('**Critical build error - abort...**')
-                    err_exit(4)
-                else:
-                    install_config.get_module_by_name(failed).package = "NO"
-
+        # Run the clone process
+        if clone == "y":
+            print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
+            print("----------------------------------------------")
+            unsuccessful = cloner.clone_and_checkout()
+            if len(unsuccessful) > 0:
+                for module in unsuccessful:
+                    print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
+                    if module.name in builder.critical_modules:
+                        print("Critical clone error... abort.")
+                        err_exit(3)
+                print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
 
         print("----------------------------------------------")
-        print("Autogenerating scripts and README file...")
-        autogenerator.autogenerate_all(create_simple_readme=False)
-        autogenerator.generate_readme('{}'.format(install_config.install_location))
-        print("Done.")
-        if ret == 0:
-            print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
+        if not yes:
+            # Update configuration files
+            update = input("Do you need installSynApps to update configuration files? (y/n) > ")
         else:
-            print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
-        print('Build step completed in {} seconds'.format(time.time() - script_start_time))
+            update = "y"
 
-    else:
-        print("Build aborted... Exiting.")
-        err_exit(5)
+        if update == "y":
+            print("Updating all RELEASE and configuration files...")
+            updater.run_update_config()
+
+        dep_errors = updater.perform_dependency_valid_check()
+        for dep_error in dep_errors:
+            print(dep_error)
+
+        # Here the update driver will reorder build to make sure all modules are being built after their dependencies.
+        print('Reordering module build order to account for intra-module dependencies...')
+        updater.perform_fix_out_of_order_dependencies()
+
+        print("----------------------------------------------")
+        print("Ready to build EPICS base, support and areaDetector...")
+        if not dep and not yes:
+            d = input("Do you need installSynApps to now install dependency packages on this machine? (y/n) > ")
+        elif dep:
+            d = "y"
+        elif yes:
+            d = 'n'
+
+        if d == "y":
+            print('Acquiring dependencies through dependency script...')
+            if platform == 'win32':
+                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
+            else:
+                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
+            if not os.path.exists(dep_script_path):
+                print('Could not find script at {}, skipping...'.format(dep_script_path))
+            else:
+                builder.acquire_dependecies(dep_script_path)
+
+        if not yes:
+            # Inform user of number of CPU cores to use and prompt to build
+            if builder.one_thread:
+                num_cores = 'one CPU core'
+            elif builder.threads == 0:
+                num_cores = 'as many CPU cores as possible'
+            else:
+                num_cores = '{} CPU cores'.format(builder.threads)
+            print("----------------------------------------------")
+            print('Builder is configured to use {} during compilation...'.format(num_cores))
+            build = input("Ready to build selected modules... Continue (y/n) > ")
+        else:
+            build = "y"
+
+        if build == "y":
+            print("Starting build...")
+            # Build all
+            ret, failed_list = builder.build_all()
+
+            if ret != 0:
+                for failed in failed_list:
+                    print('Module {} failed to build, will not package'.format(failed))
+                    if failed in builder.critical_modules:
+                        print("**ERROR - Build failed - {}**".format(message))
+                        print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
+                        print('**Critical build error - abort...**')
+                        err_exit(4)
+                    else:
+                        install_config.get_module_by_name(failed).package = "NO"
+
+
+            print("----------------------------------------------")
+            print("Autogenerating scripts and README file...")
+            autogenerator.autogenerate_all(create_simple_readme=False)
+            autogenerator.generate_readme('{}'.format(install_config.install_location))
+            print("Done.")
+            if ret == 0:
+                print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
+            else:
+                print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
+            print('Build step completed in {} seconds'.format(time.time() - script_start_time))
+
+        else:
+            print("Build aborted... Exiting.")
+            err_exit(5)
 
 
 #########################################################################
@@ -415,57 +405,86 @@ else:
 #                                                                       #
 #########################################################################
 
-print()
-if not yes:
-    create_tarball = input('Would you like to create a tarball binary bundle now? (y/n) > ')
-else:
-    create_tarball = 'y'
-if create_tarball == 'y':
-    output_filename = packager.create_bundle_name()
-    ret = packager.create_package(output_filename, flat_format=args['flatbinaries'])
-    if ret != 0:
-        print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
-        err_exit(6)
-    else:
-        print('Bundle generated at: {}'.format(output_filename))
+def generate_bundles(install_config, packager):
 
-ask_create_add_on_tarball = True
-while ask_create_add_on_tarball:
+    print()
     if not yes:
-        print()
-        create_add_on_tarball = input('Would you like to create an add-on tarball to add a module to an existing bundle? (y/n) > ')
+        create_tarball = input('Would you like to create a tarball binary bundle now? (y/n) > ')
     else:
-        create_add_on_tarball = 'n'
-        ask_create_add_on_tarball = False
-    if create_add_on_tarball == 'y':
-        module_name = input('Please enter name of the module you want packaged (All capitals - Ex. ADPROSILICA) > ')
-        if install_config.get_module_by_name(module_name) is None or install_config.get_module_by_name(module_name).build == 'NO':
-            print('ERROR - Selected module not built, cannot create add on tarball!')
-            err_exit(7)
-        output_filename = packager.create_bundle_name(module_name=module_name)
-        if output_filename is None:
-            print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
-            err_exit(7)
-        ret = packager.create_add_on_package(output_filename, module_name)
-        make_another_tarball = input('Would you like to create another add on tarball? (y/n) > ')
-        if make_another_tarball != 'y':
+        create_tarball = 'y'
+    if create_tarball == 'y':
+        output_filename = packager.create_bundle_name()
+        ret = packager.create_package(output_filename, flat_format=args['flatbinaries'])
+        if ret != 0:
+            print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
+            err_exit(6)
+        else:
+            print('Bundle generated at: {}'.format(output_filename))
+
+    ask_create_add_on_tarball = True
+    while ask_create_add_on_tarball:
+        if not yes:
+            print()
+            create_add_on_tarball = input('Would you like to create an add-on tarball to add a module to an existing bundle? (y/n) > ')
+        else:
+            create_add_on_tarball = 'n'
             ask_create_add_on_tarball = False
-    else:
-        ask_create_add_on_tarball = False
+        if create_add_on_tarball == 'y':
+            module_name = input('Please enter name of the module you want packaged (All capitals - Ex. ADPROSILICA) > ')
+            if install_config.get_module_by_name(module_name) is None or install_config.get_module_by_name(module_name).build == 'NO':
+                print('ERROR - Selected module not built, cannot create add on tarball!')
+                err_exit(7)
+            output_filename = packager.create_bundle_name(module_name=module_name)
+            if output_filename is None:
+                print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
+                err_exit(7)
+            ret = packager.create_add_on_package(output_filename, module_name)
+            make_another_tarball = input('Would you like to create another add on tarball? (y/n) > ')
+            if make_another_tarball != 'y':
+                ask_create_add_on_tarball = False
+        else:
+            ask_create_add_on_tarball = False
 
-print()
-if not yes:
-    create_opi_dir = input('Would you like to create opi_dir now? (y/n) > ')
-else:
-    create_opi_dir = 'y'
-if create_opi_dir == 'y':
-    ret = packager.create_opi_package()
-    if ret != 0:
-        print('ERROR - Failed to create opi bundle.')
-        err_exit(8)
+    print()
+    if not yes:
+        create_opi_dir = input('Would you like to create opi_dir now? (y/n) > ')
     else:
-        print('OPI screen tarball generated.')
+        create_opi_dir = 'y'
+    if create_opi_dir == 'y':
+        ret = packager.create_opi_package()
+        if ret != 0:
+            print('ERROR - Failed to create opi bundle.')
+            err_exit(8)
+        else:
+            print('OPI screen tarball generated.')
 
-print('Done.')
-clean_exit()
+
+def main():
+
+    install_config = parse_configuration()
+
+    # Driver Objects for running through build process
+    cloner      = DRIVER.clone_driver.CloneDriver(install_config)
+    updater     = DRIVER.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
+    builder     = DRIVER.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
+    packager    = DRIVER.packager_driver.Packager(install_config)
+    if not packager.found_distro and platform != 'win32':
+        print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
+        print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
+        if not yes:
+            custom_output = input('Would you like to manually input a name to replace the generic one? (y/n) > ')
+            if custom_output == 'y':
+                custom_os = input('Please enter a suitable output package name: > ')
+                packager.OS = custom_os
+    autogenerator = IO.file_generator.FileGenerator(install_config)
+
+    execute_build(install_config, cloner, updater, builder, autogenerator)
+
+    generate_bundles(install_config, packager)
+    print('Done.')
+    clean_exit()
+
+
+if __name__ == '__main__':
+    main()
 

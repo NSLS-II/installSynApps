@@ -30,7 +30,7 @@ else:
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
 # Module version, author, copyright
-__version__     = "R2-4"
+__version__     = "R2-5"
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright (c) Brookhaven National Laboratory 2018-2020"
 __environment__ = "Python Version: {}, OS Class: {}".format(sys.version.split()[0], OS_class)

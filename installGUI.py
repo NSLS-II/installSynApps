@@ -252,7 +252,7 @@ class InstallSynAppsGUI:
         self.writeToLog(self.initLogText())
 
         # default configure path
-        self.configure_path = 'configure'
+        self.configure_path = os.path.join(os.path.dirname(__file__), 'configure')
         self.configure_path = os.path.abspath(self.configure_path)
         self.valid_install = False
         self.deps_found = True
@@ -1165,13 +1165,17 @@ class InstallSynAppsGUI:
 
 # ---------------- Start the GUI ---------------
 
-root = Tk()
-root.title("installSynApps - {}".format(installSynApps.__version__))
-try:
-    root.iconbitmap('docs/assets/isaIcon.ico')
-except:
-    pass
-root.resizable(False, False)
-gui = InstallSynAppsGUI(root)
+def main():
+    root = Tk()
+    root.title("installSynApps - {}".format(installSynApps.__version__))
+    try:
+        root.iconbitmap('docs/assets/isaIcon.ico')
+    except:
+        pass
+    root.resizable(False, False)
+    gui = InstallSynAppsGUI(root)
 
-root.mainloop()
+    root.mainloop()
+
+if __name__ == '__main__':
+    main()

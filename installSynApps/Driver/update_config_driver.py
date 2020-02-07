@@ -71,7 +71,7 @@ class UpdateConfigDriver:
         self.path_to_configure = path_to_configure
         self.config_injector = CI.ConfigInjector(self.install_config)
         self.fix_release_list = ["DEVIOCSTATS"]
-        self.add_to_release_blacklist = ["AREA_DETECTOR", "ADCORE", "ADSUPPORT", "CONFIGURE", "DOCUMENTATION", "UTILS", "QUADEM"]
+        self.add_to_release_blacklist = ["CONFIGURE", "DOCUMENTATION", "UTILS"]
         self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT", "INSTALL_LOCATION_APP", "CAPFAST_TEMPLATES"]
 
 
