@@ -1,10 +1,7 @@
-""" 
-Class for a window that allows for adding a new module to a loaded install config
+"""Class for a window that allows for adding a new module to a loaded install config
 """
 
-__author__      = "Jakub Wlodek"
-
-
+# Standard lib imports
 import os
 
 # Tkinter imports
@@ -12,14 +9,11 @@ import tkinter as tk
 from tkinter import *
 from tkinter import font as tkFont
 
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.DataModel.install_module as Module
+from installSynApps.data_model import install_module as INSTALL_MODULE
 
 
 class AddModuleGUI:
-    """
-    Class representing a window for adding a new install module to loaded config
+    """Class representing a window for adding a new install module to loaded config
 
     Attributes
     ----------
@@ -56,15 +50,7 @@ class AddModuleGUI:
 
 
     def __init__(self, root, install_config):
-        """
-        Constructor for the EditInjectoGUI class
-
-        Parameters
-        ----------
-        root : InstallSynAppsGUI
-            The root opening window. Used to refresh references on apply
-        install_config : InstallConfiguration
-            The currently loaded install configuration
+        """Constructor for the EditInjectoGUI class
         """
 
         self.root = root
@@ -133,8 +119,7 @@ class AddModuleGUI:
 
 
     def reloadPanel(self):
-        """
-        reloads Panel to defaults
+        """Reloads Panel to defaults
         """
 
         self.name_box.delete('1.0', END)
@@ -149,8 +134,8 @@ class AddModuleGUI:
 
 
     def applyChanges(self):
-        """
-        Method that reads the contents of the text boxes, and tries to create a new InstallModule object.
+        """Method that reads the contents of the text boxes, and tries to create a new InstallModule object.
+
         If the new object is valid and is created successfully, the module is added to the install config,
         and the root InstallSynAppsGUI object calls update all references
         """
@@ -203,7 +188,7 @@ class AddModuleGUI:
             build_str = 'YES'
         if pakcage:
             package_str = 'YES'
-        new_module = Module.InstallModule(name, version, rel_path, url_type, url, repo, clone_str, build_str, package_str)
+        new_module = INSTALL_MODULE.InstallModule(name, version, rel_path, url_type, url, repo, clone_str, build_str, package_str)
         self.install_config.add_module(new_module)
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
@@ -211,7 +196,8 @@ class AddModuleGUI:
 
 
     def exitWindow(self):
-        """ exits from the window """
+        """Exits from the window
+        """
 
         self.master.destroy()
 

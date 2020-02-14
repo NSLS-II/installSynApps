@@ -1,10 +1,7 @@
-""" 
-Class for a window that allows editing of a single module
+"""Class for a window that allows editing of a single module
 """
 
-__author__      = "Jakub Wlodek"
-
-
+# Standard lib imports
 import os
 
 # Tkinter imports
@@ -13,14 +10,10 @@ from tkinter import *
 from tkinter import font as tkFont
 from tkinter import ttk
 
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.DataModel.install_module as Module
 
 
 class EditSingleModuleGUI:
-    """
-    Class representing a window for adding a new install module to loaded config
+    """Class representing a window for adding a new install module to loaded config
 
     Attributes
     ----------
@@ -61,8 +54,7 @@ class EditSingleModuleGUI:
 
 
     def __init__(self, root, install_config):
-        """
-        Constructor for the EditSingleModuleGUI class
+        """Constructor for the EditSingleModuleGUI class
 
         Parameters
         ----------
@@ -146,14 +138,14 @@ class EditSingleModuleGUI:
 
 
     def reloadPanelWrapper(self, *args):
-        """ A wrapper function for reloading the panel """
+        """A wrapper function for reloading the panel
+        """
 
         self.reloadPanel()
 
 
     def reloadPanel(self):
-        """
-        reloads Panel to defaults
+        """Reloads panel to defaults
         """
 
         self.version_box.delete('1.0', END)
@@ -183,10 +175,9 @@ class EditSingleModuleGUI:
 
 
     def applyChanges(self):
-        """
-        Function that reads all of the inputted information and edits the module
-        parameters based on these inputs. Then refreshes the data model to account for the
-        new changes.
+        """Function that reads all of the inputted information and edits the module parameters based on these inputs.
+        
+        Then refreshes the data model to account for the new changes.
         """
 
         version = self.version_box.get('1.0', END).strip()
@@ -239,6 +230,7 @@ class EditSingleModuleGUI:
 
 
     def exitWindow(self):
-        """ exits from the window """
+        """Exits from the window
+        """
 
         self.master.destroy()

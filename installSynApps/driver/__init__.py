@@ -4,7 +4,7 @@ This module contains drivers for the cloning, updating, building, and packaging 
 the implementation to build the install configuration
 """
 
-import installSynApps.Driver.build_driver
-import installSynApps.Driver.update_config_driver
-import installSynApps.Driver.clone_driver
-import installSynApps.Driver.packager_driver
+import installSynApps.driver.build_driver
+import installSynApps.driver.update_config_driver
+import installSynApps.driver.clone_driver
+import installSynApps.driver.packager_driver

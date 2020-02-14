@@ -1,2 +1,2 @@
-recursive-include resources *
-recursive-include configure *
+recursive-include resources/*
+recursive-include configure/*

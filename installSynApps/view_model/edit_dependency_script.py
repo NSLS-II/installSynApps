@@ -1,8 +1,5 @@
-""" 
-Class for a window that allows writing/editing custom build scripts for individual modules.
+"""Class for a window that allows writing/editing custom build scripts for individual modules.
 """
-
-__author__      = "Jakub Wlodek"
 
 import os
 from sys import platform
@@ -16,15 +13,9 @@ from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.IO.config_parser as Parser
-import installSynApps.IO.config_injector as Injector
-
 
 class EditDependencyScriptGUI:
-    """
-    Class representing a window for editing a currently loaded install config in the GUI.
+    """Class representing a window for editing a currently loaded install config in the GUI.
 
     Attributes
     ----------
@@ -43,8 +34,7 @@ class EditDependencyScriptGUI:
     """
 
     def __init__(self, root, install_config):
-        """
-        Constructor for the EditDependencyScriptGUI class
+        """Constructor for the EditDependencyScriptGUI class
         """
 
         self.root = root
@@ -82,7 +72,8 @@ class EditDependencyScriptGUI:
 
 
     def deleteBuildScript(self):
-        """ Function that deletes the dependency Script """
+        """Function that deletes the dependency Script
+        """
 
         if self.root.configure_path is None:
             self.root.showErrorMessage('ERROR', 'ERROR - No configure directory loaded, please save the configuration first.', force_popup=True)
@@ -96,14 +87,14 @@ class EditDependencyScriptGUI:
 
 
     def loadCustomBuild(self, *args):
-        """ Wrapper that reloads the panel with new info """
+        """Wrapper that reloads the panel with new info
+        """
 
         self.reloadPanel()
 
 
     def reloadPanel(self):
-        """
-        reloads Panel based on selection
+        """Reloads panel based on selection
         """
 
         self.editPanel.delete('1.0', END)
@@ -121,9 +112,9 @@ class EditDependencyScriptGUI:
 
 
     def applyChanges(self):
-        """
-        Method that reads the edit panel, and writes the contents into a dependencyInstall script in the
-        configuration directory, with the appropriate extension based on OS.
+        """Method that reads the edit panel, and writes the contents into a dependencyInstall script.
+        
+        Script is written to the configuration directory, with the appropriate extension based on current OS.
         """
 
         temp = self.editPanel.get('1.0', END).splitlines()
@@ -147,7 +138,8 @@ class EditDependencyScriptGUI:
 
 
     def exit(self):
-        """ applies changes and exits window """
+        """Applies changes and exits window
+        """
 
         self.master.destroy()
 

@@ -11,7 +11,7 @@ from sys import platform
 import datetime
 import subprocess
 from subprocess import Popen, PIPE
-import installSynApps.IO.logger as LOG
+import installSynApps.io.logger as LOG
 
 # Only support 64 bit windows
 if platform == 'win32':

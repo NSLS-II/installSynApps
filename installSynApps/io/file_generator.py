@@ -12,9 +12,9 @@ import subprocess
 
 # InstallSynApps internal imports
 import installSynApps
-import installSynApps.DataModel.install_config as IC
-from installSynApps.IO import config_writer as WRITER
-from installSynApps.IO import logger as LOG
+import installSynApps.data_model.install_config as IC
+from installSynApps.io import config_writer as WRITER
+from installSynApps.io import logger as LOG
 
 # External package used to identify linux distribution version. Note that this adds external
 # dependancy, but it is required because the platform.linuxdistro() function is being deprecated

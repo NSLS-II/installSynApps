@@ -1,9 +1,7 @@
-""" 
-Class for a window that allows writing/editing custom build scripts for individual modules.
+""" Class for a window that allows writing/editing custom build scripts for individual modules.
 """
 
-__author__      = "Jakub Wlodek"
-
+# Python imports
 import os
 from sys import platform
 
@@ -16,15 +14,9 @@ from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.IO.config_parser as Parser
-import installSynApps.IO.config_injector as Injector
-
 
 class AddCustomBuildScriptGUI:
-    """
-    Class representing a window for editing a currently loaded install config in the GUI.
+    """Class representing a window for editing a currently loaded install config in the GUI.
 
     Attributes
     ----------
@@ -43,8 +35,7 @@ class AddCustomBuildScriptGUI:
     """
 
     def __init__(self, root, install_config):
-        """
-        Constructor for the AddCustomBuildScriptGUI class
+        """Constructor for the AddCustomBuildScriptGUI class
         """
 
         self.root = root
@@ -90,7 +81,8 @@ class AddCustomBuildScriptGUI:
 
 
     def deleteBuildScript(self):
-        """ Function that deletes custom build script associated with module """
+        """Function that deletes custom build script associated with module
+        """
 
         if self.currentModule.custom_build_script_path is None:
             self.root.showErrorMessage('ERROR', 'ERROR - No build script associated with this module.', force_popup=True)
@@ -103,14 +95,14 @@ class AddCustomBuildScriptGUI:
 
 
     def loadCustomBuild(self, *args):
-        """ Wrapper that reloads the panel based on selection """
+        """Wrapper that reloads the panel based on selection
+        """
 
         self.reloadPanel()
 
 
     def reloadPanel(self, ifsame=False):
-        """
-        reloads Panel based on selection
+        """Reloads Panel based on selection
         """
 
         found = False
@@ -139,9 +131,7 @@ class AddCustomBuildScriptGUI:
 
 
     def applyChanges(self):
-        """
-        Method that reads the edit panel, and writes a custom build script with $MODULE_NAME as the name
-        and an OS appropriate extension
+        """Method that reads the edit panel, and writes a custom build script with $MODULE_NAME as the name, and an OS appropriate extension
         """
 
         temp = self.editPanel.get('1.0', END).splitlines()
@@ -173,7 +163,8 @@ class AddCustomBuildScriptGUI:
 
 
     def exit(self):
-        """ applies changes and exits window """
+        """Applies changes and exits window
+        """
 
         self.master.destroy()
 

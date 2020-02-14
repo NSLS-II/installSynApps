@@ -891,8 +891,8 @@ class InstallSynAppsGUI:
 
         if self.install_config is None:
             self.showErrorMessage('Error', 'ERROR - No loaded install config found', force_popup=True)
-
-        self.writeToLog(self.install_config.get_printable_string())
+        else:
+            self.writeToLog(self.install_config.get_printable_string())
 
 
     def depScriptHelp(self):
