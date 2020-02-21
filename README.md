@@ -38,6 +38,15 @@ sudo apt install gcc g++ make git wget tar perl
 ```
 on linux, while on windows each of these should be installed from the appropriate websites. To ensure that they are in the system path, type each module into a terminal and see if it displays usage information. If not, and you see an error along the lines of `make command not found`, then the module is not in the system path. In addition, on windows it is required to install Visual Studio 2015+, along with the MSVC and MSVC++ compilers for C and C++ respectively.
 
+Install EPICS dependencies {Below dependencies are typically installed if automatic mode is used}
+```
+sudo apt install re2c libusb-1.0-0-dev
+```
+Install areaDetector dependencies
+```
+sudo apt install libx11-dev libxext-dev libzmq3-dev
+```
+
 ### Usage
 
 There are two recommended usage procedures for the module, through the use of `installCLI.py` and `installGUI.py`. The first will perform all operations through the terminal, while the other will display a GUI written in Tkinter. 
