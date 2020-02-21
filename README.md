@@ -44,6 +44,15 @@ or something similar for each of the above dependencies and see if it displays v
 
 If running on windows, make sure to run `installSynApps` from the Visual Studio developer command prompt, not from `cmd` or `powershell`.
 
+Install EPICS dependencies {Below dependencies are typically installed if automatic mode is used}
+```
+sudo apt install re2c libusb-1.0-0-dev
+```
+Install areaDetector dependencies
+```
+sudo apt install libx11-dev libxext-dev libzmq3-dev
+```
+
 ### Usage
 
 There are two recommended usage procedures for the module, through the use of `installCLI.py` and `installGUI.py`. The first will perform all operations through the terminal, while the other will display a GUI written in Tkinter. 
