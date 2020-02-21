@@ -170,7 +170,7 @@ def parse_user_input():
             print("**INSTALL_CONFIG file not found in specified directory!**\nAborting...")
             clean_exit()
         parser = IO.config_parser.ConfigParser(path_to_configure)
-        install_config, message = parser.parse_install_config(allow_illegal=True)
+        install_config, _ = parser.parse_install_config(allow_illegal=True)
         installSynApps.sync_all_module_tags(install_config, path_to_configure)
         print('Done.')
         clean_exit()
@@ -316,15 +316,8 @@ def execute_build(install_config, cloner, updater, builder, autogenerator):
                 print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
 
         print("----------------------------------------------")
-        if not yes:
-            # Update configuration files
-            update = input("Do you need installSynApps to update configuration files? (y/n) > ")
-        else:
-            update = "y"
-
-        if update == "y":
-            print("Updating all RELEASE and configuration files...")
-            updater.run_update_config()
+        print("Updating all RELEASE and configuration files...")
+        updater.run_update_config()
 
         dep_errors = updater.perform_dependency_valid_check()
         for dep_error in dep_errors:
@@ -336,23 +329,16 @@ def execute_build(install_config, cloner, updater, builder, autogenerator):
 
         print("----------------------------------------------")
         print("Ready to build EPICS base, support and areaDetector...")
-        if not dep and not yes:
-            d = input("Do you need installSynApps to now install dependency packages on this machine? (y/n) > ")
-        elif dep:
-            d = "y"
-        elif yes:
-            d = 'n'
 
-        if d == "y":
-            print('Acquiring dependencies through dependency script...')
-            if platform == 'win32':
-                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
-            else:
-                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
-            if not os.path.exists(dep_script_path):
-                print('Could not find script at {}, skipping...'.format(dep_script_path))
-            else:
-                builder.acquire_dependecies(dep_script_path)
+        print('Attempting to grab external dependencies...')
+        if platform == 'win32':
+            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
+        else:
+            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
+        if not os.path.exists(dep_script_path):
+            print('Could not find script at {}, skipping...'.format(dep_script_path))
+        else:
+            builder.acquire_dependecies(dep_script_path)
 
         if not yes:
             # Inform user of number of CPU cores to use and prompt to build
@@ -377,7 +363,7 @@ def execute_build(install_config, cloner, updater, builder, autogenerator):
                 for failed in failed_list:
                     print('Module {} failed to build, will not package'.format(failed))
                     if failed in builder.critical_modules:
-                        print("**ERROR - Build failed - {}**".format(message))
+                        print("**ERROR - Build failed - {} is a critical module**".format(failed))
                         print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
                         print('**Critical build error - abort...**')
                         err_exit(4)
