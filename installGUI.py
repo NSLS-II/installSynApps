@@ -27,10 +27,10 @@ from sys import platform
 
 # installSynApps module imports
 import installSynApps
-import installSynApps.DataModel as DATA_MODEL
-import installSynApps.IO as IO
-import installSynApps.Driver as DRIVER
-import installSynApps.ViewModel as VIEW_MODEL
+import installSynApps.data_model as DATA_MODEL
+import installSynApps.io as IO
+import installSynApps.driver as DRIVER
+import installSynApps.view_model as VIEW_MODEL
 
 
 class InstallSynAppsGUI:
@@ -252,7 +252,7 @@ class InstallSynAppsGUI:
         self.writeToLog(self.initLogText())
 
         # default configure path
-        self.configure_path = os.path.join(os.path.dirname(__file__), 'configure')
+        self.configure_path = os.path.join(os.path.dirname(installSynApps.__file__), 'configure')
         self.configure_path = os.path.abspath(self.configure_path)
         self.valid_install = False
         self.deps_found = True

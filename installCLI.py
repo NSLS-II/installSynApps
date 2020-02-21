@@ -53,9 +53,9 @@ from sys import platform
 
 # InstallSynAppsModules
 import installSynApps
-import installSynApps.DataModel as DATA_MODEL
-import installSynApps.Driver as DRIVER
-import installSynApps.IO as IO
+import installSynApps.data_model as DATA_MODEL
+import installSynApps.driver as DRIVER
+import installSynApps.io as IO
 
 # -------------- Some helper functions ------------------
 
@@ -119,7 +119,7 @@ def parse_user_input():
     """Parses user's command line flags
     """
 
-    path_to_configure = os.path.join(os.path.dirname(__file__), "configure")
+    path_to_configure = os.path.join(os.path.dirname(installSynApps.__file__), 'configure')
 
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
 
@@ -463,29 +463,32 @@ def generate_bundles(install_config, packager):
 
 def main():
 
-    install_config = parse_configuration()
+    try:
+        install_config = parse_configuration()
 
-    # Driver Objects for running through build process
-    cloner      = DRIVER.clone_driver.CloneDriver(install_config)
-    updater     = DRIVER.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
-    builder     = DRIVER.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
-    packager    = DRIVER.packager_driver.Packager(install_config)
-    if not packager.found_distro and platform != 'win32':
-        print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
-        print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
-        if not yes:
-            custom_output = input('Would you like to manually input a name to replace the generic one? (y/n) > ')
-            if custom_output == 'y':
-                custom_os = input('Please enter a suitable output package name: > ')
-                packager.OS = custom_os
-    autogenerator = IO.file_generator.FileGenerator(install_config)
+        # Driver Objects for running through build process
+        cloner      = DRIVER.clone_driver.CloneDriver(install_config)
+        updater     = DRIVER.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
+        builder     = DRIVER.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
+        packager    = DRIVER.packager_driver.Packager(install_config)
+        if not packager.found_distro and platform != 'win32':
+            print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
+            print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
+            if not yes:
+                custom_output = input('Would you like to manually input a name to replace the generic one? (y/n) > ')
+                if custom_output == 'y':
+                    custom_os = input('Please enter a suitable output package name: > ')
+                    packager.OS = custom_os
+        autogenerator = IO.file_generator.FileGenerator(install_config)
 
-    execute_build(install_config, cloner, updater, builder, autogenerator)
+        execute_build(install_config, cloner, updater, builder, autogenerator)
 
-    generate_bundles(install_config, packager)
-    print('Done.')
-    clean_exit()
-
+        generate_bundles(install_config, packager)
+        print('Done.')
+        clean_exit()
+    except KeyboardInterrupt:
+        print('\n\nAborting installSynApps execution...\nGoodbye.')
+        clean_exit()
 
 if __name__ == '__main__':
     main()

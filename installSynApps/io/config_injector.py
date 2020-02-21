@@ -7,8 +7,8 @@ for the update_config_driver.
 
 import os
 import re
-import installSynApps.DataModel.install_config as IC
-from installSynApps.IO import logger as LOG
+import installSynApps.data_model.install_config as IC
+from installSynApps.io import logger as LOG
 
 class ConfigInjector:
     """Class that is responsible for injecting configuration information and replaces macros.

@@ -1,8 +1,6 @@
-""" 
-Class for a window that allows editing of loaded macros.
+"""Class for a window that allows editing of loaded macros.
 """
 
-__author__      = "Jakub Wlodek"
 
 # Tkinter imports
 import tkinter as tk
@@ -12,15 +10,9 @@ from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.IO.config_parser as Parser
-import installSynApps.IO.config_injector as Injector
-
 
 class EditMacroGUI:
-    """
-    Class representing a window for editing a currently loaded install config in the GUI.
+    """Class representing a window for editing a currently loaded install config in the GUI.
 
     Attributes
     ----------
@@ -48,8 +40,7 @@ class EditMacroGUI:
     """
 
     def __init__(self, root, install_config):
-        """
-        Constructor for the EditMacroGUI class
+        """Constructor for the EditMacroGUI class
         """
 
         self.root = root
@@ -82,8 +73,7 @@ class EditMacroGUI:
 
 
     def initEditPanel(self):
-        """
-        Function that initializes the edit panel text the currently loaded one.
+        """Function that initializes the edit panel text the currently loaded one.
         """
 
         self.editPanel.delete('1.0', END)
@@ -95,9 +85,9 @@ class EditMacroGUI:
 
 
     def applyChanges(self):
-        """
-        Method that reads the edit panel, and sets the macro file contents to whatever the user
-        wrote. Note that there are no checks to see if the edited macros will be valid
+        """Method that reads the edit panel, and sets the macro file contents to whatever the user wrote.
+        
+        Note that there are no checks to see if the edited macros will be valid
         """
 
         new_list = []
@@ -113,7 +103,8 @@ class EditMacroGUI:
 
 
     def applyChangesExit(self):
-        """ Applies changes and exits """
+        """Applies changes and exits
+        """
 
         self.applyChanges()
         self.master.destroy()

@@ -9,7 +9,7 @@ into configuration files prior to builds.
 
 
 import os
-import installSynApps.DataModel.install_module as IM
+import installSynApps.data_model.install_module as IM
 
 
 class InstallConfiguration:

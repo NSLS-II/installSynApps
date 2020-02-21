@@ -1,8 +1,5 @@
-""" 
-Class for a window that allows editing of a loaded install config.
+"""Class for a window that allows editing of a loaded install config.
 """
-
-__author__      = "Jakub Wlodek"
 
 
 # Tkinter imports
@@ -16,13 +13,9 @@ import tkinter.scrolledtext as ScrolledText
 # Helper python modules
 import os
 
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-
 
 class EditConfigGUI:
-    """
-    Class representing a window for editing a currently loaded install config in the GUI.
+    """Class representing a window for editing a currently loaded install config in the GUI.
 
     Attributes
     ----------
@@ -55,15 +48,7 @@ class EditConfigGUI:
 
 
     def __init__(self, root, install_config):
-        """
-        Constructor for the EditConfigGUI class
-
-        Parameters
-        ----------
-        root : InstallSynAppsGUI
-            The root opening window. Used to refresh references on apply
-        install_config : InstallConfiguration
-            The currently loaded install configuration
+        """Constructor for the EditConfigGUI class
         """
 
         self.root = root
@@ -113,7 +98,8 @@ class EditConfigGUI:
 
 
     def readInstallModules(self):
-        """ Function that parses the install configuration into Tk widgets """
+        """Function that parses the install configuration into Tk widgets
+        """
 
         counter = 3
         for module in self.install_config.get_module_list():
@@ -144,13 +130,15 @@ class EditConfigGUI:
 
 
     def scrollFunction(self, event):
-        """ Function used for achieving scrolling """
+        """Function used for achieving scrolling
+        """
         
         self.canvas.configure(scrollregion=self.canvas.bbox("all"), width=825,height=575)
 
 
     def applyChanges(self):
-        """ Function that applies changes made to the install configuration to the currently loaded one. """
+        """Function that applies changes made to the install configuration to the currently loaded one.
+        """
 
         old_loc = self.install_config.install_location
         new_install_loc = self.installTextBox.get('1.0', END)
@@ -206,7 +194,8 @@ class EditConfigGUI:
 
 
     def applyExit(self):
-        """ Function that runs apply changes and then exits the window """
+        """Function that runs apply changes and then exits the window
+        """
 
         self.applyChanges()
         self.master.destroy()

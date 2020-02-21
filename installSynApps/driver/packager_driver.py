@@ -1,7 +1,7 @@
 """Class responsible for packaging compiled binaries based on install config
 """
 
-# imports
+# std lib imports
 import os
 import shutil
 import sys
@@ -22,9 +22,9 @@ except ImportError:
 
 # Only depends on install config
 import installSynApps
-import installSynApps.DataModel.install_config as IC
-import installSynApps.IO.logger as LOG
-import installSynApps.IO.file_generator as FILE_GENERATOR
+import installSynApps.data_model.install_config as IC
+import installSynApps.io.logger as LOG
+import installSynApps.io.file_generator as FILE_GENERATOR
 
 
 class Packager:

@@ -1,8 +1,5 @@
-""" Class for a window that allows editing of loaded macros.
+"""Class for a window that allows editing of loaded macros.
 """
-
-__author__      = "Jakub Wlodek"
-
 
 # Tkinter imports
 import tkinter as tk
@@ -12,13 +9,8 @@ from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
-
+# Standard lib imports
 import os
-
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.IO.config_parser as Parser
-import installSynApps.IO.config_injector as Injector
 
 
 class NewConfigGUI:

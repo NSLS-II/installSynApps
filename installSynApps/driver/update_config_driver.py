@@ -7,9 +7,9 @@ to run an installSynApps client with debug message printing enabled.
 import os
 import re
 import shutil
-import installSynApps.DataModel.install_config as IC
-import installSynApps.IO.config_injector as CI
-import installSynApps.IO.logger as LOG
+import installSynApps.data_model.install_config as IC
+import installSynApps.io.config_injector as CI
+import installSynApps.io.logger as LOG
 
 
 class UpdateConfigDriver:

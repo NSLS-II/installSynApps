@@ -7,8 +7,7 @@ import os
 import json
 
 class MetaDataController:
-    """
-    Class for handling metadata and settings
+    """Class for handling metadata and settings
 
     Attributes
     ----------

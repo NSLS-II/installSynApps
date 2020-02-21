@@ -8,8 +8,8 @@ import datetime
 import os
 import errno
 import shutil
-from installSynApps.DataModel import *
-from installSynApps.IO import logger as LOG
+from installSynApps.data_model import *
+from installSynApps.io import logger as LOG
 
 class ConfigWriter:
     """Class that is responsible for writing Install Configurations

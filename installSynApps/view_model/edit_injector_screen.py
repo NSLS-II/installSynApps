@@ -1,8 +1,5 @@
-""" 
-Class for a window that allows editing of a loaded injector files.
+""" Class for a window that allows editing of a loaded injector files.
 """
-
-__author__      = "Jakub Wlodek"
 
 # Tkinter imports
 import tkinter as tk
@@ -13,15 +10,9 @@ from tkinter import filedialog
 from tkinter import font as tkFont
 import tkinter.scrolledtext as ScrolledText
 
-# installSynApps module imports
-import installSynApps.DataModel.install_config as Config
-import installSynApps.IO.config_parser as Parser
-import installSynApps.IO.config_injector as Injector
-
 
 class EditInjectorGUI:
-    """
-    Class representing a window for editing a currently loaded install config in the GUI.
+    """Class representing a window for editing a currently loaded install config in the GUI.
 
     Attributes
     ----------
@@ -47,8 +38,7 @@ class EditInjectorGUI:
     """
 
     def __init__(self, root, install_config):
-        """
-        Constructor for the EditInjectorGUI class
+        """Constructor for the EditInjectorGUI class
         """
 
         self.root = root
@@ -95,7 +85,8 @@ class EditInjectorGUI:
 
 
     def newInjector(self):
-        """ Function for creating new injector files from within the GUI """
+        """Function for creating new injector files from within the GUI
+        """
 
         new_name = simpledialog.askstring('New Injector', 'Please enter a new injector filename')
         if new_name is not None:
@@ -118,14 +109,14 @@ class EditInjectorGUI:
 
 
     def updateEditPanel(self, *args):
-        """ Wrapper that reloads the panel based on selection """
+        """Wrapper that reloads the panel based on selection
+        """
 
         self.reloadPanel()
 
 
     def reloadPanel(self):
-        """
-        reloads Panel based on selection
+        """Reloads Panel based on selection
         """
 
         target_file = self.currentEditVar.get()
@@ -144,9 +135,9 @@ class EditInjectorGUI:
 
 
     def applyChanges(self):
-        """
-        Method that reads the edit panel, and sets the injector contents to whatever the user
-        wrote. Note that there are no checks to see if the injection will be valid.
+        """Method that reads the edit panel, and sets the injector contents to whatever the user wrote.
+        
+        Note that there are no checks to see if the injection will be valid.
         """
 
         temp = self.editPanel.get('1.0', END).splitlines()
@@ -163,7 +154,8 @@ class EditInjectorGUI:
 
 
     def applyExit(self):
-        """ applies changes and exits window """
+        """Applies changes and exits window
+        """
 
         self.applyChanges()
         self.master.destroy()

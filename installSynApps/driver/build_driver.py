@@ -4,13 +4,15 @@ Includes functions for building modules, updating releases, setting maximum core
 acquiring and checking dependencies.
 """
 
+# Standard libs
 import os
 from subprocess import Popen, PIPE, STDOUT
 import subprocess
 from sys import platform
 import sys
-import installSynApps.DataModel.install_config as IC
-import installSynApps.IO.logger as LOG
+
+# Logger import
+import installSynApps.io.logger as LOG
 
 
 class BuildDriver:

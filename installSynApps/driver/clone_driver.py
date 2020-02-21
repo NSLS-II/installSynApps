@@ -8,9 +8,9 @@ import os
 from subprocess import Popen, PIPE
 import shutil
 from sys import platform
-import installSynApps.DataModel.install_config as IC
-import installSynApps.DataModel.install_module as IM
-import installSynApps.IO.logger as LOG
+import installSynApps.data_model.install_config as IC
+import installSynApps.data_model.install_module as IM
+import installSynApps.io.logger as LOG
 
 class CloneDriver:
     """Class responsible for cloning and checking out all of the modules described in a given InstallConfiguration
