@@ -8,8 +8,8 @@ __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
 import pytest
 import os
 import shutil
-import installSynApps.IO as IO
-import installSynApps.Driver as Driver
+import installSynApps.io as IO
+import installSynApps.driver as Driver
 
 
 parser = IO.config_parser.ConfigParser('tests/TestConfigs/basic')

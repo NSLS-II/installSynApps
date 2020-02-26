@@ -10,8 +10,8 @@ __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
 import pytest
 
 # installSynApps include
-import installSynApps.DataModel.install_config as InstallConfig
-import installSynApps.DataModel.install_module as InstallModule
+import installSynApps.data_model.install_config as InstallConfig
+import installSynApps.data_model.install_module as InstallModule
 
 
 # Test install 

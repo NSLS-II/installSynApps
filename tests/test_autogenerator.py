@@ -9,10 +9,10 @@ import shutil
 import pytest
 
 import tests.helper_test_funcs as Helper
-import installSynApps.DataModel.install_config as IC
-import installSynApps.DataModel.install_module as IM
-import installSynApps.IO.config_parser as Parser
-import installSynApps.IO.file_generator as AutoGenerator
+import installSynApps.data_model.install_config as IC
+import installSynApps.data_model.install_module as IM
+import installSynApps.io.config_parser as Parser
+import installSynApps.io.file_generator as AutoGenerator
 
 parser = Parser.ConfigParser('tests/TestConfigs/basic')
 install_config, message = parser.parse_install_config(force_location='tests/TestFiles/inputs')

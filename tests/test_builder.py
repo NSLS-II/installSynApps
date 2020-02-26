@@ -9,9 +9,9 @@ __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
 import pytest
 import tests.helper_test_funcs as Helper
 
-import installSynApps.DataModel.install_config as IC
-from installSynApps.IO import config_parser as Parser
-from installSynApps.Driver import build_driver as Builder
+import installSynApps.data_model.install_config as IC
+from installSynApps.io import config_parser as Parser
+from installSynApps.driver import build_driver as Builder
 
 parser = Parser.ConfigParser('tests/TestConfigs/basic')
 parsed_config, message = parser.parse_install_config()

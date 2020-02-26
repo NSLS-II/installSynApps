@@ -12,6 +12,7 @@ import datetime
 import subprocess
 from subprocess import Popen, PIPE
 import installSynApps.io.logger as LOG
+import installSynApps.io as IO
 
 # Only support 64 bit windows
 if platform == 'win32':
@@ -164,7 +165,7 @@ def sync_module_tag(module_name, install_config, save_path = None):
 
     if save_path is not None:
         writer = IO.config_writer.ConfigWriter(install_config)
-        ret, message = writer.write_install_config(save_path, overwrite_existing=True)
+        ret, _ = writer.write_install_config(save_path, overwrite_existing=True)
         LOG.write('Updated install config saved to {}'.format(save_path))
         return ret
     else:
