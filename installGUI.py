@@ -8,7 +8,7 @@ to clone, update, and build the EPICS and synApps software stack.
 
 # Tkinter imports
 import tkinter as tk
-from tkinter import *
+from tkinter import Label, Button, INSERT, END, W, SUNKEN, Frame, Menu, Tk
 from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import simpledialog
@@ -224,7 +224,7 @@ class InstallSynAppsGUI:
         self.buildButton    = Button(frame, font=self.smallFont, text='Build Modules',  command=lambda : self.initBuildProcess('build'),    height='3', width='20')
         self.autorunButton  = Button(frame, font=self.smallFont, text='Autorun',        command=lambda : self.initBuildProcess('autorun'),  height='3', width='20')
         self.packageButton  = Button(frame, font=self.smallFont, text='Package',        command=lambda : self.initBuildProcess('package'),  height='3', width='20')
-        self.saveLog        = Button(frame, font=self.smallFont, text='Save Log',       command=self.saveLog,                               height='3', width='20')
+        self.saveLog        = Button(frame, font=self.smallFont, text='Save Log',       command=self.saveLogFunc,                           height='3', width='20')
 
         self.loadButton.grid(   row = 1, column = 0, padx = 15, pady = 15, columnspan = 1)
         self.cloneButton.grid(  row = 1, column = 1, padx = 15, pady = 15, columnspan = 1)
@@ -238,7 +238,7 @@ class InstallSynAppsGUI:
 
         # Log and loading label
         #self.logLabel       = Label(frame, text = 'Log', font = self.smallFont, height = '1').grid(row = 0, column = 6, pady = 0, columnspan = 1)
-        self.logButton      = Button(frame, text='Clear Log', font=self.smallFont, height='1', command=self.resetLog).grid(row = 0, column = 7, pady = 0, columnspan = 1)
+        Button(frame, text='Clear Log', font=self.smallFont, height='1', command=self.resetLog).grid(row = 0, column = 7, pady = 0, columnspan = 1)
         self.loadingLabel   = Label(frame, text = 'Process Thread Status: Done.', anchor=W, font=self.smallFont, height = '1')
         self.loadingLabel.grid(row = 0, column = 2, pady = 0, columnspan = 2)
 
@@ -252,7 +252,7 @@ class InstallSynAppsGUI:
         self.writeToLog(self.initLogText())
 
         # default configure path
-        self.configure_path = os.path.join(os.path.dirname(installSynApps.__file__), 'configure')
+        self.configure_path = os.path.join(os.path.dirname(os.path.dirname(installSynApps.__file__)), 'configure')
         self.configure_path = os.path.abspath(self.configure_path)
         self.valid_install = False
         self.deps_found = True
@@ -546,12 +546,6 @@ class InstallSynAppsGUI:
             The template type to create the configuration with
         """
 
-        template_filename = 'NEW_CONFIG_ALL'
-        if template_type == 'AreaDetector':
-            template_filename = 'NEW_CONFIG_AD'
-        elif template_type == 'Motor':
-            template_filename = 'NEW_CONFIG_MOTOR'
-
         self.writeToLog("Trying to load new default config with install location {}...\n".format(install_location))
         if not self.thread.is_alive():
             self.thread = threading.Thread(target=lambda : self.newConfigProcess(install_location, template_type, update_tags))
@@ -575,6 +569,7 @@ class InstallSynAppsGUI:
             The update tags flag
         """
 
+        old_config = self.configure_path
         loaded_install_config, message = installSynApps.create_new_install_config(install_loc, template_type, update_versions=update_tags)
 
         if message is not None:
@@ -696,7 +691,7 @@ class InstallSynAppsGUI:
             self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
 
 
-    def saveLog(self, saveDir=None):
+    def saveLogFunc(self, saveDir=None):
         """Function that saves the contents of the log to a file.
 
         Parameters
@@ -753,7 +748,7 @@ class InstallSynAppsGUI:
         """
 
         self.writeToLog('Fetching the initIOC script...\n')
-        out = subprocess.Popen(['git', 'clone', 'https://github.com/epicsNSLS2-deploy/initIOC'])
+        _ = subprocess.Popen(['git', 'clone', 'https://github.com/epicsNSLS2-deploy/initIOC'])
         self.writeToLog('Done.\n')
 
 
@@ -766,9 +761,9 @@ class InstallSynAppsGUI:
             current = os.getcwd()
             os.chdir('initIOC')
             if platform == 'win32':
-                p = subprocess.Popen(['py', 'initIOCs.py', '-g'])
+                _ = subprocess.Popen(['py', 'initIOCs.py', '-g'])
             else:
-                p = subprocess.Popen(['./initIOCs.py', '-g'])
+                _ = subprocess.Popen(['./initIOCs.py', '-g'])
             os.chdir(current)
             self.writeToLog('Done.\n')
         else:
@@ -1174,7 +1169,7 @@ def main():
     except:
         pass
     root.resizable(False, False)
-    gui = InstallSynAppsGUI(root)
+    _ = InstallSynAppsGUI(root)
 
     root.mainloop()
 

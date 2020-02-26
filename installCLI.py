@@ -119,7 +119,7 @@ def parse_user_input():
     """Parses user's command line flags
     """
 
-    path_to_configure = os.path.join(os.path.dirname(installSynApps.__file__), 'configure')
+    path_to_configure = os.path.join(os.path.dirname(os.path.dirname(installSynApps.__file__)), 'configure')
 
     parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
 
@@ -185,24 +185,6 @@ def parse_user_input():
 
 
 # ----------------- Run the script ------------------------
-
-script_start_time = time.time()
-
-path_to_configure, force_install_path, args = parse_user_input()
-path_to_configure = os.path.abspath(path_to_configure)
-yes             = args['forceyes']
-dep             = args['dependency']
-single_thread   = False
-
-threads         = args['threads']
-if threads is None:
-    threads = 0
-elif threads == 1:
-    single_thread = True
-
-
-print('Reading install configuration directory located at: {}...'.format(path_to_configure))
-print()
 
 
 #########################################################################
@@ -283,7 +265,7 @@ def check_deps(builder):
 #                                                                       #
 #########################################################################
 
-def execute_build(install_config, cloner, updater, builder, autogenerator):
+def execute_build(yes, grab_deps, install_config, cloner, updater, builder, autogenerator):
 
     # Ask useer to proceed
     print("Ready to start build process with location: {}...".format(install_config.install_location))
@@ -330,15 +312,19 @@ def execute_build(install_config, cloner, updater, builder, autogenerator):
         print("----------------------------------------------")
         print("Ready to build EPICS base, support and areaDetector...")
 
-        print('Attempting to grab external dependencies...')
-        if platform == 'win32':
-            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
-        else:
-            dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
-        if not os.path.exists(dep_script_path):
-            print('Could not find script at {}, skipping...'.format(dep_script_path))
-        else:
-            builder.acquire_dependecies(dep_script_path)
+        install_deps = 'n'
+        if not grab_deps and not yes:
+            install_deps = input('Would you like to run dependency script to grab dependency packages? (y/n) > ')
+        if install_deps == 'y' or (grab_deps):
+            print('Attempting to grab external dependencies...')
+            if platform == 'win32':
+                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
+            else:
+                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
+            if not os.path.exists(dep_script_path):
+                print('Could not find script at {}, skipping...'.format(dep_script_path))
+            else:
+                builder.acquire_dependecies(dep_script_path)
 
         if not yes:
             # Inform user of number of CPU cores to use and prompt to build
@@ -393,7 +379,7 @@ def execute_build(install_config, cloner, updater, builder, autogenerator):
 #                                                                       #
 #########################################################################
 
-def generate_bundles(install_config, packager):
+def generate_bundles(yes, install_config, packager):
 
     print()
     if not yes:
@@ -447,7 +433,7 @@ def generate_bundles(install_config, packager):
             print('OPI screen tarball generated.')
 
 
-def main():
+def main(yes, grab_deps):
 
     try:
         install_config = parse_configuration()
@@ -467,15 +453,33 @@ def main():
                     packager.OS = custom_os
         autogenerator = IO.file_generator.FileGenerator(install_config)
 
-        execute_build(install_config, cloner, updater, builder, autogenerator)
+        execute_build(yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
 
-        generate_bundles(install_config, packager)
+        generate_bundles(yes, install_config, packager)
         print('Done.')
         clean_exit()
     except KeyboardInterrupt:
         print('\n\nAborting installSynApps execution...\nGoodbye.')
         clean_exit()
 
+
 if __name__ == '__main__':
-    main()
+    script_start_time = time.time()
+
+    path_to_configure, force_install_path, args = parse_user_input()
+    path_to_configure = os.path.abspath(path_to_configure)
+    yes             = args['forceyes']
+    dep             = args['dependency']
+    single_thread   = False
+
+    threads         = args['threads']
+    if threads is None:
+        threads = 0
+    elif threads == 1:
+        single_thread = True
+
+
+    print('Reading install configuration directory located at: {}...'.format(path_to_configure))
+    print()
+    main(yes, dep)
 

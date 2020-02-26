@@ -142,7 +142,7 @@ ADPROSILICA         R2-5        $(AREA_DETECTOR)/ADProsilica                ADPr
 ADSIMDETECTOR       R2-10       $(AREA_DETECTOR)/ADSimDetector              ADSimDetector                   YES             YES             YES
 ADPILATUS           R2-8        $(AREA_DETECTOR)/ADPilatus                  ADPilatus                       YES             YES             YES
 ADMERLIN            master      $(AREA_DETECTOR)/ADMerlin                   ADMerlin                        YES             YES             YES
-ADARAVIS            master      $(AREA_DETECTOR)/ADAravis                   ADAravis                        YES             YES             YES
+ADARAVIS            master      $(AREA_DETECTOR)/ADAravis                   ADAravis                        YES             NO              NO
 aravisGigE          R3-0        $(AREA_DETECTOR)/aravisGigE                 aravisGigE                      YES             NO              NO
 ADEIGER             R2-6        $(AREA_DETECTOR)/ADEiger                    ADEiger                         YES             NO              NO
 ADVIMBA             master      $(AREA_DETECTOR)/ADVimba                    ADVimba                         YES             YES             YES
