@@ -2,7 +2,7 @@
 
 <!--RELEASE START-->
 
-## R2-5 (???-Febuary-2020)
+## R2-5 (26-Febuary-2020)
 
 * Features Added
     * Utilize improved `README` file format for source bundles
@@ -17,6 +17,10 @@
     * Remove some unnecessary prompts from `installCLI`
     * Fix minor issues found by linter in `installGUI`
     * Refactor `installCLI` for more modularity
+    * Fix sync-tags auto overwrite in GUI
+    * Add injection and macro files to resources (were missing from new configs)
+    * More robust debug options
+    * Renamed submodules for consistency
 
 * Future Plans
     * Improve documentation - Use sphinx for auto-building docs from source code

@@ -75,7 +75,7 @@ def get_debug_version_info():
         A string with debug information about installSynApps
     """
 
-    isa_version, commit_hash = find_isa_version()
+    isa_version, _ = find_isa_version()
     return 'installSynApps: {}, {}, Date: {}\n'.format(isa_version, __environment__, datetime.datetime.now())
 
 
@@ -117,7 +117,7 @@ def sync_module_tag(module_name, install_config, save_path = None):
         account_repo = '{}{}'.format(module.url, module.repository)
         LOG.print_command("git ls-remote --tags {}".format(account_repo))
         sync_tags_proc = Popen(['git', 'ls-remote', '--tags', account_repo], stdout=PIPE, stderr=PIPE)
-        out, err = sync_tags_proc.communicate()
+        out, _ = sync_tags_proc.communicate()
         ret = out.decode('utf-8')
         tags_temp = ret.splitlines()
         tags = []
@@ -192,7 +192,7 @@ def sync_all_module_tags(install_config, save_path=None, overwrite_existing=True
 
     if save_path is not None:
         writer = IO.config_writer.ConfigWriter(install_config)
-        ret, message = writer.write_install_config(save_path, overwrite_existing=overwrite_existing)
+        ret, _ = writer.write_install_config(save_path, overwrite_existing=overwrite_existing)
         LOG.write('Updated install config saved to {}'.format(save_path))
         return ret
     else:
