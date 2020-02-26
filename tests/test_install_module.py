@@ -8,7 +8,7 @@ __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
 import pytest
 
 
-import installSynApps.DataModel.install_module as Module
+import installSynApps.data_model.install_module as Module
 
 
 def test_version_replace():

@@ -1,0 +1,10 @@
+# This file contains definitions for any Area Detector elements you wish to define in the AD build process.
+#
+# Essentially, in order to compile drivers with support for external plugins, define them here
+#
+# Author: Jakub Wlodek
+# Created on: 4-Feb-2019
+# Copyright (c): Brookhaven National Laboratory
+#
+__TARGET_LOC__=$(AREA_DETECTOR)/configure/RELEASE_PRODS.local
+

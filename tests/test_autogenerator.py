@@ -1,5 +1,4 @@
-"""
-Unit test file for script + readme autogenerator
+"""Unit test file for script + readme autogenerator
 """
 
 __author__      = "Jakub Wlodek"
@@ -10,14 +9,14 @@ import shutil
 import pytest
 
 import tests.helper_test_funcs as Helper
-import installSynApps.DataModel.install_config as IC
-import installSynApps.DataModel.install_module as IM
-import installSynApps.IO.config_parser as Parser
-import installSynApps.IO.script_generator as AutoGenerator
+import installSynApps.data_model.install_config as IC
+import installSynApps.data_model.install_module as IM
+import installSynApps.io.config_parser as Parser
+import installSynApps.io.file_generator as AutoGenerator
 
 parser = Parser.ConfigParser('tests/TestConfigs/basic')
 install_config, message = parser.parse_install_config(force_location='tests/TestFiles/inputs')
-generator = AutoGenerator.ScriptGenerator(install_config)
+generator = AutoGenerator.FileGenerator(install_config)
 
 
 
@@ -61,7 +60,7 @@ def test_uninstall_script():
 
 def test_README():
     generator.initialize_dir()
-    generator.generate_readme()
+    generator.generate_readme_simple()
     test = open(install_config.install_location + '/INSTALL_README.txt', 'r')
     test.readline()
     check = open('tests/TestFiles/outputs/ExpectedREADME', 'r')

@@ -2,6 +2,32 @@
 
 <!--RELEASE START-->
 
+## R2-5 (26-Febuary-2020)
+
+* Features Added
+    * Utilize improved `README` file format for source bundles
+    * New Screen for creating new configurations.
+    * `setup.py` file worked on. Can install both scripts, but need external configuration
+    * `regenerateSources.sh` script is now generated during build. Can be used to recreate sources.
+
+* Bug Fixes/Improvements
+    * Fixed several minor issues causing failed module building with default `configure` directory
+    * New configs should now have populated `injectionFiles` and `macroFiles` directories.
+    * Fix issue with building `QuadEM` on certain distributions. 
+    * Remove some unnecessary prompts from `installCLI`
+    * Fix minor issues found by linter in `installGUI`
+    * Refactor `installCLI` for more modularity
+    * Fix sync-tags auto overwrite in GUI
+    * Add injection and macro files to resources (were missing from new configs)
+    * More robust debug options
+    * Renamed submodules for consistency
+
+* Future Plans
+    * Improve documentation - Use sphinx for auto-building docs from source code
+    * Include better handling of module by module dependency packages
+    * Work on improving support for auto-building motion IOCs.
+    * Add more support for running `installSynApps` in an automated environment (`ansible`)
+
 ## R2-4 (10-January-2020)
 
 * Features Added
