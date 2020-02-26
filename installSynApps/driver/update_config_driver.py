@@ -279,11 +279,11 @@ class UpdateConfigDriver:
                     line = line.strip()
                     line = re.sub(' +', '', line)
                     dep = line.split('=')[0]
-                    if dep not in module.dependencies and dep not in self.dependency_ignore_list and dep != module.name:
-                        module.dependencies.append(dep)
+                    if dep not in module.epics_dependencies and dep not in self.dependency_ignore_list and dep != module.name:
+                        module.epics_dependencies.append(dep)
                         if dep == 'AREA_DETECTOR' or (module.rel_path.startswith('$(AREA_DETECTOR)') and module.name != 'ADSUPPORT' and module.name != 'ADCORE'):
-                            module.dependencies.append('ADSUPPORT')
-                            module.dependencies.append('ADCORE')
+                            module.epics_dependencies.append('ADSUPPORT')
+                            module.epics_dependencies.append('ADCORE')
 
 
     def perform_dependency_valid_check(self):
@@ -304,9 +304,9 @@ class UpdateConfigDriver:
             if module.build == "YES" and module.name != 'SUPPORT':
                 ret = 0
                 self.check_module_dependencies(module)
-                if len(module.dependencies) > 0:
-                    LOG.write('{:<16} - {}'.format(module.name, module.dependencies))
-                for dep in module.dependencies:
+                if len(module.epics_dependencies) > 0:
+                    LOG.write('{:<16} - {}'.format(module.name, module.epics_dependencies))
+                for dep in module.epics_dependencies:
                     dep_mod = self.install_config.get_module_by_name(dep)
                     if dep_mod is None:
                         ret = -1 
@@ -336,8 +336,8 @@ class UpdateConfigDriver:
         """
 
         for module in self.install_config.get_module_list():
-            if len(module.dependencies) > 0:
-                for dep in module.dependencies:
+            if len(module.epics_dependencies) > 0:
+                for dep in module.epics_dependencies:
                     if self.install_config.get_module_build_index(module.name) < self.install_config.get_module_build_index(dep):
                         return False, module.name, dep
         return True, None, None

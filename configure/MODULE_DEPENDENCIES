@@ -1,0 +1,21 @@
+#
+# File defining list of dependencies for modules in configure file
+#
+# Author: Jakub Wlodek
+#
+
+DISTRO=Debian
+
+
+# MODULE_NAME               DEPENDENCIES (Comma-separated)
+#------------------------------------------------------------
+EPICS_BASE      :       gcc,g++,make,git,wget,tar,perl,libreadline-dev,re2c,libusb-1.0.0-dev,libpcre3-dev,libusb-dev
+ADCORE          :       
+
+ADPLUGINBAR     :       libopencv-dev,libzbar-dev
+
+ADCOMPVISION    :       libopencv-dev
+ADUVC           :       libjpeg-dev 
+
+
+

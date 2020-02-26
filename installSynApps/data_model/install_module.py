@@ -70,7 +70,10 @@ class InstallModule:
         self.custom_build_script_path = None
 
         # List of epics modules that this module depends on
-        self.dependencies = []
+        self.epics_dependencies = []
+
+        # List of external packages this module depends on
+        self.external_dependencies = []
 
 
     def print_info(self, fp = None):
