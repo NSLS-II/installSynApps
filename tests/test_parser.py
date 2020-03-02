@@ -8,9 +8,9 @@ __copyright__   = "Copyright June 2019, Brookhaven Science Associates"
 import pytest
 import tests.helper_test_funcs as Helper
 
-import installSynApps.DataModel.install_config as IC
-import installSynApps.DataModel.install_module as IM
-from installSynApps.IO import config_parser as Parser
+import installSynApps.data_model.install_config as IC
+import installSynApps.data_model.install_module as IM
+from installSynApps.io import config_parser as Parser
 
 
 # Test install 

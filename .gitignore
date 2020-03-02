@@ -12,6 +12,7 @@ DEPLOYMENTS/
 addtlConfDirs/*Test/
 .pytest_cache/
 .metadata/
+.isa_metadata/
 build/
 __pycache__/
 initIOC/

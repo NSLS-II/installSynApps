@@ -1,4 +1,5 @@
-# Saved by installSynApps on 2020-02-05 12:43:28.551286
+# This file will contain code to insert into the commonDriverMakefile to link libraries for any external plugins
+# not included by default with areaDetector/ADCore
 __TARGET_LOC__=$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile
 
 ifeq ($(WITH_BOOST),YES)

@@ -8,8 +8,11 @@ import sys
 import re
 import os
 from sys import platform
+import datetime
+import subprocess
 from subprocess import Popen, PIPE
-import installSynApps.IO.logger as LOG
+import installSynApps.io.logger as LOG
+import installSynApps.io as IO
 
 # Only support 64 bit windows
 if platform == 'win32':
@@ -30,10 +33,50 @@ else:
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
 # Module version, author, copyright
-__version__     = "R2-4"
+__version__     = "R2-5"
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright (c) Brookhaven National Laboratory 2018-2020"
 __environment__ = "Python Version: {}, OS Class: {}".format(sys.version.split()[0], OS_class)
+
+
+def find_isa_version():
+    """Function that attempts to get the version of installSynApps used.
+
+    Returns
+    -------
+    isa_version : str
+        The version string for installSynApps. Either hardcoded version, or git tag description
+    commit_hash : str
+        None if git status not available, otherwise hash of current installSynApps commit.
+    """
+
+    isa_version = __version__
+    commit_hash = None
+
+    try:
+        LOG.debug('git describe --tags')
+        out = subprocess.check_output(['git', 'describe', '--tags'])
+        isa_version = out.decode('utf-8').strip()
+        LOG.debug('git rev-parse HEAD')
+        out = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+        commit_hash = out.decode('utf-8')
+    except PermissionError:
+        LOG.debug('Could not find git information for installSynApps versions, defaulting to internal version.')
+
+    return isa_version, commit_hash
+
+
+def get_debug_version_info():
+    """Function that retrieves printable debug string about current installSynApps version
+
+    Returns
+    -------
+    debug_info : str
+        A string with debug information about installSynApps
+    """
+
+    isa_version, _ = find_isa_version()
+    return 'installSynApps: {}, {}, Date: {}\n'.format(isa_version, __environment__, datetime.datetime.now())
 
 
 def get_welcome_text():
@@ -74,7 +117,7 @@ def sync_module_tag(module_name, install_config, save_path = None):
         account_repo = '{}{}'.format(module.url, module.repository)
         LOG.print_command("git ls-remote --tags {}".format(account_repo))
         sync_tags_proc = Popen(['git', 'ls-remote', '--tags', account_repo], stdout=PIPE, stderr=PIPE)
-        out, err = sync_tags_proc.communicate()
+        out, _ = sync_tags_proc.communicate()
         ret = out.decode('utf-8')
         tags_temp = ret.splitlines()
         tags = []
@@ -122,7 +165,7 @@ def sync_module_tag(module_name, install_config, save_path = None):
 
     if save_path is not None:
         writer = IO.config_writer.ConfigWriter(install_config)
-        ret, message = writer.write_install_config(save_path, overwrite_existing=True)
+        ret, _ = writer.write_install_config(save_path, overwrite_existing=True)
         LOG.write('Updated install config saved to {}'.format(save_path))
         return ret
     else:
@@ -149,7 +192,7 @@ def sync_all_module_tags(install_config, save_path=None, overwrite_existing=True
 
     if save_path is not None:
         writer = IO.config_writer.ConfigWriter(install_config)
-        ret, message = writer.write_install_config(save_path, overwrite_existing=overwrite_existing)
+        ret, _ = writer.write_install_config(save_path, overwrite_existing=overwrite_existing)
         LOG.write('Updated install config saved to {}'.format(save_path))
         return ret
     else:
