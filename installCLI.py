@@ -475,11 +475,12 @@ if __name__ == '__main__':
     script_start_time = time.time()
 
     path_to_configure, force_install_path, args = parse_user_input()
-    path_to_configure = os.path.abspath(path_to_configure)
-    yes             = args['forceyes']
-    dep             = args['dependency']
-    flat_output     = args['flatbinaries']
-    include_src     = args['includesources']
+    force_install_path  = os.path.abspath(force_install_path)
+    path_to_configure   = os.path.abspath(path_to_configure)
+    yes                 = args['forceyes']
+    dep                 = args['dependency']
+    flat_output         = args['flatbinaries']
+    include_src         = args['includesources']
     # Inclusion of sources only supported in non-flat output mode
     if include_src:
         flat_output = False

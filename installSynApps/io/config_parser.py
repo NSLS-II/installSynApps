@@ -181,7 +181,6 @@ class ConfigParser:
                             install_config.add_module(install_module)
                 line = install_file.readline()
             
-            install_config.install_location = os.path.abspath(install_config.install_location)
             install_file.close()
             # Read injectors and build flags
             if install_config is None:
