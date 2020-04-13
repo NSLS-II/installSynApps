@@ -3,7 +3,8 @@
 
 # Tkinter imports
 import tkinter as tk
-from tkinter import *
+from tkinter import Button, Label, Toplevel, Frame, BooleanVar, Checkbutton
+from tkinter import GROOVE, Text, END, INSERT
 from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import font as tkFont

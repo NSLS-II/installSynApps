@@ -6,7 +6,8 @@ from sys import platform
 
 # Tkinter imports
 import tkinter as tk
-from tkinter import *
+from tkinter import Button, Label, Toplevel, Frame, BooleanVar, Checkbutton
+from tkinter import GROOVE, Text, END, INSERT, StringVar, OptionMenu
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog

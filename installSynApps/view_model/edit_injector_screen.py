@@ -3,7 +3,8 @@
 
 # Tkinter imports
 import tkinter as tk
-from tkinter import *
+from tkinter import Button, Label, Toplevel, Frame, BooleanVar, Checkbutton
+from tkinter import GROOVE, Text, END, INSERT, StringVar, OptionMenu
 from tkinter import messagebox
 from tkinter import simpledialog
 from tkinter import filedialog
@@ -54,7 +55,7 @@ class EditInjectorGUI:
         self.currentEditVar = StringVar()
         self.currentEditVar.set(self.injectorList[0])
 
-        self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, *self.injectorList)
+        self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, self.injectorList[0], *self.injectorList)
         self.dropdown.config(width=20)
         self.dropdown.grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
         self.currentEditVar.trace('w', self.updateEditPanel)
@@ -90,7 +91,7 @@ class EditInjectorGUI:
                     self.injectorList.append(file.name)
 
                 self.currentEditVar.set(self.injectorList[0])
-                self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, *self.injectorList)
+                self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, self.injectorList[0], *self.injectorList)
                 self.dropdown.config(width=20)
                 self.dropdown.grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
                 self.reloadPanel()

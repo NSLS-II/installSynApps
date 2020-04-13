@@ -50,47 +50,6 @@ class InstallSynAppsGUI:
         threads used for asynchronous usage of the module
     installSynApps modules
         loaded instances of installSynApps objects that drive the process
-    
-    Methods
-    -------
-    loadingloop
-        Method that creates a loading animation
-    writeToLog
-        Method that appends to the log
-    showMessage, showWarningMessage, showErrorMessage
-        Methods for displaying output messages
-    initLogText
-        returns initial log text
-    updateConfigPanel
-        Syncs the config panel with the currently loaded config
-    updateAllRefs
-        Updates references to install config so that build remains consistent
-    recheckDeps
-        Function that checks if dependancies are in the system path
-    newConfig
-        Function that asks user for an install location, and then loads a basic install config with that path.
-    loadConfig
-        event function that gives directory selection prompt and loads configure if dir is valid
-    saveConfig
-        overwrites the existing config path with whatever changes had been added
-    saveConfigAs
-        Opens dialog for file path, and saves to a specific directory
-    openEditWindow
-        Function that opens appropriate edit window depending on argument.
-    injectFilesProcess
-        process function for injecting into files
-    updateConfigProcess
-        process function for updating RELEASE and configuration files
-    cloneConfigProcess
-        process function for cloning all selected modules
-    buildConfigProcess
-        process function for building all selected modules
-    autorunProcss
-        process function for building all selected modules
-    loadHelp
-        prints help information
-    saveLog
-        prompts for save location of log file
     """
 
     def __init__(self, master):
