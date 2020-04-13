@@ -135,6 +135,7 @@ def parse_user_input():
     build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
     build_group.add_argument('-d', '--dependency',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
     build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
+    build_group.add_argument('-s', '--includesources',   action='store_true', help='Add this flag for output bundles to include the full source tree.')
     build_group.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.', type=int)
     
     debug_group.add_argument('-l', '--savelog',          action='store_true', help='Add this flag to save the build log to a file in the logs/ directory.')
@@ -379,7 +380,7 @@ def execute_build(yes, grab_deps, install_config, cloner, updater, builder, auto
 #                                                                       #
 #########################################################################
 
-def generate_bundles(yes, install_config, packager):
+def generate_bundles(yes, install_config, packager, flat_output, include_src):
 
     print()
     if not yes:
@@ -387,8 +388,8 @@ def generate_bundles(yes, install_config, packager):
     else:
         create_tarball = 'y'
     if create_tarball == 'y':
-        output_filename = packager.create_bundle_name()
-        ret = packager.create_package(output_filename, flat_format=args['flatbinaries'])
+        output_filename = packager.create_bundle_name(source_bundle=include_src)
+        ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=include_src)
         if ret != 0:
             print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
             err_exit(6)
@@ -408,11 +409,11 @@ def generate_bundles(yes, install_config, packager):
             if install_config.get_module_by_name(module_name) is None or install_config.get_module_by_name(module_name).build == 'NO':
                 print('ERROR - Selected module not built, cannot create add on tarball!')
                 err_exit(7)
-            output_filename = packager.create_bundle_name(module_name=module_name)
+            output_filename = packager.create_bundle_name(module_name=module_name, source_bundle=include_src)
             if output_filename is None:
                 print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
                 err_exit(7)
-            ret = packager.create_add_on_package(output_filename, module_name)
+            ret = packager.create_add_on_package(output_filename, module_name, with_sources=include_src)
             make_another_tarball = input('Would you like to create another add on tarball? (y/n) > ')
             if make_another_tarball != 'y':
                 ask_create_add_on_tarball = False
@@ -433,7 +434,7 @@ def generate_bundles(yes, install_config, packager):
             print('OPI screen tarball generated.')
 
 
-def main(yes, grab_deps):
+def main(yes, grab_deps, flat_output, include_src):
 
     try:
         install_config = parse_configuration()
@@ -443,6 +444,7 @@ def main(yes, grab_deps):
         updater     = DRIVER.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
         builder     = DRIVER.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
         packager    = DRIVER.packager_driver.Packager(install_config)
+        
         if not packager.found_distro and platform != 'win32':
             print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
             print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
@@ -451,13 +453,19 @@ def main(yes, grab_deps):
                 if custom_output == 'y':
                     custom_os = input('Please enter a suitable output package name: > ')
                     packager.OS = custom_os
+        
         autogenerator = IO.file_generator.FileGenerator(install_config)
 
+        # Run the build
         execute_build(yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
 
-        generate_bundles(yes, install_config, packager)
+        # Generate output bundles
+        generate_bundles(yes, install_config, packager, flat_output, include_src)
+
+        # Finished
         print('Done.')
         clean_exit()
+
     except KeyboardInterrupt:
         print('\n\nAborting installSynApps execution...\nGoodbye.')
         clean_exit()
@@ -470,8 +478,13 @@ if __name__ == '__main__':
     path_to_configure = os.path.abspath(path_to_configure)
     yes             = args['forceyes']
     dep             = args['dependency']
+    flat_output     = args['flatbinaries']
+    include_src     = args['includesources']
+    # Inclusion of sources only supported in non-flat output mode
+    if include_src:
+        flat_output = False
+    
     single_thread   = False
-
     threads         = args['threads']
     if threads is None:
         threads = 0
@@ -481,5 +494,5 @@ if __name__ == '__main__':
 
     print('Reading install configuration directory located at: {}...'.format(path_to_configure))
     print()
-    main(yes, dep)
+    main(yes, dep, flat_output, include_src)
 
