@@ -25,19 +25,6 @@ class CloneDriver:
         pairings of module names to submodules that must be initialized
     install_config : InstallConfiguration
         contains all necessary install configuration information including list of modules
-
-    Methods
-    -------
-    clone_module(module : InstallModule, recursive=False)
-        Function responsible for cloning each module into the appropriate location
-    checkout_module(module : InstallModule)
-        Function that checks out module's tag version if non-master version is specified
-    update_submodules()
-        Function that updates all submodules for git repos that require it
-    cleanup_modules()
-        Function that removes any module directories that exist but are not required
-    clone_and_checkout()
-        Top level function that calls the other functions on each module in self.install_config.get_module_list()
     """
 
 

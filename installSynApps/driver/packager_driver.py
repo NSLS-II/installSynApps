@@ -48,39 +48,6 @@ class Packager:
         a timestamp for the start of the tarring process
     required_in_package : list of str
         list of modules that will be packaged no matter what
-
-    Methods
-    -------
-    start_timer()
-        starts the tar timer
-    stop_timer()
-        stops the timer and returns the elapsed time
-    grab_folder()
-        helper function that copies a specified dir if it exists
-    grab_base()
-        grabs all required base directories
-    grab_module()
-        Function that grabs all of the required folders from each individual module.
-    setup_tar_staging()
-        Function that creates tar staging point.
-    cleanup_tar_staging()
-        Function that cleans up tar staging point, and creates readme file.
-    create_single_module_tarball()
-        Function responsible for creating a tarball for a single module.
-    create_opi_tarball()
-        Function that collects autoconverted .opi files from epics_dir.
-    create_tarball()
-        top level generator that creates tarball in DEPLOTMENTS/tarball
-    create_bundle_name()
-        Helper function for creating output filename
-    create_bundle_cleanup_tool()
-        Simple function that spawns basic scripts used to remove unused bundles.
-    create_package()
-        function that should be called to use packager. Generates a unique package name, creates tarball, and measures time
-    create_add_on_package()
-        Top level packager driver function for creating addon packages.
-    create_opi_package()
-        Function that creates bundle of all opi files.
     """
 
 

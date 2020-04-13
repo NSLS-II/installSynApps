@@ -38,13 +38,6 @@ class InstallModule:
         path to script used to build module instead of just make
     dependencies : list of str
         list of modules identified as dependencies for module
-
-    Methods
-    -------
-    print_info(fp=None)
-        Method that prints information about the given install module
-    get_printable_string()
-        Function that gets an InstallModule toString
     """
 
 

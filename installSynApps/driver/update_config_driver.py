@@ -29,37 +29,6 @@ class UpdateConfigDriver:
         list of modules that should be commented in support/configure/RELEASE
     dependency_ignore_list
         list of macros in RELEASE files that are not EPICS module dependencies
-    
-    Methods
-    -------
-    perform_injection_updates()
-        Function that calls the ConfigInjector functions for appending config files
-    get_macros_from_install_config()
-        Retrieves a list of name-path pairs from install config modules
-    update_ad_macros()
-        Updates the macros in the AD configuration files
-    update_support_macros()
-        Updates the macros in the Support configuration files
-    update_support_build_macros()
-        Function that applies build flags to support module configure directories.
-    update_macros(target_path : str)
-        Function that calls Config injector to update all macros in target dir
-    fix_target_release(target_module_name : str)
-        Function that replaces the RELEASE file of a target module with a corrected one
-    add_missing_support_macros()
-        Function that appends any paths to the support/configure/RELEASE file that were not in it originally
-    comment_non_build_macros()
-        Function that comments out any paths in the support/configure/RELEASE that are clone only and not build
-    run_update_config()
-        Top level function that runs all required config update functions
-    check_module_dependencies()
-        Function that checks inter-module dependencies
-    perform_dependency_valid_check()
-        Function that searches each modules configure/RELEASE file for dependencies.
-    check_dependency_order_valid()
-        Function that checks if the order of module building is valid.
-    perform_fix_out_of_order_dependencies()
-        Function that repeatedly checks if dependency order is valid, until no issues found.
     """
 
 
