@@ -359,15 +359,15 @@ class FileGenerator:
         """
 
         target_fp = open(os.path.join(target, 'envPaths-template'), 'w')
-        target_fp.write('# Please edit this variable to hardcoded path to bundle location')
-        target_fp.write('epicsEnvSet(INSTALL, "{}")\n\n'.format(self.install_config.install_location))
+        target_fp.write('# Please edit this variable to hardcoded path to bundle location\n')
+        target_fp.write('epicsEnvSet("INSTALL", "{}")\n\n'.format(self.install_config.install_location))
         for module in self.install_config.get_module_list():
             if module.package == 'YES':
                 if flat_bin and module.name == 'EPICS_BASE':
                     target_fp.write('epicsEnvSet("{}", $(INSTALL)/../base)\n'.format(module.name))
                 else:
                     target_fp.write('epicsEnvSet("{}", "{}")\n'.format(module.name, module.rel_path))
-        target_fp.write('epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")')
+        target_fp.write('epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")\n')
         target_fp.close()
 
 
