@@ -336,6 +336,7 @@ class Packager:
 
 
         self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
+        self.file_generator.generate_default_envPaths(flat_bin=flat_format)
         result = self.cleanup_tar_staging(filename)
         return result
 
