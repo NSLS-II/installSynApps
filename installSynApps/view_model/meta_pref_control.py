@@ -1,8 +1,6 @@
 """Class that handles installSynApps settings and metadata
 """
 
-__author__      = "Jakub Wlodek"
-
 import os
 import json
 
@@ -15,16 +13,11 @@ class MetaDataController:
         location for metadata/settings
     metadata : dict
         dictionary that stores all settings/metadata
-
-    Methods
-    -------
-    save_metadata()
-        function that writes the loaded metadata. Called at GUI close
     """
 
 
     def __init__(self):
-        """Constructor for MetaDataController
+        """Initialzier for MetaDataController
         """
 
         self.pref_loc = '.isa_metadata'

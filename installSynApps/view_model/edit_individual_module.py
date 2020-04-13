@@ -39,29 +39,11 @@ class EditSingleModuleGUI:
         dropdown for url types
     clone_button/build_button : CheckButton
         toggles to clone/build
-    
-    Methods
-    -------
-    reloadPanelWrapper(*args)
-        A wrapper function that just calls reloadPanel()
-    reloadPanel()
-        resets all text fields to blank
-    applyChanges()
-        Applies changes to the loaded config and updates all references
-    exitWindow()
-        exits from the window
     """
 
 
     def __init__(self, root, install_config):
-        """Constructor for the EditSingleModuleGUI class
-
-        Parameters
-        ----------
-        root : InstallSynAppsGUI
-            The root opening window. Used to refresh references on apply
-        install_config : InstallConfiguration
-            The currently loaded install configuration
+        """Initializer for the EditSingleModuleGUI class
         """
 
         self.root = root

@@ -35,18 +35,13 @@ class AddCustomBuildScriptGUI:
     """
 
     def __init__(self, root, install_config):
-        """Constructor for the AddCustomBuildScriptGUI class
+        """Initializer for the AddCustomBuildScriptGUI class
         """
 
         self.root = root
         self.master = Toplevel()
         self.master.title('Edit Custom Build Scripts')
         self.master.resizable(False, False)
-        sizex = 850
-        sizey = 700
-        posx = 100
-        posy = 100
-        #self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
 
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
@@ -68,9 +63,9 @@ class AddCustomBuildScriptGUI:
         self.module_dropdown.grid(row = 0, column = 0, columnspan = 3, padx=10, pady=10)
         self.customBuildModuleVar.trace('w', self.loadCustomBuild)
 
-        self.applyButton =      Button(self.viewFrame,  text='Save Build Script',   command = self.applyChanges).grid(row = 0, column = 3, columnspan = 1)
-        self.applyExitButton =  Button(self.viewFrame,  text='Exit',                command = self.exit).grid(   row = 0, column = 5, columnspan = 1)
-        self.clearButton =      Button(self.viewFrame,  text='Delete Build Script', command = self.deleteBuildScript).grid( row = 0, column = 4, columnspan = 1)
+        Button(self.viewFrame,  text='Save Build Script',   command = self.applyChanges).grid(row = 0, column = 3, columnspan = 1)
+        Button(self.viewFrame,  text='Exit',                command = self.exit).grid(   row = 0, column = 5, columnspan = 1)
+        Button(self.viewFrame,  text='Delete Build Script', command = self.deleteBuildScript).grid( row = 0, column = 4, columnspan = 1)
 
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 37, width = 100)
         self.editPanel.grid(row = 1, column = 0, columnspan = 6)

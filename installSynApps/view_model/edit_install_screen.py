@@ -35,20 +35,11 @@ class EditConfigGUI:
         Tk text box for editing install location
     applyButton : Button
         button that runs the apply method
-    
-    Methods
-    -------
-    readInstallModules()
-        Function that parses an InstallConfiguration Object into a series of Tk widgets
-    scrollFunction(event)
-        Function used to achieve scrolling in the canvas
-    applyChanges()
-        converts the widget information back into install configuration information, and then applies it to the loaded info
     """
 
 
     def __init__(self, root, install_config):
-        """Constructor for the EditConfigGUI class
+        """Initializer for the EditConfigGUI class
         """
 
         self.root = root
@@ -80,11 +71,10 @@ class EditConfigGUI:
         self.canvas.create_window((0,0), window=self.viewFrame, anchor='nw')
         self.viewFrame.bind('<Configure>', self.scrollFunction)
         Label(self.viewFrame, text='    Edit Loaded Install Configuration', anchor=W, justify=LEFT).grid(row = 0, column = 0, columnspan = 1, pady = 5)
-        self.applyButton = Button(self.viewFrame, text = 'Apply Changes', justify = LEFT, command=self.applyChanges).grid(row = 0, column = 3)
-        self.applyExitButton = Button(self.viewFrame, text = 'Apply and Exit', justify = LEFT, command=self.applyExit).grid(row = 0, column = 5)
-        temp = ''
-        for i in range(0, 150):
-            temp = temp + '-'
+        Button(self.viewFrame, text = 'Apply Changes', justify = LEFT, command=self.applyChanges).grid(row = 0, column = 3)
+        Button(self.viewFrame, text = 'Apply and Exit', justify = LEFT, command=self.applyExit).grid(row = 0, column = 5)
+        
+        temp = '-' * 150
         self.splitter = Label(self.viewFrame, text=temp)
         self.splitter.grid(row = 1, column = 0, columnspan = 6)
 
@@ -101,26 +91,31 @@ class EditConfigGUI:
         """Function that parses the install configuration into Tk widgets
         """
 
+        # Initial row will be 3
         counter = 3
         for module in self.install_config.get_module_list():
+            
             self.installModuleLines[module.name] = {}
-            modLabel = Label(self.viewFrame, text=module.name).grid(row=counter, column = 0, columnspan = 1)
-            self.installModuleLines[module.name]['Label'] = modLabel
+            Label(self.viewFrame, text=module.name).grid(row=counter, column = 0, columnspan = 1)
+            
             vTextBox = Text(self.viewFrame, height = 1, width = 32, padx = 3, pady = 3)
             vTextBox.grid(row=counter, column = 1, columnspan = 2)
             vTextBox.insert(INSERT, module.version)
             self.installModuleLines[module.name]['versionTextBox'] = vTextBox
+            
             self.installModuleLines[module.name]['cloneVar'] = BooleanVar()
             if module.clone == 'YES':
                 self.installModuleLines[module.name]['cloneVar'].set(True)
             self.installModuleLines[module.name]['cloneCheck'] = Checkbutton(self.viewFrame, text='Clone', onvalue = True, offvalue = False, variable = self.installModuleLines[module.name]['cloneVar'])
             self.installModuleLines[module.name]['cloneCheck'].grid(row = counter, column = 3, columnspan = 1)
             self.installModuleLines[module.name]['buildVar'] = BooleanVar()
+            
             if module.build == 'YES':
                 self.installModuleLines[module.name]['buildVar'].set(True)
             self.installModuleLines[module.name]['buildCheck'] = Checkbutton(self.viewFrame, text='Build', onvalue = True, offvalue = False, variable = self.installModuleLines[module.name]['buildVar'])
             self.installModuleLines[module.name]['buildCheck'].grid(row = counter, column = 4, columnspan = 1)
             self.installModuleLines[module.name]['packageVar'] = BooleanVar()
+            
             if module.package == 'YES':
                 self.installModuleLines[module.name]['packageVar'].set(True)
             self.installModuleLines[module.name]['packageCheck'] = Checkbutton(self.viewFrame, text='Package', onvalue = True, offvalue = False, variable = self.installModuleLines[module.name]['packageVar'])
@@ -148,6 +143,7 @@ class EditConfigGUI:
         if res < 0:
             self.root.showWarningMessage('Edit Error', 'WARNING - Permission Error for selected install location', force_popup=True)
             self.root.valid_install = False
+            self.install_config.install_location = old_loc
         elif res == 0:
             try:
                 os.mkdir(self.install_config.install_location)

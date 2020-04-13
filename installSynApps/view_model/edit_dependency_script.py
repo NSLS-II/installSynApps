@@ -34,17 +34,13 @@ class EditDependencyScriptGUI:
     """
 
     def __init__(self, root, install_config):
-        """Constructor for the EditDependencyScriptGUI class
+        """Initializer for the EditDependencyScriptGUI class
         """
 
         self.root = root
         self.master = Toplevel()
         self.master.title('Edit Dependency Script')
         self.master.resizable(False, False)
-        sizex = 850
-        sizey = 700
-        posx = 100
-        posy = 100
         
         # Select the appropriate extension
         self.extension = '.sh'
@@ -59,9 +55,9 @@ class EditDependencyScriptGUI:
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
-        self.applyButton =      Button(self.viewFrame, text='Save Script',   command=self.applyChanges,      width=10).grid(row=0, column=0, columnspan=1, pady=5)
-        self.applyExitButton =  Button(self.viewFrame, text='Exit',          command=self.exit,              width=10).grid(row=0, column=4, columnspan=1, pady=5)
-        self.clearButton =      Button(self.viewFrame, text='Delete Script', command=self.deleteBuildScript, width=10).grid(row=0, column=2, columnspan=1, pady=5)
+        Button(self.viewFrame, text='Save Script',   command=self.applyChanges,      width=10).grid(row=0, column=0, columnspan=1, pady=5)
+        Button(self.viewFrame, text='Exit',          command=self.exit,              width=10).grid(row=0, column=4, columnspan=1, pady=5)
+        Button(self.viewFrame, text='Delete Script', command=self.deleteBuildScript, width=10).grid(row=0, column=2, columnspan=1, pady=5)
 
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 37, width = 100)
         self.editPanel.grid(row = 1, column = 0, columnspan = 5)

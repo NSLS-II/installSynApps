@@ -28,30 +28,16 @@ class EditMacroGUI:
         button that runs the apply method
     editPanel : ScrolledText
         Panel for editing the loaded injector file.
-    
-    Methods
-    -------
-    updateEditPanel(*args)
-        updates the main edit panel based on current selection
-    applyChanges()
-        Applies changes to the loaded config
-    applyAndExit()
-        Applies changes and exits the window
     """
 
     def __init__(self, root, install_config):
-        """Constructor for the EditMacroGUI class
+        """Initializer for the EditMacroGUI class
         """
 
         self.root = root
         self.master = Toplevel()
         self.master.title('Edit Build Flags')
         self.master.resizable(False, False)
-        sizex = 500
-        sizey = 400
-        posx = 100
-        posy = 100
-        #self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
 
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
@@ -61,9 +47,9 @@ class EditMacroGUI:
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
-        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=12).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.applyButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyChangesExit, width=12).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
-        self.refreshButton = Button(self.viewFrame, text='Reload', command = self.initEditPanel, width=12).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=12).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Apply and Exit', command = self.applyChangesExit, width=12).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Reload', command = self.initEditPanel, width=12).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 20, width = 55)
         self.editPanel.grid(row = 1, column = 0, columnspan = 3)
 
