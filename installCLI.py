@@ -291,8 +291,8 @@ def execute_build(yes, grab_deps, install_config, cloner, updater, builder, auto
             unsuccessful = cloner.clone_and_checkout()
             if len(unsuccessful) > 0:
                 for module in unsuccessful:
-                    print("Module {} was either unsuccessfully cloned or checked out.".format(module.name))
-                    if module.name in builder.critical_modules:
+                    print("Module {} was either unsuccessfully cloned or checked out.".format(module))
+                    if module in builder.critical_modules:
                         print("Critical clone error... abort.")
                         err_exit(3)
                 print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
