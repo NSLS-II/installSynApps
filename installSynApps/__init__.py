@@ -97,6 +97,25 @@ def get_welcome_text():
     return text
 
 
+def installSynApps_path_join(path_A, path_B):
+    """Function that joins two paths.
+    All paths use / instead of \\ for simplicity.
+    """
+
+    output_path = path_A
+    if not path_A.endswith('/'):
+        output_path = output_path + '/'
+    if path_B.startswith('/'):
+        output_path = output_path + path_B[1:]
+    else:
+        output_path = output_path + path_B
+
+    if output_path.endswith('/'):
+        output_path = output_path[:-1]
+
+    return output_path
+
+
 def sync_module_tag(module_name, install_config, save_path = None):
     """Function that syncs module version tags with those hosted with git.
 

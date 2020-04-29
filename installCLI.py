@@ -424,7 +424,7 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
     if not yes:
         create_opi_dir = input('Would you like to create opi_dir now? (y/n) > ')
     else:
-        create_opi_dir = 'y'
+        create_opi_dir = 'n'
     if create_opi_dir == 'y':
         ret = packager.create_opi_package()
         if ret != 0:

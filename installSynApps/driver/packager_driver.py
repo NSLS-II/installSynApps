@@ -25,7 +25,7 @@ import installSynApps
 import installSynApps.data_model.install_config as IC
 import installSynApps.io.logger as LOG
 import installSynApps.io.file_generator as FILE_GENERATOR
-
+import installSynApps.io.ioc_generator as IOC_GENERATOR
 
 class Packager:
     """Class responsible for packaging compiled binaries based on install config
@@ -84,6 +84,7 @@ class Packager:
             self.OS = self.arch
         self.start_time = 0
         self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
+        self.ioc_gen = IOC_GENERATOR.DummyIOCGenerator(self.install_config)
 
 
     def start_timer(self):
@@ -336,7 +337,7 @@ class Packager:
 
 
         self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
-        self.file_generator.generate_default_envPaths(flat_bin=flat_format)
+        self.ioc_gen.generate_dummy_iocs()
         result = self.cleanup_tar_staging(filename)
         return result
 

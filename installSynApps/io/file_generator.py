@@ -26,6 +26,14 @@ except ImportError:
     WITH_DISTRO=False
 
 
+WITH_YAML=True
+try:
+    import yaml
+except ImportError:
+    # User does not have pyyaml installed, so dummy IOCs will not have configuration stored in yaml file
+    WITH_YAML = False
+
+
 class FileGenerator:
     """Class responsible for auto-generating install, uninstall, and README files for a given install config
 
@@ -345,30 +353,6 @@ class FileGenerator:
             readme_fp.write('This add on tarball contains a folder with a compiled version of {}.\n'.format(module.name))
             readme_fp.write('To use it with an existing bundle, please copy the folder into {} in the target bundle.\n'.format(module.rel_path))
             readme_fp.write('It is also recommended to edit the build-config for the bundle to reflect the inclusion of this module.\n\n')
-
-
-    def generate_default_envPaths(self, target='__temp__', flat_bin=False):
-        """Generates a default envPaths file for use with bundle
-
-        Parameters
-        ----------
-        target : str
-            Path of bundle staging location
-        flat_bin : bool
-            Toggle for flat binary structure
-        """
-
-        target_fp = open(os.path.join(target, 'envPaths-template'), 'w')
-        target_fp.write('# Please edit this variable to hardcoded path to bundle location\n')
-        target_fp.write('epicsEnvSet("INSTALL", "{}")\n\n'.format(self.install_config.install_location))
-        for module in self.install_config.get_module_list():
-            if module.package == 'YES':
-                if flat_bin and module.name == 'EPICS_BASE':
-                    target_fp.write('epicsEnvSet("{}", $(INSTALL)/../base)\n'.format(module.name))
-                else:
-                    target_fp.write('epicsEnvSet("{}", "{}")\n'.format(module.name, module.rel_path))
-        target_fp.write('epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")\n')
-        target_fp.close()
 
 
     def autogenerate_all(self, create_simple_readme=True):

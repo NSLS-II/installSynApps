@@ -49,22 +49,24 @@ class InstallConfiguration:
         """Constructor for the InstallConfiguration object
         """
 
-        self.path_to_configure = path_to_configure
+        # Paths to configure and output locations
+        self.path_to_configure  = path_to_configure
+        self.install_location   = install_location
 
-        self.install_location = install_location
-        self.modules = []
+        # Modules loaded into install config
+        self.modules        = []
 
         # Dict that maps module name to index in module list for easier searching.
-        self.module_map = {}
+        self.module_map     = {}
 
         self.injector_files = []
-        self.build_flags = []
+        self.build_flags    = []
 
         # Paths to the three install location paths used for relative path correction
-        self.base_path = None
-        self.support_path = None
-        self.ad_path = None
-        self.motor_path = None
+        self.base_path      = None
+        self.support_path   = None
+        self.ad_path        = None
+        self.motor_path     = None
 
     
     def is_install_valid(self):
