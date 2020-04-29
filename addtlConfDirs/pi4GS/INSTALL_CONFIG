@@ -34,7 +34,7 @@ CALC             R3-7-3               $(SUPPORT)/calc                          c
 CAMAC            R2-7-2               $(SUPPORT)/camac                         camac                    NO               NO               NO
 CAPUTRECORDER    R3-1                 $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES              YES
 DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  NO               NO               NO
-DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 YES              YES              YES
+DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 NO               NO               NO
 DEVLIB2          2.10                 $(SUPPORT)/devlib2                       devlib2                  NO               NO               NO
 DXP              R6-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
 DXPSITORO        R1-2                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
