@@ -97,7 +97,7 @@ def get_welcome_text():
     return text
 
 
-def installSynApps_path_join(path_A, path_B):
+def join_path(path_A, path_B):
     """Function that joins two paths.
     All paths use / instead of \\ for simplicity.
     """

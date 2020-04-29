@@ -337,6 +337,7 @@ class Packager:
 
 
         self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
+        self.ioc_gen.init_template_dir()
         self.ioc_gen.generate_dummy_iocs()
         result = self.cleanup_tar_staging(filename)
         return result
