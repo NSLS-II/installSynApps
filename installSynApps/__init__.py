@@ -13,6 +13,7 @@ import subprocess
 from subprocess import Popen, PIPE
 import installSynApps.io.logger as LOG
 import installSynApps.io as IO
+import re
 
 # Only support 64 bit windows
 if platform == 'win32':
@@ -97,21 +98,24 @@ def get_welcome_text():
     return text
 
 
-def join_path(path_A, path_B):
-    """Function that joins two paths.
+def join_path(*args):
+    """Function that joins paths.
+    
     All paths use / instead of \\ for simplicity.
     """
 
-    output_path = path_A
-    if not path_A.endswith('/'):
-        output_path = output_path + '/'
-    if path_B.startswith('/'):
-        output_path = output_path + path_B[1:]
-    else:
-        output_path = output_path + path_B
-
-    if output_path.endswith('/'):
-        output_path = output_path[:-1]
+    output_path = ''
+    first = True
+    for arg in args:
+        temp = arg.strip()
+        temp = temp.replace('\\', '/')
+        if temp.endswith('/'):
+            temp = temp[:-1]
+        if first:
+            first = False
+        else:
+            output_path += '/'
+        output_path += temp
 
     return output_path
 
