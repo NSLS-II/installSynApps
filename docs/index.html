@@ -118,6 +118,62 @@
     <h4>installSynApps Releases:</h4>
     <!--RELEASE START-->
 
+<h4>R2-6 (22-May-2020)</h4>
+<ul>
+<li>
+<p>Features Added</p>
+<ul>
+<li>Allow for generating Debug versions of bundles that include sources</li>
+<li>Generation of dummy IOCs that are included with the bundles</li>
+<li>Integrate certain <code>initIOC</code> features in new modules.</li>
+</ul>
+</li>
+<li>
+<p>Bug Fixes/Improvements</p>
+<ul>
+<li>Fixed issue with certain relative paths being incorrectly represented</li>
+<li>Fix minor bugs in installCLI build script</li>
+<li>Fix minor issue in envPaths generation</li>
+<li>Documentation cleanup - redundant docstrings removed</li>
+</ul>
+</li>
+</ul>
+<h4>R2-5 (26-Febuary-2020)</h4>
+<ul>
+<li>
+<p>Features Added</p>
+<ul>
+<li>Utilize improved <code>README</code> file format for source bundles</li>
+<li>New Screen for creating new configurations.</li>
+<li><code>setup.py</code> file worked on. Can install both scripts, but need external configuration</li>
+<li><code>regenerateSources.sh</code> script is now generated during build. Can be used to recreate sources.</li>
+</ul>
+</li>
+<li>
+<p>Bug Fixes/Improvements</p>
+<ul>
+<li>Fixed several minor issues causing failed module building with default <code>configure</code> directory</li>
+<li>New configs should now have populated <code>injectionFiles</code> and <code>macroFiles</code> directories.</li>
+<li>Fix issue with building <code>QuadEM</code> on certain distributions. </li>
+<li>Remove some unnecessary prompts from <code>installCLI</code></li>
+<li>Fix minor issues found by linter in <code>installGUI</code></li>
+<li>Refactor <code>installCLI</code> for more modularity</li>
+<li>Fix sync-tags auto overwrite in GUI</li>
+<li>Add injection and macro files to resources (were missing from new configs)</li>
+<li>More robust debug options</li>
+<li>Renamed submodules for consistency</li>
+</ul>
+</li>
+<li>
+<p>Future Plans</p>
+<ul>
+<li>Improve documentation - Use sphinx for auto-building docs from source code</li>
+<li>Include better handling of module by module dependency packages</li>
+<li>Work on improving support for auto-building motion IOCs.</li>
+<li>Add more support for running <code>installSynApps</code> in an automated environment (<code>ansible</code>)</li>
+</ul>
+</li>
+</ul>
 <h4>R2-4 (10-January-2020)</h4>
 <ul>
 <li>

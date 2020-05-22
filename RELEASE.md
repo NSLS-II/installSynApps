@@ -2,6 +2,19 @@
 
 <!--RELEASE START-->
 
+## R2-6 (22-May-2020)
+
+* Features Added
+    * Allow for generating Debug versions of bundles that include sources
+    * Generation of dummy IOCs that are included with the bundles
+    * Integrate certain `initIOC` features in new modules.
+
+* Bug Fixes/Improvements
+    * Fixed issue with certain relative paths being incorrectly represented
+    * Fix minor bugs in installCLI build script
+    * Fix minor issue in envPaths generation
+    * Documentation cleanup - redundant docstrings removed
+
 ## R2-5 (26-Febuary-2020)
 
 * Features Added
