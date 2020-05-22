@@ -89,10 +89,14 @@ class DummyIOCGenerator:
 
             driver_path = installSynApps.join_path(self.install_config.ad_path, driver_type)
 
+
+            ioc_top_path = '$(BUNDLE_LOC)/support/areaDetector/{}'.format(driver_type)
+
             # identify the IOCs folder
             for name in os.listdir(driver_path):
                 if "ioc" == name or "iocs" == name:
                     driver_path = installSynApps.join_path(driver_path, name)
+                    ioc_top_path = installSynApps.join_path(ioc_top_path, name)
                     break
 
             # identify the IOC 
@@ -100,9 +104,9 @@ class DummyIOCGenerator:
                 # Add check to see if NOIOC in name - occasional problems generating ADSimDetector
                 if ("IOC" in name or "ioc" in name) and "NOIOC" not in name.upper():
                     driver_path = installSynApps.join_path(driver_path, name)
+                    ioc_top_path = installSynApps.join_path(ioc_top_path, name)
                     break
 
-            ioc_top_path = driver_path
 
             # find the driver executable
             executable_path = installSynApps.join_path(driver_path, "bin")
