@@ -25,7 +25,7 @@ import installSynApps
 import installSynApps.data_model.install_config as IC
 import installSynApps.io.logger as LOG
 import installSynApps.io.file_generator as FILE_GENERATOR
-
+import installSynApps.io.ioc_generator as IOC_GENERATOR
 
 class Packager:
     """Class responsible for packaging compiled binaries based on install config
@@ -48,39 +48,6 @@ class Packager:
         a timestamp for the start of the tarring process
     required_in_package : list of str
         list of modules that will be packaged no matter what
-
-    Methods
-    -------
-    start_timer()
-        starts the tar timer
-    stop_timer()
-        stops the timer and returns the elapsed time
-    grab_folder()
-        helper function that copies a specified dir if it exists
-    grab_base()
-        grabs all required base directories
-    grab_module()
-        Function that grabs all of the required folders from each individual module.
-    setup_tar_staging()
-        Function that creates tar staging point.
-    cleanup_tar_staging()
-        Function that cleans up tar staging point, and creates readme file.
-    create_single_module_tarball()
-        Function responsible for creating a tarball for a single module.
-    create_opi_tarball()
-        Function that collects autoconverted .opi files from epics_dir.
-    create_tarball()
-        top level generator that creates tarball in DEPLOTMENTS/tarball
-    create_bundle_name()
-        Helper function for creating output filename
-    create_bundle_cleanup_tool()
-        Simple function that spawns basic scripts used to remove unused bundles.
-    create_package()
-        function that should be called to use packager. Generates a unique package name, creates tarball, and measures time
-    create_add_on_package()
-        Top level packager driver function for creating addon packages.
-    create_opi_package()
-        Function that creates bundle of all opi files.
     """
 
 
@@ -117,6 +84,7 @@ class Packager:
             self.OS = self.arch
         self.start_time = 0
         self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
+        self.ioc_gen = IOC_GENERATOR.DummyIOCGenerator(self.install_config)
 
 
     def start_timer(self):
@@ -154,7 +122,7 @@ class Packager:
             shutil.copytree(src, dest)
 
 
-    def grab_base(self, top):
+    def grab_base(self, top, include_src=False):
         """Function that copies all of the required folders from EPICS_BASE
 
         Parameters
@@ -164,15 +132,20 @@ class Packager:
         """
 
         base_path = self.install_config.base_path
-        self.grab_folder(base_path + '/bin/' + self.arch,   top + '/base/bin/' + self.arch)
-        self.grab_folder(base_path + '/lib/' + self.arch,   top + '/base/lib/' + self.arch)
-        self.grab_folder(base_path + '/lib/perl',           top + '/base/lib/perl')
-        self.grab_folder(base_path + '/configure',          top + '/base/configure')
-        self.grab_folder(base_path + '/include',            top + '/base/include')
-        self.grab_folder(base_path + '/startup',            top + '/base/startup')
+        if not include_src:
+            LOG.debug('Grabbing lean epics base files')
+            self.grab_folder(base_path + '/bin/' + self.arch,   top + '/base/bin/' + self.arch)
+            self.grab_folder(base_path + '/lib/' + self.arch,   top + '/base/lib/' + self.arch)
+            self.grab_folder(base_path + '/lib/perl',           top + '/base/lib/perl')
+            self.grab_folder(base_path + '/configure',          top + '/base/configure')
+            self.grab_folder(base_path + '/include',            top + '/base/include')
+            self.grab_folder(base_path + '/startup',            top + '/base/startup')
+        else:
+            LOG.debug('Grabbing full epics base files')
+            self.grab_folder(base_path,                         top + '/base')
 
 
-    def grab_module(self, top, module):
+    def grab_module(self, top, module, include_src=False):
         """Function that grabs all of the required folders from each individual module.
 
         Parameters
@@ -192,30 +165,34 @@ class Packager:
             LOG.debug('Module {} not found, skipping...'.format(module.name))
             return
 
-        LOG.debug('Grabbing files for module {}.'.format(module.name))
-        self.grab_folder(target_folder + '/opi',                top + '/' + module_name + '/opi')
-        self.grab_folder(target_folder + '/db',                 top + '/' + module_name + '/db')
-        self.grab_folder(target_folder + '/dbd',                top + '/' + module_name + '/dbd')
-        self.grab_folder(target_folder + '/include',            top + '/' + module_name + '/include')
-        self.grab_folder(target_folder + '/bin/' + self.arch,   top + '/' + module_name + '/bin/' + self.arch)
-        self.grab_folder(target_folder + '/lib/' + self.arch,   top + '/' + module_name + '/lib/' + self.arch)
-        self.grab_folder(target_folder + '/configure',          top + '/' + module_name + '/configure')
-        self.grab_folder(target_folder + '/iocBoot',            top + '/' + module_name + '/iocBoot')
-        self.grab_folder(target_folder + '/modules',            top + '/' + module_name + '/modules')
-        self.grab_folder(target_folder + '/ADViewers/ImageJ',   top + '/' + module_name + '/ADViewers/ImageJ')
-        for dir in os.listdir(target_folder):
-            if 'App' in dir and not dir.startswith('test'):
-                self.grab_folder(target_folder + '/' + dir + '/Db', top + '/' + module_name +'/' + dir + '/Db')
-                self.grab_folder(target_folder + '/' + dir + '/op', top + '/' + module_name +'/' + dir + '/op')
-        if os.path.exists(target_folder + '/iocs'):
-            for dir in os.listdir(target_folder + '/iocs'):
-                ioc_folder = '/iocs/' + dir
-                if 'IOC' in dir:
-                    LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module.name, dir))
-                    self.grab_folder(target_folder + ioc_folder + '/bin/' + self.arch,  top + '/' + module_name + ioc_folder + '/bin/' + self.arch)
-                    self.grab_folder(target_folder + ioc_folder + '/lib/' + self.arch,  top + '/' + module_name + ioc_folder + '/lib/' + self.arch)
-                    self.grab_folder(target_folder + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
-                    self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
+        if not include_src:
+            LOG.debug('Grabbing lean files for module {}.'.format(module.name))
+            self.grab_folder(target_folder + '/opi',                top + '/' + module_name + '/opi')
+            self.grab_folder(target_folder + '/db',                 top + '/' + module_name + '/db')
+            self.grab_folder(target_folder + '/dbd',                top + '/' + module_name + '/dbd')
+            self.grab_folder(target_folder + '/include',            top + '/' + module_name + '/include')
+            self.grab_folder(target_folder + '/bin/' + self.arch,   top + '/' + module_name + '/bin/' + self.arch)
+            self.grab_folder(target_folder + '/lib/' + self.arch,   top + '/' + module_name + '/lib/' + self.arch)
+            self.grab_folder(target_folder + '/configure',          top + '/' + module_name + '/configure')
+            self.grab_folder(target_folder + '/iocBoot',            top + '/' + module_name + '/iocBoot')
+            self.grab_folder(target_folder + '/modules',            top + '/' + module_name + '/modules')
+            self.grab_folder(target_folder + '/ADViewers/ImageJ',   top + '/' + module_name + '/ADViewers/ImageJ')
+            for dir in os.listdir(target_folder):
+                if 'App' in dir and not dir.startswith('test'):
+                    self.grab_folder(target_folder + '/' + dir + '/Db', top + '/' + module_name +'/' + dir + '/Db')
+                    self.grab_folder(target_folder + '/' + dir + '/op', top + '/' + module_name +'/' + dir + '/op')
+            if os.path.exists(target_folder + '/iocs'):
+                for dir in os.listdir(target_folder + '/iocs'):
+                    ioc_folder = '/iocs/' + dir
+                    if 'IOC' in dir:
+                        LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module.name, dir))
+                        self.grab_folder(target_folder + ioc_folder + '/bin/' + self.arch,  top + '/' + module_name + ioc_folder + '/bin/' + self.arch)
+                        self.grab_folder(target_folder + ioc_folder + '/lib/' + self.arch,  top + '/' + module_name + ioc_folder + '/lib/' + self.arch)
+                        self.grab_folder(target_folder + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
+                        self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
+        else:
+            LOG.debug('Grabbing full files for module {}.'.format(module.name))
+            self.grab_folder(target_folder, top + '/' + module_name)
 
 
     def setup_tar_staging(self):
@@ -257,7 +234,7 @@ class Packager:
         return out
 
 
-    def create_single_module_tarball(self, filename, module):
+    def create_single_module_tarball(self, filename, module, with_sources):
         """Function responsible for creating a tarball for a single module.
 
         Used to add modules to existing distributions.
@@ -272,7 +249,7 @@ class Packager:
 
         readme_path = os.path.join(self.output_location, 'README_{}.txt'.format(filename))
         self.setup_tar_staging()
-        self.grab_module('__temp__', module)
+        self.grab_module('__temp__', module, include_src=with_sources)
         self.file_generator.generate_readme(filename, installation_type='addon', readme_path=readme_path, module=module)
         result = self.cleanup_tar_staging(filename, module=module)
         return result
@@ -297,7 +274,7 @@ class Packager:
         except OSError:
             LOG.write('Error creating ' + opi_dir + ' directory', )
 
-        for (root, dirs, files) in os.walk(self.install_config.install_location, topdown=True):
+        for (root, _, files) in os.walk(self.install_config.install_location, topdown=True):
             for name in files:
                 if '.opi' in name and 'autoconvert' in root:
                     file_name = os.path.join(root, name)
@@ -319,7 +296,7 @@ class Packager:
         return out
         
 
-    def create_tarball(self, filename, flat_format):
+    def create_tarball(self, filename, flat_format, with_sources):
         """Function responsible for creating the tarball given a filename.
 
         Parameters
@@ -328,6 +305,8 @@ class Packager:
             name for output tarball and readme file
         flat_format=True : bool
             flag to toggle generating flat vs. non-flat binaries
+        with_sources : bool
+            flag to include non-build artefact files with bundle
         
         Returns
         -------
@@ -338,7 +317,7 @@ class Packager:
         readme_path = os.path.join(self.output_location, 'README_{}.txt'.format(filename))
         self.setup_tar_staging()
 
-        self.grab_base('__temp__')
+        self.grab_base('__temp__', include_src=with_sources)
 
         support_top = '__temp__'
         if not flat_format:
@@ -352,17 +331,19 @@ class Packager:
         for module in self.install_config.get_module_list():
             if (module.name in self.required_in_pacakge or module.package == "YES") and not module.name == "EPICS_BASE":
                 if module.rel_path.startswith('$(AREA_DETECTOR)'):
-                    self.grab_module(ad_top, module)
+                    self.grab_module(ad_top, module, include_src=with_sources)
                 else:
-                    self.grab_module(support_top, module)
+                    self.grab_module(support_top, module, include_src=with_sources)
 
 
         self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
+        self.ioc_gen.init_template_dir()
+        self.ioc_gen.generate_dummy_iocs()
         result = self.cleanup_tar_staging(filename)
         return result
 
 
-    def create_bundle_name(self, module_name=None):
+    def create_bundle_name(self, module_name=None, source_bundle=False):
         """Helper function for creating output filename
 
         Returns
@@ -376,11 +357,15 @@ class Packager:
             if module is None:
                 return None
 
+        bundle_type = 'Prod'
+        if source_bundle:
+            bundle_type = 'Debug'
+
         date_str = datetime.date.today()
         if module_name is None:
-            output_filename = '{}_AD_{}_Bin_{}_{}'.format(self.institution, self.install_config.get_core_version(), self.OS, date_str)
+            output_filename = '{}_AD_{}_{}_{}_{}'.format(self.institution, self.install_config.get_core_version(), bundle_type, self.OS, date_str)
         else:
-            output_filename = '{}_AD_{}_Bin_{}_{}_addon'.format(self.institution, self.install_config.get_core_version(), self.OS, module.name)
+            output_filename = '{}_AD_{}_{}_{}_{}_addon'.format(self.institution, self.install_config.get_core_version(), bundle_type, self.OS, module.name)
         temp = output_filename
         counter = 1
         while os.path.exists(self.output_location + '/' + temp + '.tgz'):
@@ -410,7 +395,7 @@ class Packager:
                 cleanup_tool.close()
 
 
-    def create_package(self, filename, flat_format=True):
+    def create_package(self, filename, flat_format=True, with_sources=False):
         """Top level packager driver function.
 
         Creates output directory, generates filename, creates the tarball, and measures time.
@@ -441,7 +426,7 @@ class Packager:
         LOG.write('Beginning bundling process...')
 
         # Generate the bundle
-        status = self.create_tarball(filename, flat_format)
+        status = self.create_tarball(filename, flat_format, with_sources)
 
         # Stop the timer
         elapsed = self.stop_timer()
@@ -452,7 +437,7 @@ class Packager:
         return status
 
 
-    def create_add_on_package(self, filename, module_name):
+    def create_add_on_package(self, filename, module_name, with_sources=False):
         """Top level packager driver function for creating addon packages.
 
         Creates output directory, generates filename, creates the tarball, and measures time.
@@ -488,7 +473,7 @@ class Packager:
         LOG.write('Beginning construction of {} add on...'.format(module.name))
 
         # Generate the bundle
-        status = self.create_single_module_tarball(filename, module)
+        status = self.create_single_module_tarball(filename, module, with_sources)
 
         # Stop the timer
         elapsed = self.stop_timer()

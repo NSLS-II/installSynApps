@@ -42,33 +42,6 @@ class InstallConfiguration:
         list of injector files loaded by install configuration
     build_flags : list of list of str
         list of macro-value pairs enforced at build time
-
-    Methods
-    -------
-    is_install_valid() : int
-        Function that checks if given install location is valid
-    add_module(module : InstallModule)
-        Function that appends a new module to the list of InstallModules
-    add_injector_file(name : str, contents : str, target : str)
-        Creates new injector file object and adds it to list
-    add_macros(macro_list : list of list of str)
-        appends macros to build flag list
-    get_module_list() : List InstallModule
-        Function that gets the current list of InstallModules
-    get_module_by_name(name : str)
-        gets module given module name
-    get_module_build_index(name : str)
-        returns module build order index
-    get_core_version()
-        returns ADCORE version
-    swap_module_positions(module_A : str, module_B : str)
-        swaps build index positions o modules A and B
-    convert_path_abs(rel_path : str) : str
-        Function that converts a relative path to an absolute path based on locations of install, base, support, and ad
-    print_installation_info(fp=None)
-        Method that prints information about the given install module
-    get_printable_string()
-        gets install configuration info into string
     """
 
 
@@ -76,22 +49,24 @@ class InstallConfiguration:
         """Constructor for the InstallConfiguration object
         """
 
-        self.path_to_configure = path_to_configure
+        # Paths to configure and output locations
+        self.path_to_configure  = path_to_configure
+        self.install_location   = install_location
 
-        self.install_location = install_location
-        self.modules = []
+        # Modules loaded into install config
+        self.modules        = []
 
         # Dict that maps module name to index in module list for easier searching.
-        self.module_map = {}
+        self.module_map     = {}
 
         self.injector_files = []
-        self.build_flags = []
+        self.build_flags    = []
 
         # Paths to the three install location paths used for relative path correction
-        self.base_path = None
-        self.support_path = None
-        self.ad_path = None
-        self.motor_path = None
+        self.base_path      = None
+        self.support_path   = None
+        self.ad_path        = None
+        self.motor_path     = None
 
     
     def is_install_valid(self):

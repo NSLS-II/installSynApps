@@ -18,15 +18,6 @@ class ConfigWriter:
     ----------
     install_config : InstallConfiguration
         install config to write
-
-    Methods
-    -------
-    write_injector_files(filepath : str)
-       Helper Function for writing injector files from install config
-    write_build_flags(filepath : str)
-       Helper Function for writing build flags from install config
-    write_install_config(filepath : str)
-        function that writes an install config "saving" it
     """
 
     def __init__(self, install_config):

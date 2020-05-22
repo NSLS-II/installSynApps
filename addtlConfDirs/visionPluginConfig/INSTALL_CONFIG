@@ -83,12 +83,13 @@ GALIL            V3-6                 $(SUPPORT)/galil                         G
 
 GIT_URL=https://github.com/areaDetector/
 
+ADCORE           master               $(AREA_DETECTOR)/ADCore                  ADCore                   YES              YES              YES
 AREA_DETECTOR    R3-8                 $(SUPPORT)/areaDetector                  areaDetector             YES              YES              NO
 ADSUPPORT        R1-9                 $(AREA_DETECTOR)/ADSupport               ADSupport                YES              YES              YES
+ADCORE           R3-8                 $(AREA_DETECTOR)/ADCore                  ADCore                   YES              YES              YES
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADCORE           master               $(AREA_DETECTOR)/ADCore                  ADCore                   YES              YES              YES
 ADCOMPVISION     master               $(AREA_DETECTOR)/ADCompVision            ADCompVision             YES              YES              YES
 ADPLUGINBAR      master               $(AREA_DETECTOR)/ADPluginBar             ADPluginBar              YES              YES              YES
 ADPLUGINDMTX     master               $(AREA_DETECTOR)/ADPluginDmtx            ADPluginDmtx             YES              YES              YES

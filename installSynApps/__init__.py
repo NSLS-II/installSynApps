@@ -13,6 +13,7 @@ import subprocess
 from subprocess import Popen, PIPE
 import installSynApps.io.logger as LOG
 import installSynApps.io as IO
+import re
 
 # Only support 64 bit windows
 if platform == 'win32':
@@ -33,7 +34,7 @@ else:
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
 # Module version, author, copyright
-__version__     = "R2-5"
+__version__     = "R2-6"
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright (c) Brookhaven National Laboratory 2018-2020"
 __environment__ = "Python Version: {}, OS Class: {}".format(sys.version.split()[0], OS_class)
@@ -95,6 +96,28 @@ def get_welcome_text():
     text = text + "+ This software comes with NO warranty!                          +\n"
     text = text + "+----------------------------------------------------------------+\n"
     return text
+
+
+def join_path(*args):
+    """Function that joins paths.
+    
+    All paths use / instead of \\ for simplicity.
+    """
+
+    output_path = ''
+    first = True
+    for arg in args:
+        temp = arg.strip()
+        temp = temp.replace('\\', '/')
+        if temp.endswith('/'):
+            temp = temp[:-1]
+        if first:
+            first = False
+        else:
+            output_path += '/'
+        output_path += temp
+
+    return output_path
 
 
 def sync_module_tag(module_name, install_config, save_path = None):

@@ -3,7 +3,8 @@
 
 # Tkinter imports
 import tkinter as tk
-from tkinter import *
+from tkinter import Button, Label, Toplevel, Frame, BooleanVar, Checkbutton
+from tkinter import GROOVE, Text, END, INSERT, StringVar, OptionMenu
 from tkinter import messagebox
 from tkinter import simpledialog
 from tkinter import filedialog
@@ -28,28 +29,16 @@ class EditInjectorGUI:
         button that runs the apply method
     editPanel : ScrolledText
         Panel for editing the loaded injector file.
-    
-    Methods
-    -------
-    updateEditPanel(*args)
-        updates the main edit panel based on current selection
-    applyChanges()
-        Applies changes to the loaded config
     """
 
     def __init__(self, root, install_config):
-        """Constructor for the EditInjectorGUI class
+        """Initializer for the EditInjectorGUI class
         """
 
         self.root = root
         self.master = Toplevel()
         self.master.title('Edit Injector Files')
         self.master.resizable(False, False)
-        sizex = 850
-        sizey = 700
-        posx = 100
-        posy = 100
-        #self.master.wm_geometry("%dx%d+%d+%d" % (sizex, sizey, posx, posy))
 
         self.smallFont = tkFont.Font(family = "Helvetica", size = 10)
         self.largeFont = tkFont.Font(family = "Helvetica", size = 14)
@@ -66,15 +55,15 @@ class EditInjectorGUI:
         self.currentEditVar = StringVar()
         self.currentEditVar.set(self.injectorList[0])
 
-        self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, *self.injectorList)
+        self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, self.injectorList[0], *self.injectorList)
         self.dropdown.config(width=20)
         self.dropdown.grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
         self.currentEditVar.trace('w', self.updateEditPanel)
 
-        self.addNewButton = Button(self.viewFrame, text='New Injector', command = self.newInjector, width = 10).grid(row = 0, column = 1, columnspan = 1)
-        self.applyButton = Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=10).grid(row = 0, column = 2, columnspan = 1)
-        self.applyExitButton = Button(self.viewFrame, text='Apply and Exit', command = self.applyExit, width=10).grid(row = 0, column = 3, columnspan = 1)
-        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 4, columnspan = 1)
+        Button(self.viewFrame, text='New Injector', command = self.newInjector, width = 10).grid(row = 0, column = 1, columnspan = 1)
+        Button(self.viewFrame, text='Apply Changes', command = self.applyChanges, width=10).grid(row = 0, column = 2, columnspan = 1)
+        Button(self.viewFrame, text='Apply and Exit', command = self.applyExit, width=10).grid(row = 0, column = 3, columnspan = 1)
+        Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 4, columnspan = 1)
 
         self.editPanel = ScrolledText.ScrolledText(self.viewFrame, height = 37, width = 100)
         self.editPanel.grid(row = 1, column = 0, columnspan = 5)
@@ -102,7 +91,7 @@ class EditInjectorGUI:
                     self.injectorList.append(file.name)
 
                 self.currentEditVar.set(self.injectorList[0])
-                self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, *self.injectorList)
+                self.dropdown = OptionMenu(self.viewFrame, self.currentEditVar, self.injectorList[0], *self.injectorList)
                 self.dropdown.config(width=20)
                 self.dropdown.grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
                 self.reloadPanel()

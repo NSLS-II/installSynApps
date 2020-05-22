@@ -1,5 +1,4 @@
-# Saved by InstallSynAppsGUI on 2019-06-26 17:08:10.142307
-
+# Saved by installSynApps on 2020-04-13 12:07:50.099269
 __TARGET_LOC__=$(AREA_DETECTOR)/ADCore/ADApp/commonDriverMakefile
 
 ifdef ADCOMPVISION
@@ -12,8 +11,6 @@ ifdef ADCOMPVISION
     PROD_SYS_LIBS   += opencv_core opencv_imgproc opencv_highgui
   endif 
 endif
-
-
 ifeq ($(WITH_BOOST),YES)
   ifeq ($(BOOST_EXTERNAL),NO)
     PROD_SYS_LIBS += boost_system
@@ -26,4 +23,3 @@ ifeq ($(WITH_BOOST),YES)
     endif
   endif
 endif
-
