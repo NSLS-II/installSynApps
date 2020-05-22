@@ -388,9 +388,15 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
     else:
         create_tarball = 'y'
     if create_tarball == 'y':
-        output_filename = packager.create_bundle_name(source_bundle=include_src)
-        ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=include_src)
-        if ret != 0:
+        ret_src = 0
+        # If we want to, include debug bundles
+        if include_src:
+            output_filename_src = packager.create_bundle_name(source_bundle=include_src)
+            ret_src = packager.create_package(output_filename_src, flat_format=flat_output, with_sources=include_src)
+        # Always generate a production bundle.
+        output_filename = packager.create_bundle_name(source_bundle=False)
+        ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=False)
+        if ret_src != 0 or ret != 0:
             print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
             err_exit(6)
         else:
