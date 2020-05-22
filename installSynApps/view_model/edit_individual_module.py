@@ -6,7 +6,8 @@ import os
 
 # Tkinter imports
 import tkinter as tk
-from tkinter import *
+from tkinter import Button, Label, Toplevel, Frame, BooleanVar, Checkbutton
+from tkinter import GROOVE, Text, END, INSERT, StringVar, OptionMenu
 from tkinter import font as tkFont
 from tkinter import ttk
 
@@ -39,29 +40,11 @@ class EditSingleModuleGUI:
         dropdown for url types
     clone_button/build_button : CheckButton
         toggles to clone/build
-    
-    Methods
-    -------
-    reloadPanelWrapper(*args)
-        A wrapper function that just calls reloadPanel()
-    reloadPanel()
-        resets all text fields to blank
-    applyChanges()
-        Applies changes to the loaded config and updates all references
-    exitWindow()
-        exits from the window
     """
 
 
     def __init__(self, root, install_config):
-        """Constructor for the EditSingleModuleGUI class
-
-        Parameters
-        ----------
-        root : InstallSynAppsGUI
-            The root opening window. Used to refresh references on apply
-        install_config : InstallConfiguration
-            The currently loaded install configuration
+        """Initializer for the EditSingleModuleGUI class
         """
 
         self.root = root
@@ -96,33 +79,32 @@ class EditSingleModuleGUI:
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
-        self.applyButton = Button(self.viewFrame, text='Save Changes', command = self.applyChanges, width=10).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.exitWindowButton = Button(self.viewFrame, text='Return', command = self.exitWindow, width=10).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
-        self.reloadButton = Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Save Changes', command = self.applyChanges, width=10).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Return', command = self.exitWindow, width=10).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Reload', command = self.reloadPanel, width=10).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
 
-        self.title_label = Label(self.viewFrame, text='Edit individual module:').grid(row = 1, column = 0, columnspan = 1, padx = 5, pady = 5)
-        #self.module_dropdown = OptionMenu(self.viewFrame, self.edit_name_var, *self.legal_names)
+        Label(self.viewFrame, text='Edit individual module:').grid(row = 1, column = 0, columnspan = 1, padx = 5, pady = 5)
         self.module_dropdown = ttk.Combobox(self.viewFrame, textvariable=self.edit_name_var, values=self.legal_names)
         self.module_dropdown.grid(row = 1, column = 1)
         self.edit_name_var.trace('w', self.reloadPanelWrapper)
 
-        self.version_label = Label(self.viewFrame, text='Version:').grid(row =3, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text='Version:').grid(row =3, column = 0, padx = 5, pady = 5)
         self.version_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.version_box.grid(row = 3, column = 1, columnspan = 2)
         
-        self.rel_path_label = Label(self.viewFrame, text = 'Relative Install Path:').grid(row =4, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Relative Install Path:').grid(row =4, column = 0, padx = 5, pady = 5)
         self.rel_path_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.rel_path_box.grid(row = 4, column = 1, columnspan = 2)
         
-        self.url_type_label = Label(self.viewFrame, text = 'Url Type:').grid(row =5, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Url Type:').grid(row =5, column = 0, padx = 5, pady = 5)
         self.url_type_dropdown = OptionMenu(self.viewFrame, self.url_type_var, *self.legal_url_types)
         self.url_type_dropdown.grid(row = 5, column = 1)
         
-        self.url_label = Label(self.viewFrame, text = 'Url:').grid(row =6, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Url:').grid(row =6, column = 0, padx = 5, pady = 5)
         self.url_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.url_box.grid(row = 6, column = 1, columnspan = 2)
         
-        self.repository_label = Label(self.viewFrame, text = 'Repository:').grid(row =7, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Repository:').grid(row =7, column = 0, padx = 5, pady = 5)
         self.repository_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.repository_box.grid(row = 7, column = 1, columnspan = 2)
 

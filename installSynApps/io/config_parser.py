@@ -20,27 +20,6 @@ class ConfigParser:
     ----------
     configure_path : str
         path to installSynApps configure directory
-
-    Methods
-    -------
-    check_valid_config_path()
-        Checks if confgure path is valid
-    parse_line_to_module(line : str, current_url : str, current_url_type : str)
-        parses module line into an InstllModule object
-    parse_install_config(config_filename=INSTALL_CONFIG)
-        main top level function that parses install config file
-    generate_default_injector_files(install_config : InstallConfiguration)
-        Function that creates some new base default injector files
-    read_injector_files(install_config : InstallConfiguration)
-        Function that reads the injector files and adds them to install config
-    parse_injector_files(injector_file_name : str, install_config : InstallConfiguration)
-        Function that parses an injector file and adds it to the install_config
-    read_build_flags(install_config : InstallConfiguration)
-        Function that reads the build flag files and adds them to install config
-    parse_macro_file(macro_file_name : str, install_config : InstallConfiguration)
-        Function to parse macro-value pairs and adds them to install config
-    parse_custom_build_scripts(install_config : InstallConfiguration)
-        Function that checks for custom build scripts
     """
 
 

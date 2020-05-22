@@ -30,23 +30,6 @@ class BuildDriver:
         make flag to use for compilation (-s, -sj, -sjNUM_THREADS)
     built : list of str
         list of modules built successfully
-
-    Methods
-    -------
-    create_make_flags()
-        Function that creates the flags used by make depending on the thread config passed in
-    check_dependencies_in_path()
-        Function meant to check if required packages are located in the system path
-    acquire_dependencies(dependency_script_path : str)
-        function that calls script for acquiring dependency libraries and build environment
-    build_via_custom_script()
-        function used to build a module with a custom install script
-    make_support_releases_consistent()
-        Runs make release in the support directory to propagate RELEASE tags
-    build_module()
-        function that is used to build an individual module.
-    build_all()
-        function that calls all build functions sequentially
     """
 
     def __init__(self, install_config, threads, one_thread=False):

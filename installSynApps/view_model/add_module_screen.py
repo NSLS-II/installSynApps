@@ -6,7 +6,8 @@ import os
 
 # Tkinter imports
 import tkinter as tk
-from tkinter import *
+from tkinter import Button, Label, Toplevel, Frame, BooleanVar, Checkbutton
+from tkinter import GROOVE, Text, END, INSERT, StringVar, OptionMenu
 from tkinter import font as tkFont
 
 from installSynApps.data_model import install_module as INSTALL_MODULE
@@ -37,15 +38,6 @@ class AddModuleGUI:
         dropdown for url types
     clone_button/build_button : CheckButton
         toggles to clone/build
-    
-    Methods
-    -------
-    reloadPanel()
-        resets all text fields to blank
-    applyChanges()
-        Applies changes to the loaded config and updates all references
-    exitWindow()
-        exits from the window
     """
 
 
@@ -79,31 +71,31 @@ class AddModuleGUI:
         self.viewFrame.pack()
 
 
-        self.applyButton = Button(self.viewFrame, text='Save Module', command = self.applyChanges, width=10).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
-        self.exitWindowButton = Button(self.viewFrame, text='Return', command = self.exitWindow, width=10).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
-        self.reloadButton = Button(self.viewFrame, text='Reset', command = self.reloadPanel, width=10).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Save Module', command = self.applyChanges, width=10).grid(row = 0, column = 0, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Return', command = self.exitWindow, width=10).grid(row = 0, column = 1, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Reset', command = self.reloadPanel, width=10).grid(row = 0, column = 2, columnspan = 1, padx = 5, pady = 5)
 
-        self.name_label = Label(self.viewFrame, text='Name:').grid(row =1, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text='Name:').grid(row =1, column = 0, padx = 5, pady = 5)
         self.name_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.name_box.grid(row = 1, column = 1, columnspan = 2)
 
-        self.version_label = Label(self.viewFrame, text='Version:').grid(row =2, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text='Version:').grid(row =2, column = 0, padx = 5, pady = 5)
         self.version_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.version_box.grid(row = 2, column = 1, columnspan = 2)
         
-        self.rel_path_label = Label(self.viewFrame, text = 'Relative Install Path:').grid(row =3, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Relative Install Path:').grid(row =3, column = 0, padx = 5, pady = 5)
         self.rel_path_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.rel_path_box.grid(row = 3, column = 1, columnspan = 2)
         
-        self.url_type_label = Label(self.viewFrame, text = 'Url Type:').grid(row =4, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Url Type:').grid(row =4, column = 0, padx = 5, pady = 5)
         self.url_type_dropdown = OptionMenu(self.viewFrame, self.url_type_var, *self.legal_url_types)
         self.url_type_dropdown.grid(row = 4, column = 1)
         
-        self.url_label = Label(self.viewFrame, text = 'Url:').grid(row =5, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Url:').grid(row =5, column = 0, padx = 5, pady = 5)
         self.url_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.url_box.grid(row = 5, column = 1, columnspan = 2)
         
-        self.repository_label = Label(self.viewFrame, text = 'Repository:').grid(row =6, column = 0, padx = 5, pady = 5)
+        Label(self.viewFrame, text = 'Repository:').grid(row =6, column = 0, padx = 5, pady = 5)
         self.repository_box = Text(self.viewFrame, height = 1, width = 40, padx = 3, pady = 3)
         self.repository_box.grid(row = 6, column = 1, columnspan = 2)
 
@@ -179,16 +171,20 @@ class AddModuleGUI:
                 return
 
         abs_path = self.install_config.convert_path_abs(rel_path)
+        
         if '$(' in abs_path:
             self.root.showErrorMessage('Add Module Error', 'ERROR - Given path not valid or cannot be parsed' , force_popup = True)
             return
+        
         if clone:
             clone_str = 'YES'
         if build:
             build_str = 'YES'
-        if pakcage:
+        if package:
             package_str = 'YES'
+        
         new_module = INSTALL_MODULE.InstallModule(name, version, rel_path, url_type, url, repo, clone_str, build_str, package_str)
+        
         self.install_config.add_module(new_module)
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
