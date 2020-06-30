@@ -104,6 +104,8 @@ class ConfigInjector:
         old_files_dir = os.path.join(target_dir, 'OLD_FILES')
         if not os.path.exists(old_files_dir):
             os.mkdir(old_files_dir)
+        if os.path.exists(os.path.join(old_files_dir, target_filename)):
+            os.remove(os.path.join(old_files_dir, target_filename))
         os.rename(os.path.join(target_dir, target_filename), os.path.join(old_files_dir, target_filename))
         old_fp = open(os.path.join(old_files_dir, target_filename), "r")
 

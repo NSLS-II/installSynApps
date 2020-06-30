@@ -89,7 +89,8 @@ class UpdateConfigDriver:
         """Updates the macros in the support configuration files.
         """
 
-        self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), False, False, single_file=True)
+        support_config = os.path.join(self.install_config.support_path, "configure")
+        self.update_macros(support_config, False, False)
 
 
     def update_support_build_macros(self):
