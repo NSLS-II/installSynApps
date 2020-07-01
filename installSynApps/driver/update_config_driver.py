@@ -150,6 +150,8 @@ class UpdateConfigDriver:
                     if not os.path.exists(release_path):
                         return
                     release_path_old = release_path + "_OLD"
+                    if os.path.exists(release_path_old):
+                        os.remove(release_path_old)
                     os.rename(release_path, release_path_old)
                     shutil.copyfile(replace_release_path, release_path)
 
