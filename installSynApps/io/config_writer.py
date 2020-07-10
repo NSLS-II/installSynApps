@@ -8,6 +8,7 @@ import datetime
 import os
 import errno
 import shutil
+import installSynApps
 from installSynApps.data_model import *
 from installSynApps.io import logger as LOG
 
@@ -72,14 +73,14 @@ class ConfigWriter:
             Path into which we wish to save configuration
         """
 
-        build_script_out = os.path.join(filepath, 'customBuildScripts')
+        build_script_out = installSynApps.join_path(filepath, 'customBuildScripts')
         for module in self.install_config.get_module_list():
             old_script = module.custom_build_script_path
             if old_script is not None:
-                if os.path.exists(old_script) and not os.path.exists(os.path.join(build_script_out, os.path.basename(old_script))):
+                if os.path.exists(old_script) and not os.path.exists(installSynApps.join_path(build_script_out, os.path.basename(old_script))):
                     LOG.debug('Copying module custom build script: {}'.format(old_script))
                     try:
-                        shutil.copyfile(old_script, os.path.join(build_script_out, os.path.basename(old_script)))
+                        shutil.copyfile(old_script, installSynApps.join_path(build_script_out, os.path.basename(old_script)))
                     except:
                         LOG.debug('Encountered error copying: {}'.format(old_script))
                 else:
@@ -107,9 +108,9 @@ class ConfigWriter:
 
         if overwrite_existing and os.path.exists(filepath):
             try:
-                shutil.rmtree(os.path.join(filepath, 'injectionFiles'))
-                shutil.rmtree(os.path.join(filepath, 'macroFiles'))
-                os.remove(os.path.join(filepath, 'INSTALL_CONFIG'))
+                shutil.rmtree(installSynApps.join_path(filepath, 'injectionFiles'))
+                shutil.rmtree(installSynApps.join_path(filepath, 'macroFiles'))
+                os.remove(installSynApps.join_path(filepath, 'INSTALL_CONFIG'))
             except PermissionError:
                 return False, 'Insufficient Permissions'
 
@@ -129,10 +130,10 @@ class ConfigWriter:
                 else:
                     return False, 'Unknown Error'
         try:
-            os.mkdir(os.path.join(filepath, 'injectionFiles'))
-            os.mkdir(os.path.join(filepath, 'macroFiles'))
-            if not os.path.exists(os.path.join(filepath, 'customBuildScripts')):
-                os.mkdir(os.path.join(filepath, 'customBuildScripts'))
+            os.mkdir(installSynApps.join_path(filepath, 'injectionFiles'))
+            os.mkdir(installSynApps.join_path(filepath, 'macroFiles'))
+            if not os.path.exists(installSynApps.join_path(filepath, 'customBuildScripts')):
+                os.mkdir(installSynApps.join_path(filepath, 'customBuildScripts'))
 
         except OSError:
             LOG.write('Failed to make configuration directories!')
@@ -148,7 +149,7 @@ class ConfigWriter:
         self.write_custom_build_scripts(filepath)
 
         LOG.debug('Writing INSTALL_CONFIG file.')
-        new_install_config = open(os.path.join(filepath, "INSTALL_CONFIG"), "w+")
+        new_install_config = open(installSynApps.join_path(filepath, "INSTALL_CONFIG"), "w+")
         new_install_config.write('#\n# INSTALL_CONFIG file saved by installSynApps on {}\n#\n\n'.format(datetime.datetime.now())) 
         new_install_config.write("INSTALL={}\n\n\n".format(self.install_config.install_location))
 
