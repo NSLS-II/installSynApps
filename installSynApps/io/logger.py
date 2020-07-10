@@ -8,12 +8,29 @@ function that takes a single string input parameter. This can be print or writin
 
 import os
 import datetime
+import installSynApps
+
+
+def get_date_as_string():
+    """Helper function that gets a string representation of the current date and time
+
+    Returns
+    -------
+    str
+        String representing current date
+    """
+
+    now = datetime.datetime.now()
+    date_time = now.strftime('%m-%d-%Y_%H-%M-%S')
+    return str(date_time)
+
 
 # Global variable storing function for logging. Function must accept a single string parameter
 _WRITE_FUNCTION = None
 
 # Global variable representing the log file for the current run of installSynApps
 _LOG_FILE = None
+_LOG_FILE_PATH = 'installSynApps_{}.log'.format(get_date_as_string())
 
 # Global variable representing whether or not to print commands being run by installSynApps
 _PRINT_COMMANDS = False
@@ -33,7 +50,7 @@ def initialize_logger():
     try:
         if not os.path.exists('logs'):
             os.mkdir('logs')
-        _LOG_FILE = open(os.path.join('logs', 'installSynApps_{}.log'.format(datetime.datetime.now())), 'w')
+        _LOG_FILE = open(installSynApps.join_path('logs', _LOG_FILE_PATH), 'w')
     except OSError:
         write('Failed to initialize log file...')
 
