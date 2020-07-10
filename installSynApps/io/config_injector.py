@@ -7,6 +7,7 @@ for the update_config_driver.
 
 import os
 import re
+import installSynApps
 import installSynApps.data_model.install_config as IC
 from installSynApps.io import logger as LOG
 
@@ -50,7 +51,7 @@ class ConfigInjector:
         if (not os.path.exists(target_path)):
             return
         if target_file.startswith("EXAMPLE_"):
-            target_path_no_example = os.path.join(os.path.dirname(target_path), target_file[8:])
+            target_path_no_example = installSynApps.join_path(os.path.dirname(target_path), target_file[8:])
             if os.path.exists(target_path):
                 os.rename(target_path, target_path_no_example)
             target_path = target_path_no_example
@@ -101,16 +102,18 @@ class ConfigInjector:
             if false, will comment out macros for area detector modules. used for RELEASE in support - AD is built separately
         """
 
-        old_files_dir = os.path.join(target_dir, 'OLD_FILES')
+        old_files_dir = installSynApps.join_path(target_dir, 'OLD_FILES')
         if not os.path.exists(old_files_dir):
             os.mkdir(old_files_dir)
-        os.rename(os.path.join(target_dir, target_filename), os.path.join(old_files_dir, target_filename))
-        old_fp = open(os.path.join(old_files_dir, target_filename), "r")
+        if os.path.exists(installSynApps.join_path(old_files_dir, target_filename)):
+            os.remove(installSynApps.join_path(old_files_dir, target_filename))
+        os.rename(installSynApps.join_path(target_dir, target_filename), installSynApps.join_path(old_files_dir, target_filename))
+        old_fp = open(installSynApps.join_path(old_files_dir, target_filename), "r")
 
         if target_filename.startswith("EXAMPLE_"):
-            new_fp = open(os.path.join(target_dir, target_filename[8:]), "w")
+            new_fp = open(installSynApps.join_path(target_dir, target_filename[8:]), "w")
         else:
-            new_fp = open(os.path.join(target_dir, target_filename), "w")
+            new_fp = open(installSynApps.join_path(target_dir, target_filename), "w")
         line = old_fp.readline()
         while line:
             original = line

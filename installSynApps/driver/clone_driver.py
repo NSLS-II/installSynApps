@@ -11,6 +11,7 @@ from sys import platform
 import installSynApps.data_model.install_config as IC
 import installSynApps.data_model.install_module as IM
 import installSynApps.io.logger as LOG
+import installSynApps
 
 class CloneDriver:
     """Class responsible for cloning and checking out all of the modules described in a given InstallConfiguration
@@ -81,9 +82,9 @@ class CloneDriver:
                 if module.url_type == "WGET_URL":
                     
                     if (module.repository.endswith(".tar.gz") or module.repository.endswith(".tgz")) and ret == 0:
-                        command = "tar -xzf {} -C {} --strip-components=1".format(os.path.join(module.abs_path, module.repository), module.abs_path)
+                        command = "tar -xzf {} -C {} --strip-components=1".format(installSynApps.join_path(module.abs_path, module.repository), module.abs_path)
                     elif module.repository.endswith(".zip") and ret == 0:
-                        command = "unzip {} -C {}".format(os.path.join(module.abs_path, module.repository), module.abs_path)
+                        command = "unzip {} -C {}".format(installSynApps.join_path(module.abs_path, module.repository), module.abs_path)
                     
                     LOG.print_command(command)
                     proc = Popen(command.split(' '))
