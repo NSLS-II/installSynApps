@@ -1,5 +1,5 @@
 #
-# INSTALL_CONFIG file saved by installSynApps on 2020-07-02 14:51:30.557038
+# INSTALL_CONFIG file saved by installSynApps on 2020-07-10 11:56:01.019641
 #
 
 INSTALL=C:/epics
@@ -21,51 +21,51 @@ UTILS            R6-1                 $(SUPPORT)/utils                         u
 
 WGET_URL=http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
 
-SNCSEQ           2.2.6                $(SUPPORT)/seq                           seq-2.2.6.tar.gz         YES              YES              YES
+SNCSEQ           2.2.7                $(SUPPORT)/seq                           seq-$(VERSION).tar.gz    YES              YES              YES
 
 GIT_URL=https://github.com/epics-modules/
 
-IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              NO
+IPAC             2.15                 $(SUPPORT)/ipac                          ipac                     YES              YES              YES
 ASYN             R4-39                $(SUPPORT)/asyn                          asyn                     YES              YES              YES
 AUTOSAVE         R5-10-1              $(SUPPORT)/autosave                      autosave                 YES              YES              YES
-ALIVE            R1-2-1               $(SUPPORT)/alive                         alive                    YES              YES              NO
+ALIVE            R1-2-1               $(SUPPORT)/alive                         alive                    NO               NO               NO
 BUSY             R1-7-2               $(SUPPORT)/busy                          busy                     YES              YES              YES
 SSCAN            R2-11-1              $(SUPPORT)/sscan                         sscan                    YES              YES              YES
 CALC             R3-7-2               $(SUPPORT)/calc                          calc                     YES              YES              YES
-CAMAC            R2-7-2               $(SUPPORT)/camac                         camac                    YES              YES              NO
-CAPUTRECORDER    R3-1                 $(SUPPORT)/caputRecorder                 caputRecorder            YES              YES              NO
-DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  YES              YES              NO
-DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 YES              YES              NO
+CAMAC            R2-7-2               $(SUPPORT)/camac                         camac                    NO               NO               NO
+CAPUTRECORDER    R3-1                 $(SUPPORT)/caputRecorder                 caputRecorder            NO               NO               NO
+DAC128V          R2-9                 $(SUPPORT)/dac128V                       dac128V                  NO               NO               NO
+DELAYGEN         R1-2-1               $(SUPPORT)/delaygen                      delaygen                 NO               NO               NO
 DEVLIB2          2.11                 $(SUPPORT)/devlib2                       devlib2                  NO               NO               NO
 DXP              R6-0                 $(SUPPORT)/dxp                           dxp                      NO               NO               NO
 DXPSITORO        R1-2                 $(SUPPORT)/dxpSITORO                     dxpSITORO                NO               NO               NO
 DEVIOCSTATS      3.1.16               $(SUPPORT)/iocStats                      iocStats                 YES              YES              YES
 IP               R2-20-1              $(SUPPORT)/ip                            ip                       NO               NO               NO
 IP330            R2-9                 $(SUPPORT)/ip330                         ip330                    NO               NO               NO
-IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 YES              YES              NO
+IPUNIDIG         R2-11                $(SUPPORT)/ipUnidig                      ipUnidig                 NO               NO               NO
 LOVE             R3_13_base           $(SUPPORT)/love                          love                     NO               NO               NO
 LUA              R2-1                 $(SUPPORT)/lua                           lua                      NO               NO               NO
-MCA              R7-8                 $(SUPPORT)/mca                           mca                      YES              YES              NO
+MCA              R7-8                 $(SUPPORT)/mca                           mca                      NO               NO               NO
 MEASCOMP         R2-4                 $(SUPPORT)/measComp                      measComp                 NO               NO               NO
-MODBUS           R3-0-RC1             $(SUPPORT)/modbus                        modbus                   YES              YES              NO
-MOTOR            R7-2-1               $(SUPPORT)/motor                         motor                    YES              YES              NO
+MODBUS           R3-0-RC1             $(SUPPORT)/modbus                        modbus                   NO               NO               NO
+MOTOR            R7-2-1               $(SUPPORT)/motor                         motor                    NO               NO               NO
 OPTICS           R2-13-4              $(SUPPORT)/optics                        optics                   NO               NO               NO
 SOFTGLUE         R2-8-2               $(SUPPORT)/softGlue                      softGlue                 NO               NO               NO
 SOFTGLUEZYNQ     master               $(SUPPORT)/softGlueZynq                  softGlueZynq             NO               NO               NO
-STD              R3-6-1               $(SUPPORT)/std                           std                      YES              YES              NO
+STD              R3-6-1               $(SUPPORT)/std                           std                      NO               NO               NO
 VAC              R1-9                 $(SUPPORT)/vac                           vac                      NO               NO               NO
 VME              R2-9-2               $(SUPPORT)/vme                           vme                      NO               NO               NO
 YOKOGAWA_DAS     master               $(SUPPORT)/Yokogawa_DAS                  Yokogawa_DAS             NO               NO               NO
-XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 YES              NO               NO
+XSPRESS3         master               $(SUPPORT)/xspress3                      xspress3                 NO               NO               NO
 XXX              master               $(SUPPORT)/xxx                           xxx                      NO               NO               NO
 
 GIT_URL=https://github.com/paulscherrerinstitute/
 
-STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             YES              YES              NO
+STREAM           2.8.9                $(SUPPORT)/stream                        StreamDevice             NO               NO               NO
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
-ALLEN_BRADLEY     2.3                  $(SUPPORT)/allenBradley                  allenBradley-2.3.tar.gz  NO               NO               NO
+ALLEN_BRADLEY    2.3                  $(SUPPORT)/allenBradley                  allenBradley-2.3.tar.gz  NO               NO               NO
 
 WGET_URL=https://github.com/EPICSTools/ether_ip/archive/
 
@@ -93,39 +93,38 @@ ADPLUGINEDGE     master               $(AREA_DETECTOR)/ADPluginEdge            A
 
 GIT_URL=https://github.com/epics-modules/
 
-QUADEM           R9-3                 $(SUPPORT)/quadEM                        quadEM                   YES              YES              NO
+QUADEM           R9-3                 $(SUPPORT)/quadEM                        quadEM                   NO               NO               NO
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
 ADUVC            R1-3                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    NO               NO               NO
 ADEMERGENTVISION master               $(AREA_DETECTOR)/ADEmergentVision        ADEmergentVision         NO               NO               NO
-ADSPINNAKER      u18_compile          $(AREA_DETECTOR)/ADSpinnaker             ADSpinnaker              YES              YES              NO
+ADSPINNAKER      u18_compile          $(AREA_DETECTOR)/ADSpinnaker             ADSpinnaker              YES              YES              YES
 ADLAMBDA         dual_threshold_feature $(AREA_DETECTOR)/ADLambda                ADLambda                 NO               NO               NO
-adConfigSetup    master               $(AREA_DETECTOR)/configure/adConfigSetup adConfigSetup            NO               NO               NO
-ADANDOR3         master               $(AREA_DETECTOR)/ADAndor3                ADAndor3                 YES              YES              NO
-ADPERKINELMER    master               $(AREA_DETECTOR)/ADPerkinElmer           ADPerkinElmer            YES              YES              NO
+ADANDOR3         master               $(AREA_DETECTOR)/ADAndor3                ADAndor3                 YES              YES              YES
+ADPERKINELMER    master               $(AREA_DETECTOR)/ADPerkinElmer           ADPerkinElmer            YES              YES              YES
 
 GIT_URL=https://github.com/areaDetector/
 
-ADPROSILICA      R2-5                 $(AREA_DETECTOR)/ADProsilica             ADProsilica              YES              YES              NO
-ADSIMDETECTOR    R2-10                $(AREA_DETECTOR)/ADSimDetector           ADSimDetector            YES              YES              NO
-ADPILATUS        R2-9                 $(AREA_DETECTOR)/ADPilatus               ADPilatus                YES              YES              NO
-ADMERLIN         master               $(AREA_DETECTOR)/ADMerlin                ADMerlin                 YES              YES              NO
+ADPROSILICA      R2-5                 $(AREA_DETECTOR)/ADProsilica             ADProsilica              YES              YES              YES
+ADSIMDETECTOR    R2-10                $(AREA_DETECTOR)/ADSimDetector           ADSimDetector            YES              YES              YES
+ADPILATUS        R2-9                 $(AREA_DETECTOR)/ADPilatus               ADPilatus                YES              YES              YES
+ADMERLIN         master               $(AREA_DETECTOR)/ADMerlin                ADMerlin                 YES              YES              YES
 ADARAVIS         R3-0                 $(AREA_DETECTOR)/aravisGigE              aravisGigE               NO               NO               NO
 ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 ADEiger                  NO               NO               NO
 ADMMPAD          master               $(AREA_DETECTOR)/ADMMPAD                 ADMMPAD                  NO               NO               NO
 ADFASTCCD        R1-0                 $(AREA_DETECTOR)/ADFastCCD               ADFastCCD                NO               NO               NO
-ADPOINTGREY      R2-9                 $(AREA_DETECTOR)/ADPointGrey             ADPointGrey              YES              YES              NO
+ADPOINTGREY      R2-9                 $(AREA_DETECTOR)/ADPointGrey             ADPointGrey              YES              YES              YES
 ADPICAM          master               $(AREA_DETECTOR)/ADPICam                 ADPICam                  NO               NO               NO
 ADANDOR          R2-8                 $(AREA_DETECTOR)/ADAndor                 ADAndor                  NO               NO               NO
 ADTIMEPIX        master               $(AREA_DETECTOR)/ADTimePix               ADTimePix                NO               NO               NO
-ADDEXELA         R2-3                 $(AREA_DETECTOR)/ADDexela                ADDexela                 YES              YES              NO
+ADDEXELA         R2-3                 $(AREA_DETECTOR)/ADDexela                ADDexela                 YES              YES              YES
 ADMYTHEN         R2-1                 $(AREA_DETECTOR)/ADMythen                ADMythen                 NO               NO               NO
 ADVIMBA          master               $(AREA_DETECTOR)/ADVimba                 ADVimba                  NO               NO               NO
-ADPCO            R1-0                 $(AREA_DETECTOR)/ADPCO                   ADPCO                    YES              NO               NO
+ADPCO            R1-0                 $(AREA_DETECTOR)/ADPCO                   ADPCO                    NO               NO               NO
 ADCAMERALINK     master               $(AREA_DETECTOR)/ADCameraLink            ADCameraLink             NO               NO               NO
 FFMPEGSERVER     R3-1                 $(AREA_DETECTOR)/ffmpegServer            ffmpegServer             NO               NO               NO
-ADURL            master               $(AREA_DETECTOR)/ADURL                   ADURL                    YES              YES              NO
+ADURL            master               $(AREA_DETECTOR)/ADURL                   ADURL                    YES              YES              YES
 ADMARCCD         R2-3                 $(AREA_DETECTOR)/ADmarCCD                ADmarCCD                 NO               NO               NO
 ADLIGHTFIELD     R2-6                 $(AREA_DETECTOR)/ADLighField             ADLightField             NO               NO               NO
 ADPIXIRAD        R2-2                 $(AREA_DETECTOR)/ADPixirad               ADPixirad                NO               NO               NO
@@ -145,8 +144,8 @@ FFMPEGVIEWER     master               $(AREA_DETECTOR)/ffmpegViewer            f
 GIT_URL=https://github.com/epicsNSLS2-deploy/
 
 UPDATEIOC        master               $(INSTALL)/utils/updateIOC               updateIOC                NO               NO               NO
-IOCDEPLOY        master               $(INSTALL)/utils/ioc_deploy              ioc_deploy               YES              NO               NO
-INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  YES              NO               NO
+IOCDEPLOY        master               $(INSTALL)/utils/ioc_deploy              ioc_deploy               NO               NO               NO
+INITIOC          master               $(INSTALL)/utils/initIOC                 initIOC                  NO               NO               NO
 OPIORGANIZER     master               $(INSTALL)/utils/opi_organizer           opi_organizer            NO               NO               NO
 
 WGET_URL=https://sourceforge.net/projects/cs-studio/files/nsls2-release/
