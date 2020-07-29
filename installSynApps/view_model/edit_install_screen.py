@@ -187,6 +187,7 @@ class EditConfigGUI:
             self.root.valid_install = True
         else:
             self.root.valid_install = False
+        self.root.unsaved_changes = True
         self.root.writeToLog('Applied updated install configuration.\n')
 
 

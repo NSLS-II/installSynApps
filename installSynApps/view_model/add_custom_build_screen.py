@@ -156,6 +156,7 @@ class AddCustomBuildScriptGUI:
         self.reloadPanel(ifsame=True)
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
+        self.root.unsaved_changes = True
 
 
     def exit(self):

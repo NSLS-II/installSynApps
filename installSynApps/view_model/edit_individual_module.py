@@ -208,6 +208,7 @@ class EditSingleModuleGUI:
 
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
+        self.root.unsaved_changes = True
         self.root.showMessage('Info', 'Upated module: {}'.format(self.edit_name_var.get()))
 
 

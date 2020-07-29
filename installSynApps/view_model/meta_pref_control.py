@@ -20,17 +20,19 @@ class MetaDataController:
         """Initialzier for MetaDataController
         """
 
-        self.pref_loc = '.isa_metadata'
-        if not os.path.exists('.isa_metadata'):
+        home = os.path.expanduser('~')
+
+        self.pref_loc = os.path.join(home, '.epics-install')
+        if not self.pref_loc:
             try:
-                os.mkdir('.isa_metadata')
+                os.mkdir(self.pref_loc)
             except OSError:
                 self.pref_loc = None
 
         if self.pref_loc is None:
             self.metadata = {}
-        elif os.path.exists(self.pref_loc + '/isa_settings.json'):
-            with open(self.pref_loc + '/isa_settings.json', 'r') as json_file:
+        elif os.path.exists(self.pref_loc + '/epics_install_metadata.json'):
+            with open(self.pref_loc + '/epics_install_metadata.json', 'r') as json_file:
                 self.metadata = json.load(json_file)
         else:
             self.metadata = {}
@@ -43,7 +45,7 @@ class MetaDataController:
         if self.pref_loc is None:
             return False, 'ERROR - Could not load preferences dir'
         
-        settings_file_path = os.path.join(self.pref_loc, 'isa_settings.json')
+        settings_file_path = os.path.join(self.pref_loc, 'epics_install_metadata.json')
         
         if os.path.exists(settings_file_path):
             os.remove(settings_file_path)
