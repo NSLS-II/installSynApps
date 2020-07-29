@@ -34,7 +34,7 @@ else:
 update_tags_blacklist = ["SSCAN", "CALC", "STREAM"]
 
 # Module version, author, copyright
-__version__     = "R2-6"
+__version__     = "R2-7"
 __author__      = "Jakub Wlodek"
 __copyright__   = "Copyright (c) Brookhaven National Laboratory 2018-2020"
 __environment__ = "Python Version: {}, OS Class: {}".format(sys.version.split()[0], OS_class)
@@ -56,13 +56,17 @@ def find_isa_version():
 
     try:
         LOG.debug('git describe --tags')
-        out = subprocess.check_output(['git', 'describe', '--tags'])
+        FNULL = open(os.devnull, 'w')
+        out = subprocess.check_output(['git', 'describe', '--tags'], stderr=FNULL)
         isa_version = out.decode('utf-8').strip()
         LOG.debug('git rev-parse HEAD')
-        out = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+        out = subprocess.check_output(['git', 'rev-parse', 'HEAD'], stderr=FNULL)
         commit_hash = out.decode('utf-8')
+        FNULL.close()
     except PermissionError:
         LOG.debug('Could not find git information for installSynApps versions, defaulting to internal version.')
+    except subprocess.CalledProcessError:
+        LOG.debug('Running from non-git version of installSynApps, default to iunternal version.')
 
     return isa_version, commit_hash
 
@@ -90,7 +94,7 @@ def get_welcome_text():
     """
 
     text = "+----------------------------------------------------------------+\n"
-    text = text + "+ installSynApps, Version: {:<38}+\n".format(__version__)
+    text = text + "+ epics-install, Version: {:<39}+\n".format(__version__)
     text = text + "+ {:<63}+\n".format(__environment__)
     text = text + "+ {:<63}+\n".format(__copyright__)
     text = text + "+ This software comes with NO warranty!                          +\n"
@@ -220,54 +224,3 @@ def sync_all_module_tags(install_config, save_path=None, overwrite_existing=True
         return ret
     else:
         return True
-
-
-def create_new_install_config(install_location, configuration_type, update_versions = True, save_path=None):
-    """Helper function for creating new install configurations
-
-    Parameters
-    ----------
-    install_location : str
-        The path to the install location
-    configuration_type : str
-        The type of new install configuration
-    update_versions : bool
-        Flag to tell config to update versions from git remotes.
-    save_path : str
-        If defined, save config to specified path.
-    """
-
-    if configuration_type.lower() == 'ad':
-        install_template = 'NEW_CONFIG_AD'
-    elif configuration_type.lower() == 'motor':
-        install_template = 'NEW_CONFIG_MOTOR'
-    else:
-        install_template = 'NEW_CONFIG_ALL'
-    if save_path is not None:
-        LOG.write('\nCreating new install configuration with template: {}'.format(install_template))
-        write_loc = os.path.abspath(save_path)
-        LOG.write('Target output location set to {}'.format(write_loc))
-    parser = IO.config_parser.ConfigParser('resources')
-    install_config, message = parser.parse_install_config(config_filename=install_template, force_location=install_location, allow_illegal=True)
-    if install_config is None:
-        LOG.write('Parse Error - {}'.format(message))
-    elif message is not None:
-        LOG.write('Warning - {}'.format(message))
-    else:
-        LOG.write('Loaded template install configuration.')
-    if update_versions and save_path is not None:
-        ret = sync_all_module_tags(install_config, save_path=write_loc, overwrite_existing=False)
-    elif update_versions and save_path is None:
-        ret = sync_all_module_tags(install_config, overwrite_existing=False)
-    elif not update_versions and save_path is not None:
-        writer = IO.config_writer.ConfigWriter(install_config)
-        ret, message = writer.write_install_config(filepath=write_loc)
-    else:
-        ret = True
-    if not ret:
-        LOG.write('Write Error - {}'.format(message))
-    elif save_path is not None:
-        LOG.write('\nWrote new install configuration to {}.'.format(write_loc))
-        LOG.write('Please edit INSTALL_CONFIG file to specify build specifications.')
-        LOG.write('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
-    return install_config, message

@@ -6,6 +6,7 @@ for the update_config_driver.
 """
 
 import os
+import shutil
 import re
 import installSynApps.data_model.install_config as IC
 from installSynApps.io import logger as LOG
@@ -102,8 +103,10 @@ class ConfigInjector:
         """
 
         old_files_dir = os.path.join(target_dir, 'OLD_FILES')
-        if not os.path.exists(old_files_dir):
-            os.mkdir(old_files_dir)
+        if os.path.exists(old_files_dir):
+            shutil.rmtree(old_files_dir)
+        os.mkdir(old_files_dir)
+        
         os.rename(os.path.join(target_dir, target_filename), os.path.join(old_files_dir, target_filename))
         old_fp = open(os.path.join(old_files_dir, target_filename), "r")
 

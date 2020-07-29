@@ -80,8 +80,8 @@ class BuildDriver:
             subprocess.call(['make', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'perl'
             subprocess.call(['perl', '--version'], stdout=FNULL, stderr=FNULL)
-            current = 'wget'
-            subprocess.call(['wget', '--version'], stdout=FNULL, stderr=FNULL)
+            #current = 'wget'
+            #subprocess.call(['wget', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'git'
             subprocess.call(['git', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'tar'

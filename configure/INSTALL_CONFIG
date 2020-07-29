@@ -48,7 +48,7 @@ DELAYGEN            R1-2-1      $(SUPPORT)/delaygen                         dela
 DEVLIB2             2.10        $(SUPPORT)/devlib2                          devlib2                         NO              NO              NO
 DXP                 R6-0        $(SUPPORT)/dxp                              dxp                             NO              NO              NO
 DXPSITORO           R1-2        $(SUPPORT)/dxpSITORO                        dxpSITORO                       NO              NO              NO
-DEVIOCSTATS         3.1.16      $(SUPPORT)/iocStats                         iocStats                        YES             YES             YES
+DEVIOCSTATS         master      $(SUPPORT)/iocStats                         iocStats                        YES             YES             YES
 IP                  2-20-1      $(SUPPORT)/ip                               ip                              YES             YES             YES
 IP330               R2-9        $(SUPPORT)/ip330                            ip330                           NO              NO              NO
 IPUNIDIG            R2-11       $(SUPPORT)/ipUnidig                         ipUnidig                        YES             YES             NO

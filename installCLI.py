@@ -56,6 +56,7 @@ import installSynApps
 import installSynApps.data_model as DATA_MODEL
 import installSynApps.driver as DRIVER
 import installSynApps.io as IO
+import installSynApps.io.logger as LOG
 
 # -------------- Some helper functions ------------------
 
@@ -67,7 +68,7 @@ def print_welcome_message():
 
     IO.logger.debug(installSynApps.get_debug_version_info())
     
-    print("Welcome to the installSynApps module.")
+    print("Welcome to the epics-install utility.")
     print("It is designed to automate the build process for EPICS and areaDetector.")
     print("The scripts included will automatically edit all configuration files")
     print("required, and then build with make.")
@@ -97,22 +98,26 @@ def create_new_install_config():
     """
 
     print("You have selected to create a new install configuration.\n")
-    install_type = input("Would you like a coprehensive config, an areaDetector config, or a motor config? (AD/Motor/All) > ")
-    if install_type.lower() == 'ad':
-        print('AreaDetector config selected.\n')
-    elif install_type.lower() == 'motor':
-        print('Motor config selected.\n')
-    else:
-        print('Coprehensive config selected.\n')
 
-    write_loc = input('Where would you like the install configuration to be written? > ')
+    write_loc   = input('Where would you like the install configuration to be written? > ')
     install_loc = input('What should be the target install location for the config? > ')
-    update_ver = input('\nWould you like installSynApps to automatically sync version tags for new config?\nRequires git and network connection. (y/n) > ')
+    update_ver  = input('\nWould you like installSynApps to automatically sync version tags for new config?\nRequires git and network connection. (y/n) > ')
 
     vers = False
-    if update_ver.lower()=='y':
+    if update_ver.lower() == 'y':
         vers = True
-    installSynApps.create_new_install_config(install_loc, install_type, update_versions=vers, save_path=write_loc)
+
+    default_config = installSynApps.data_model.install_config.generate_default_install_config(target_install_loc=install_loc, update_versions=vers)
+    
+    writer = installSynApps.io.config_writer.ConfigWriter(default_config)
+    ret, message = writer.write_install_config(filepath=write_loc)
+    if not ret:
+        print('Write Error - {}'.format(message))
+
+    else:
+        print('\nWrote new install configuration to {}.'.format(write_loc))
+        print('Please edit INSTALL_CONFIG file to specify build specifications.')
+        print('Then run ./installCLI.py -c {} to run the install configuration.'.format(write_loc))
 
 
 def parse_user_input():
@@ -121,7 +126,7 @@ def parse_user_input():
 
     path_to_configure = os.path.join(os.path.dirname(os.path.dirname(installSynApps.__file__)), 'configure')
 
-    parser = argparse.ArgumentParser(description="installSynApps for CLI EPICS and synApps auto-compilation")
+    parser = argparse.ArgumentParser(description="Utility for CLI EPICS and synApps auto-compilation")
 
     config_group    = parser.add_argument_group('configuration options')
     build_group     = parser.add_argument_group('build options')
@@ -129,7 +134,7 @@ def parse_user_input():
 
     config_group.add_argument('-i', '--installpath',      help='Define an override install location to use instead of the one read from INSTALL_CONFIG.')
     config_group.add_argument('-c', '--customconfigure',  help='Use an external configuration directory. Note that it must have the same structure as the default one.')
-    config_group.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use installCLI to create a new install configuration.')
+    config_group.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use epics-install to create a new install configuration.')
     config_group.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
 
     build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
@@ -194,7 +199,7 @@ def parse_user_input():
 #                                                                       #
 #########################################################################
 
-def parse_configuration():
+def parse_configuration(path_to_configure, yes, force_install_path):
 
     # Parse base config file, make sure that it is valid - ask for user input until it is valid
     parser = IO.config_parser.ConfigParser(path_to_configure)
@@ -266,7 +271,7 @@ def check_deps(builder):
 #                                                                       #
 #########################################################################
 
-def execute_build(yes, grab_deps, install_config, cloner, updater, builder, autogenerator):
+def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator):
 
     # Ask useer to proceed
     print("Ready to start build process with location: {}...".format(install_config.install_location))
@@ -367,7 +372,6 @@ def execute_build(yes, grab_deps, install_config, cloner, updater, builder, auto
                 print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
             else:
                 print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
-            print('Build step completed in {} seconds'.format(time.time() - script_start_time))
 
         else:
             print("Build aborted... Exiting.")
@@ -440,10 +444,10 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
             print('OPI screen tarball generated.')
 
 
-def main(yes, grab_deps, flat_output, include_src):
+def execute(yes, grab_deps, flat_output, include_src, path_to_configure, force_install_path, threads, single_thread):
 
     try:
-        install_config = parse_configuration()
+        install_config = parse_configuration(path_to_configure, yes, force_install_path)
 
         # Driver Objects for running through build process
         cloner      = DRIVER.clone_driver.CloneDriver(install_config)
@@ -463,7 +467,7 @@ def main(yes, grab_deps, flat_output, include_src):
         autogenerator = IO.file_generator.FileGenerator(install_config)
 
         # Run the build
-        execute_build(yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
+        execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
 
         # Generate output bundles
         generate_bundles(yes, install_config, packager, flat_output, include_src)
@@ -477,11 +481,12 @@ def main(yes, grab_deps, flat_output, include_src):
         clean_exit()
 
 
-if __name__ == '__main__':
+def main():
     script_start_time = time.time()
 
     path_to_configure, force_install_path, args = parse_user_input()
-    force_install_path  = os.path.abspath(force_install_path)
+    if force_install_path is not None:
+        force_install_path  = os.path.abspath(force_install_path)
     path_to_configure   = os.path.abspath(path_to_configure)
     yes                 = args['forceyes']
     dep                 = args['dependency']
@@ -501,5 +506,11 @@ if __name__ == '__main__':
 
     print('Reading install configuration directory located at: {}...'.format(path_to_configure))
     print()
-    main(yes, dep, flat_output, include_src)
+    execute(yes, dep, flat_output, include_src, path_to_configure, force_install_path, threads, single_thread)
+    script_end_time = time.time()
+    print('Finished in {} seconds...'.format(script_end_time - script_start_time))
+    print('Done.\n')
 
+
+if __name__ == '__main__':
+    main()

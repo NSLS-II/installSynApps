@@ -7,6 +7,7 @@ to the local machine.
 import os
 from subprocess import Popen, PIPE
 import shutil
+import requests
 from sys import platform
 import installSynApps.data_model.install_config as IC
 import installSynApps.data_model.install_module as IM
@@ -63,10 +64,16 @@ class CloneDriver:
                 elif recursive and module.url_type == "GIT_URL":
                     command = "git clone --recursive {} {}".format(module.url + module.repository, module.abs_path)
                 elif module.url_type == "WGET_URL":
-                    if platform == "win32":
-                        command = "wget --no-check-certificate -P {} {}".format(module.abs_path, module.url + module.repository)
-                    else:
-                        command = 'wget -P {} {}'.format(module.abs_path, module.url + module.repository)
+                    #if platform == "win32":
+                    #    command = "wget --no-check-certificate -P {} {}".format(module.abs_path, module.url + module.repository)
+                    #else:
+                    #    command = 'wget -P {} {}'.format(module.abs_path, module.url + module.repository)
+                    try:
+                        r = requests.get(module.url + module.repository)
+                        with open(module.abs_path, 'wb') as fp:
+                            fp.write(r.content)
+                    except Exception as e:
+                        LOG.write(str(e))
 
                 LOG.print_command(command)
                 proc = Popen(command.split(' '))
@@ -83,7 +90,7 @@ class CloneDriver:
                     if (module.repository.endswith(".tar.gz") or module.repository.endswith(".tgz")) and ret == 0:
                         command = "tar -xzf {} -C {} --strip-components=1".format(os.path.join(module.abs_path, module.repository), module.abs_path)
                     elif module.repository.endswith(".zip") and ret == 0:
-                        command = "unzip {} -C {}".format(os.path.join(module.abs_path, module.repository), module.abs_path)
+                        command = "tar -xf {} -C {} --strip-components=1".format(os.path.join(module.abs_path, module.repository), module.abs_path)
                     
                     LOG.print_command(command)
                     proc = Popen(command.split(' '))

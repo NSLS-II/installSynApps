@@ -39,9 +39,10 @@ class UpdateConfigDriver:
         self.install_config = install_config
         self.path_to_configure = path_to_configure
         self.config_injector = CI.ConfigInjector(self.install_config)
-        self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["CONFIGURE", "DOCUMENTATION", "UTILS"]
-        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT", "INSTALL_LOCATION_APP", "CAPFAST_TEMPLATES"]
+        self.dependency_ignore_list = [ "TEMPLATE_TOP", "PCRE", 
+                                        "SUPPORT", "INSTALL_LOCATION_APP", 
+                                        "CAPFAST_TEMPLATES", "MAKE_TEST_IOC_APP"]
 
 
     def perform_injection_updates(self):
@@ -129,28 +130,12 @@ class UpdateConfigDriver:
         if not single_file:
             self.config_injector.update_macros_dir(install_macro_list, target_path, force_override_comments=force_uncomment)
         else:
-            self.config_injector.update_macros_file(install_macro_list, os.path.dirname(target_path), os.path.basename(target_path), comment_unsupported=True, with_ad=include_ad, force=force_uncomment)
-
-
-    def fix_target_release(self, target_module_name):
-        """Used to replace a target module's release file.
-        
-        Parameters
-        ----------
-        target_module_name : str
-            Name matching module.name field of target module
-        """
-
-        for module in self.install_config.get_module_list():
-            if module.name == target_module_name:
-                replace_release_path = os.path.join("resources/fixedRELEASEFiles/", module.name + "_RELEASE")
-                if os.path.exists(replace_release_path) and os.path.isfile(replace_release_path):
-                    release_path = os.path.join(module.abs_path, "configure/RELEASE")
-                    if not os.path.exists(release_path):
-                        return
-                    release_path_old = release_path + "_OLD"
-                    os.rename(release_path, release_path_old)
-                    shutil.copyfile(replace_release_path, release_path)
+            self.config_injector.update_macros_file(install_macro_list, 
+                                                    os.path.dirname(target_path), 
+                                                    os.path.basename(target_path), 
+                                                    comment_unsupported=True, 
+                                                    with_ad=include_ad, 
+                                                    force=force_uncomment)
 
 
     def add_missing_support_macros(self):
@@ -215,8 +200,6 @@ class UpdateConfigDriver:
         """Top level driver function that updates all config files as necessary
         """
 
-        for target in self.fix_release_list:
-            self.fix_target_release(target)
         self.update_ad_macros()
         self.update_support_macros()
         self.update_support_build_macros()
