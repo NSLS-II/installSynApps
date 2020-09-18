@@ -57,6 +57,7 @@ class CloneDriver:
         LOG.debug('Cloning module {}'.format(module.name))
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
+                command = None
                 ret = -1
                 if os.path.exists(module.abs_path):
                     shutil.rmtree(module.abs_path)
@@ -71,15 +72,19 @@ class CloneDriver:
                     #    command = 'wget -P {} {}'.format(module.abs_path, module.url + module.repository)
                     try:
                         r = requests.get(module.url + module.repository)
-                        with open(module.abs_path, 'wb') as fp:
+                        with open(installSynApps.join_path(os.path.dirname(module.abs_path), module.repository), 'wb') as fp:
                             fp.write(r.content)
+                        os.mkdir(module.abs_path)
+                        ret = 0
                     except Exception as e:
                         LOG.write(str(e))
+                        ret = -1
 
-                LOG.print_command(command)
-                proc = Popen(command.split(' '))
-                proc.wait()
-                ret = proc.returncode
+                if command is not None:
+                    LOG.print_command(command)
+                    proc = Popen(command.split(' '))
+                    proc.wait()
+                    ret = proc.returncode
                 if ret == 0:
                     LOG.write('Cloned module {} successfully.'.format(module.name))
                 else:
@@ -88,19 +93,22 @@ class CloneDriver:
 
                 if module.url_type == "WGET_URL":
                     
+                    command = None
                     if (module.repository.endswith(".tar.gz") or module.repository.endswith(".tgz")) and ret == 0:
-                        command = "tar -xzf {} -C {} --strip-components=1".format(installSynApps.join_path(module.abs_path, module.repository), module.abs_path)
+                        command = "tar -xzf {} -C {} --strip-components=1".format(installSynApps.join_path(os.path.dirname(module.abs_path), module.repository), module.abs_path)
                     elif module.repository.endswith(".zip") and ret == 0:
-                        command = "tar -xf {} -C {} --strip-components=1".format(os.path.join(module.abs_path, module.repository), module.abs_path)
+                        command = "tar -xf {} -C {} --strip-components=1".format(installSynApps.join_path(os.path.dirname(module.abs_path), module.repository), module.abs_path)
                     
-                    LOG.print_command(command)
-                    proc = Popen(command.split(' '))
-                    proc.wait()
-                    ret = proc.returncode
-                    if ret == 0:
-                        LOG.write('Unpacked module {} successfully.'.format(module.name))
-                    else:
-                        LOG.write('Failed to unpack module {}.'.format(module.name))
+                    if command is not None:
+                        LOG.print_command(command)
+                        proc = Popen(command.split(' '))
+                        proc.wait()
+                        ret = proc.returncode
+                        if ret == 0:
+                            LOG.write('Unpacked module {} successfully.'.format(module.name))
+                            os.remove(installSynApps.join_path(os.path.dirname(module.abs_path), module.repository))
+                        else:
+                            LOG.write('Failed to unpack module {}.'.format(module.name))
 
                 if ret == 0:
                     return ret

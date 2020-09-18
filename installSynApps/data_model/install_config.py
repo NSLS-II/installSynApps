@@ -400,6 +400,7 @@ def generate_default_install_config(target_install_loc='/epics', update_versions
     config.add_module(IM("CALC",            "R3-7-3",   "$(SUPPORT)/calc",      gu, mod_org,    "calc",     y, y, y))
     config.add_module(IM("DEVIOCSTATS",     "master",   "$(SUPPORT)/iocStats",  gu, mod_org,    "iocStats", y, y, y))
     config.add_module(IM("SSCAN",           "R2-11-3",  "$(SUPPORT)/sscan",     gu, mod_org,    "sscan",    y, y, y))
+    config.add_module(IM("IPUNIDIG",        "R2-11",    "$(SUPPORT)/ipUnidig",  gu, mod_org,    "ipUnidig", y, y, y))
 
     # Some modules that are commonly needed
     config.add_module(IM("XSPRESS3",        "master",   "$(SUPPORT)/xspress3",  gu, mod_org, "xspress3", y, y, y))

@@ -238,10 +238,10 @@ class BuildDriver:
                         break
 
                 # After we build base we should make the support releases consistent
-                if module.name == 'EPICS_BASE':
-                    out = self.make_support_releases_consistent()
-                    if out != 0:
-                        LOG.write('Failed to make releases consistent...')
-                        break
+                #if module.name == 'EPICS_BASE':
+                #    out = self.make_support_releases_consistent()
+                #    if out != 0:
+                #        LOG.write('Failed to make releases consistent...')
+                #        break
 
         return len(failed), failed

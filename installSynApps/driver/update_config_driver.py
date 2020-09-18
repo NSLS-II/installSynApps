@@ -95,14 +95,12 @@ class UpdateConfigDriver:
         self.update_macros(support_config, False, False)
 
         # Some modules don't correctly have their RELEASE files updated by make release. Fix that here
-        xspress3_mod = self.install_config.get_module_by_name('XSPRESS3')
-        if xspress3_mod is not None and xspress3_mod.build == 'YES':
-            rel_A = installSynApps.join_path(xspress3_mod.abs_path, 'configure', 'RELEASE')
-            rel_B = installSynApps.join_path(xspress3_mod.abs_path, 'iocs', 'xspress3IOC', 'configure', 'RELEASE')
-            if os.path.exists(rel_A):
-                self.update_macros(rel_A, True, False, single_file=True)
-            if os.path.exists(rel_B):
-                self.update_macros(rel_B, True, False, single_file=True)
+        for module in self.install_config.get_module_list():
+            if module.clone == 'YES' and module.build == 'YES':
+                rel = installSynApps.join_path(module.abs_path, 'configure', 'RELEASE')
+                if os.path.exists(rel):
+                    LOG.write('Updating RELEASE file for {}...'.format(module.name))
+                    self.update_macros(rel, True, True, single_file=True)
 
 
     def update_support_build_macros(self):
