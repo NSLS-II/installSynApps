@@ -232,7 +232,7 @@ class InstallSynAppsGUI:
             self.parser = IO.config_parser.ConfigParser(self.configure_path)
             self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
         else:
-            self.writeToLog('Loading default install configuration')
+            self.writeToLog('Loading default install configuration...\n')
             self.install_config = installSynApps.data_model.install_config.generate_default_install_config()
 
 
@@ -1142,4 +1142,8 @@ def main():
     root.mainloop()
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Exiting...\n')
+        exit()
