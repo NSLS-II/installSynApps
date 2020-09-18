@@ -269,21 +269,21 @@ class InstallConfiguration:
 
         temp = rel_path.split('/', 1)[-1]
         if "$(INSTALL)" in rel_path and self.install_location != None:
-            return os.path.join(self.install_location, temp)
+            return installSynApps.join_path(self.install_location, temp)
         elif "$(EPICS_BASE)" in rel_path and self.base_path != None:
-            return os.path.join(self.base_path, temp)
+            return installSynApps.join_path(self.base_path, temp)
         elif "$(SUPPORT)" in rel_path and self.support_path != None:
-            return os.path.join(self.support_path, temp)
+            return installSynApps.join_path(self.support_path, temp)
         elif "$(AREA_DETECTOR)" in rel_path and self.ad_path != None:
-            return os.path.join(self.ad_path, temp)
+            return installSynApps.join_path(self.ad_path, temp)
         elif "$(MOTOR)" in rel_path and self.motor_path != None:
-            return os.path.join(self.motor_path, temp)
+            return installSynApps.join_path(self.motor_path, temp)
         elif "$(" in rel_path:
             macro_part = rel_path.split(')')[0]
             rel_to = macro_part.split('(')[1]
             rel_to_module = self.get_module_by_name(rel_to)
             if rel_to_module is not None:
-                return os.path.join(rel_to_module.abs_path, temp)
+                return installSynApps.join_path(rel_to_module.abs_path, temp)
 
         return rel_path
 

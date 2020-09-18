@@ -7,13 +7,17 @@ to clone, update, and build the EPICS and synApps software stack.
 """
 
 # Tkinter imports
-import tkinter as tk
-from tkinter import Label, Button, INSERT, END, W, SUNKEN, Frame, Menu, Tk
-from tkinter import messagebox
-from tkinter import filedialog
-from tkinter import simpledialog
-from tkinter import font as tkFont
-import tkinter.scrolledtext as ScrolledText
+try:
+    import tkinter as tk
+    from tkinter import Label, Button, INSERT, END, W, SUNKEN, Frame, Menu, Tk
+    from tkinter import messagebox
+    from tkinter import filedialog
+    from tkinter import simpledialog
+    from tkinter import font as tkFont
+    import tkinter.scrolledtext as ScrolledText
+except ImportError:
+    print('ERROR - TKinter is not installed. Please install tkinter and rerun the application.\n')
+    exit()
 
 # Some python utility libs
 import os

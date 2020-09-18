@@ -18,7 +18,7 @@ class DummyIOCGenerator:
 
     def __init__(self, install_config):
         self.install_config         = install_config
-        self.ioc_template_dir      = os.path.join('__temp__', 'ioc-templates')
+        self.ioc_template_dir       = installSynApps.join_path('__temp__', 'ioc-templates')
 
 
     def get_env_paths_name(self, module):
@@ -29,6 +29,8 @@ class DummyIOCGenerator:
             return 'DEVIOCSTATS'
         elif module == 'areaDetector':
             return 'AREA_DETECTOR'
+        elif module == 'allenBradley':
+            return 'ALLEN_BRADLEY'
         else:
             return module.upper()
 
@@ -180,14 +182,14 @@ class DummyIOCGenerator:
 
         if os.path.exists(self.install_config.support_path) and os.path.isdir(self.install_config.support_path):
             for dir in os.listdir(self.install_config.support_path):
-                mod_path_abs = os.path.join(self.install_config.support_path, dir)
+                mod_path_abs = installSynApps.join_path(self.install_config.support_path, dir)
                 mod_path_rel = installSynApps.join_path(support_dir, dir)
                 if os.path.isdir(mod_path_abs) and dir != "base" and dir != "areaDetector":
                     lib_path_str += self.get_lib_path_for_module(mod_path_rel, arch, delimeter)
 
         if os.path.exists(self.install_config.ad_path) and os.path.isdir(self.install_config.ad_path):
             for dir in os.listdir(self.install_config.ad_path):
-                mod_path_abs = os.path.join(self.install_config.ad_path, dir)
+                mod_path_abs = installSynApps.join_path(self.install_config.ad_path, dir)
                 mod_path_rel = installSynApps.join_path(ad_dir, dir)
                 if os.path.isdir(mod_path_abs) and (dir == 'ADCore' or dir == 'ADSupport' or dir in ad_plugins or dir == action.ioc_type):
                     lib_path_str += self.get_lib_path_for_module(mod_path_rel, arch, delimeter)
@@ -294,7 +296,7 @@ class DummyIOCGenerator:
         for file in os.listdir(iocBoot_dir):
             # For any file that isnt the base file, add environment variables.
             if file.startswith('st') and file.endswith('.cmd') and file != st_file:
-                fp = open(os.path.join(iocBoot_dir, file), 'r')
+                fp = open(installSynApps.join_path(iocBoot_dir, file), 'r')
                 lines = fp.readlines()
                 for line in lines:
                     if line.startswith('epicsEnvSet'):
@@ -371,7 +373,7 @@ class DummyIOCGenerator:
         LOG.write('Generating dummy IOCs for included driver binaries')
         dummy_ioc_actions = []
         for module in self.install_config.get_module_list():
-            if module.name.startswith('AD') and os.path.exists(os.path.join(module.abs_path, 'iocs')):
+            if module.name.startswith('AD') and os.path.exists(installSynApps.join_path(module.abs_path, 'iocs')):
                 dummy_ioc_actions.append(DummyIOCAction(os.path.basename(module.abs_path)))
         
         for action in dummy_ioc_actions:

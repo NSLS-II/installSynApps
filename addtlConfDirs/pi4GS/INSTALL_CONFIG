@@ -66,7 +66,7 @@ STREAM           2.8.12               $(SUPPORT)/stream                        S
 
 WGET_URL=http://www.aps.anl.gov/epics/download/modules/
 
-ALLENBRADLEY     2.3                  $(SUPPORT)/allenBradley                  allenBradley-$(VERSION).tar.gz NO               NO               NO
+ALLEN_BRADLEY     2.3                  $(SUPPORT)/allenBradley                  allenBradley-$(VERSION).tar.gz NO               NO               NO
 
 WGET_URL=https://github.com/EPICSTools/ether_ip/archive/
 

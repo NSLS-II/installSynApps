@@ -8,6 +8,7 @@ DataModel objects representing the configuration.
 import os
 import re
 from sys import platform
+import installSynApps
 import installSynApps.data_model.install_config as IC
 import installSynApps.data_model.install_module as IM
 from installSynApps.io import logger as LOG
@@ -311,9 +312,9 @@ class ConfigParser:
         """
 
         # make sure the build script path is absolute
-        build_script_folder = os.path.abspath(os.path.join(self.configure_path, 'customBuildScripts'))
+        build_script_folder = os.path.abspath(installSynApps.join_path(self.configure_path, 'customBuildScripts'))
         if os.path.exists(build_script_folder):
             for module in install_config.get_module_list():
                 for file in os.listdir(build_script_folder):
                     if file.startswith(module.name):
-                        module.custom_build_script_path = os.path.join(build_script_folder, file)
+                        module.custom_build_script_path = installSynApps.join_path(build_script_folder, file)
