@@ -94,7 +94,6 @@ ADPLUGINEDGE     master               $(AREA_DETECTOR)/ADPluginEdge            A
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADUVC            R1-3                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    YES              YES              YES
 ADEMERGENTVISION master               $(AREA_DETECTOR)/ADEmergentVision        ADEmergentVision         NO               NO               NO
 ADLAMBDA         dual_threshold_feature $(AREA_DETECTOR)/ADLambda                ADLambda                 NO               NO               NO
 ADANDOR3         master               $(AREA_DETECTOR)/ADAndor3                ADAndor3                 YES              YES              YES
@@ -102,6 +101,7 @@ ADPERKINELMER    master               $(AREA_DETECTOR)/ADPerkinElmer           A
 
 GIT_URL=https://github.com/areaDetector/
 
+ADUVC            R1-4                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    NO               NO               NO 
 ADGENICAM        R1-1                 $(AREA_DETECTOR)/ADGenICam               ADGenICam                YES              YES              YES
 ADPROSILICA      R2-5                 $(AREA_DETECTOR)/ADProsilica             ADProsilica              YES              YES              YES
 ADSIMDETECTOR    R2-10                $(AREA_DETECTOR)/ADSimDetector           ADSimDetector            YES              YES              YES
