@@ -11,6 +11,12 @@ import subprocess
 from sys import platform
 import sys
 
+WITHOUT_REQUESTS = False
+try:
+    import requests
+except ImportError:
+    WITHOUT_REQUESTS = True
+
 # Logger import
 import installSynApps.io.logger as LOG
 
@@ -71,6 +77,7 @@ class BuildDriver:
             Empty string if success, otherwise name of mssing dependency
         """
 
+        global WITHOUT_REQUESTS
         status = True
         message = ''
         current = 'make'
@@ -80,8 +87,9 @@ class BuildDriver:
             subprocess.call(['make', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'perl'
             subprocess.call(['perl', '--version'], stdout=FNULL, stderr=FNULL)
-            #current = 'wget'
-            #subprocess.call(['wget', '--version'], stdout=FNULL, stderr=FNULL)
+            if WITHOUT_REQUESTS:
+                current = 'wget'
+                subprocess.call(['wget', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'git'
             subprocess.call(['git', '--version'], stdout=FNULL, stderr=FNULL)
             current = 'tar'

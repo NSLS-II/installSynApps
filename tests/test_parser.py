@@ -37,13 +37,13 @@ parsed_config, message = parser.parse_install_config()
 def test_no_permission():
     parsed_into_dev, error = parser.parse_install_config(force_location='/dev')
     assert parsed_into_dev is None
-    assert error == 'Permission Error'
+    assert error == 'Permission Error: /dev'
 
 
 def test_not_exist():
     parsed_into_dummy, error = parser.parse_install_config(force_location='/dummy/test')
     assert parsed_into_dummy is None
-    assert error == 'Install filepath not valid'
+    assert error == 'Install location and parent directory do not exist'
 
 
 def test_loc_parse():
