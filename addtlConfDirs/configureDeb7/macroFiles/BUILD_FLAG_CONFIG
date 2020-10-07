@@ -1,3 +1,6 @@
 # Saved by installSynApps on 2019-12-12 14:54:59.002737
 
 JPEG_EXTERNAL=YES
+ZMQ=$(ADEIGER)/zmq
+ZMQ_LIB=$(ZMQ)/lib
+ZMQ_INCLUDE=$(ZMQ)/include

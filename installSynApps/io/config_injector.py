@@ -6,6 +6,7 @@ for the update_config_driver.
 """
 
 import os
+import shutil
 import re
 import installSynApps
 import installSynApps.data_model.install_config as IC
@@ -102,13 +103,13 @@ class ConfigInjector:
             if false, will comment out macros for area detector modules. used for RELEASE in support - AD is built separately
         """
 
-        old_files_dir = installSynApps.join_path(target_dir, 'OLD_FILES')
-        if not os.path.exists(old_files_dir):
-            os.mkdir(old_files_dir)
-        if os.path.exists(installSynApps.join_path(old_files_dir, target_filename)):
-            os.remove(installSynApps.join_path(old_files_dir, target_filename))
-        os.rename(installSynApps.join_path(target_dir, target_filename), installSynApps.join_path(old_files_dir, target_filename))
-        old_fp = open(installSynApps.join_path(old_files_dir, target_filename), "r")
+        old_files_dir = os.path.join(target_dir, 'OLD_FILES')
+        if os.path.exists(old_files_dir):
+            shutil.rmtree(old_files_dir)
+        os.mkdir(old_files_dir)
+        
+        os.rename(os.path.join(target_dir, target_filename), os.path.join(old_files_dir, target_filename))
+        old_fp = open(os.path.join(old_files_dir, target_filename), "r")
 
         if target_filename.startswith("EXAMPLE_"):
             new_fp = open(installSynApps.join_path(target_dir, target_filename[8:]), "w")

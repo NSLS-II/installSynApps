@@ -188,6 +188,7 @@ class AddModuleGUI:
         self.install_config.add_module(new_module)
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
+        self.root.unsaved_changes = True
         self.root.showMessage('Info', 'Added module: {} with version {} to config'.format(name, version))
 
 

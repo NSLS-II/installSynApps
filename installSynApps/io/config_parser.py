@@ -150,25 +150,14 @@ class ConfigParser:
                             install_loc = 'C:' + install_loc
                         # create install config object
                         install_config = IC.InstallConfiguration(install_loc, self.configure_path)
+                        
                         # Error checking
-                        if install_config.is_install_valid() < 0:
+                        valid, err = install_config.is_install_valid()
+                        if not valid:
                             if not allow_illegal:
-                                return None, 'Permission Error'
+                                return None, err
                             else:
-                                message = 'Permission Error'
-                        elif install_config.is_install_valid() == 0:
-                            try:
-                                os.mkdir(install_config.install_location)
-                            except PermissionError:
-                                if not allow_illegal:
-                                    return None, 'Permission denied to create install location'
-                                else:
-                                    message = 'Permission denied to create install location'
-                            except FileNotFoundError:
-                                if not allow_illegal:
-                                    return None, 'Install filepath not valid'
-                                else:
-                                    message = 'Install filepath not valid'
+                                message = err
                     # URL definition lines
                     elif line.startswith("GIT_URL") or line.startswith("WGET_URL"):
                         current_url = line.split('=')[1]

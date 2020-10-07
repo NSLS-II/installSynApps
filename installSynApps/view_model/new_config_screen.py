@@ -56,34 +56,21 @@ class NewConfigGUI:
         self.viewFrame = Frame(self.master, relief = GROOVE, padx = 10, pady = 10)
         self.viewFrame.pack()
 
-        self.config_type = tk.IntVar()
-        self.config_types = {
-            1 : 'AreaDetector',
-            2 : 'Motor',
-            3 : 'All'
-        }
-        self.config_type.set(1)
 
-
-        Label(self.viewFrame, text='Select Config Type:').grid(row=0, column=0, padx=5, pady=5)
-        for val in self.config_types.keys():
-            tk.Radiobutton(self.viewFrame, text=self.config_types[val], variable=self.config_type, value=val).grid(row=0, column=val, padx=5, pady=5)
-
-
-        Label(self.viewFrame, text='Install Location:').grid(row=2, column=0, pady=5)
-        Button(self.viewFrame, text='Browse', command=self.selectInstallLoc).grid(row=2, column=3, padx=5, pady=5)
+        Label(self.viewFrame, text='Install Location:').grid(row=1, column=0, pady=5)
+        Button(self.viewFrame, text='Browse', command=self.selectInstallLoc).grid(row=1, column=3, padx=5, pady=5)
         self.dir_box = Text(self.viewFrame, height=1, width=45, padx=3, pady=3)
-        self.dir_box.grid(row=2, column=1, columnspan=2)
+        self.dir_box.grid(row=1, column=1, columnspan=2)
 
         Label(self.viewFrame, text='').grid(row=4)
 
         self.update_tags_var = BooleanVar()
         self.update_tags_var.set(True)
         self.update_tags_button = Checkbutton(self.viewFrame, text='Auto-Update Tags', onvalue=True, offvalue=False, variable=self.update_tags_var)
-        self.update_tags_button.grid(row=5, column=0, padx=3, pady=3)
+        self.update_tags_button.grid(row=4, column=0, padx=3, pady=3)
 
-        Button(self.viewFrame, text='Create', command = self.applyChanges, width=12).grid(row = 5, column = 2, columnspan = 1, padx = 5, pady = 5)
-        Button(self.viewFrame, text='Cancel', command = self.cancel, width=12).grid(row = 5, column = 3, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Create', command = self.applyChanges, width=12).grid(row = 4, column = 2, columnspan = 1, padx = 5, pady = 5)
+        Button(self.viewFrame, text='Cancel', command = self.cancel, width=12).grid(row = 4, column = 3, columnspan = 1, padx = 5, pady = 5)
 
         self.master.mainloop()
 
@@ -99,13 +86,12 @@ class NewConfigGUI:
         """Creates new install configuration given properties
         """
 
-        t = self.config_types[self.config_type.get()]
         u = self.update_tags_var.get()
         i = self.dir_box.get('1.0', END).strip()
         if not os.path.exists(i) or not os.path.isdir(i):
             self.root.showErrorMessage('Error', 'ERROR - Path: {} does not exist or is not a directory!'.format(i), force_popup=True)
             return
-        self.root.newConfig(t, i, update_tags=u)
+        self.root.newConfig(i, update_tags=u)
         self.cancel()
 
 

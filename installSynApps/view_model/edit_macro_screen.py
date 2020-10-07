@@ -86,6 +86,7 @@ class EditMacroGUI:
                 new_list.append(pair)
 
         self.install_config.build_flags = new_list
+        self.root.unsaved_changes = True
         self.root.writeToLog('Applied updated macro replace list.\n')
 
 

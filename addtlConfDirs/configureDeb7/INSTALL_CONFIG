@@ -94,7 +94,6 @@ ADPLUGINEDGE     master               $(AREA_DETECTOR)/ADPluginEdge            A
 
 GIT_URL=https://github.com/epicsNSLS2-areaDetector/
 
-ADUVC            R1-3                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    YES              YES              YES
 ADEMERGENTVISION master               $(AREA_DETECTOR)/ADEmergentVision        ADEmergentVision         NO               NO               NO
 ADLAMBDA         dual_threshold_feature $(AREA_DETECTOR)/ADLambda                ADLambda                 NO               NO               NO
 ADANDOR3         master               $(AREA_DETECTOR)/ADAndor3                ADAndor3                 YES              YES              YES
@@ -102,13 +101,14 @@ ADPERKINELMER    master               $(AREA_DETECTOR)/ADPerkinElmer           A
 
 GIT_URL=https://github.com/areaDetector/
 
+ADUVC            R1-4                 $(AREA_DETECTOR)/ADUVC                   ADUVC                    NO               NO               NO 
 ADGENICAM        R1-1                 $(AREA_DETECTOR)/ADGenICam               ADGenICam                YES              YES              YES
 ADPROSILICA      R2-5                 $(AREA_DETECTOR)/ADProsilica             ADProsilica              YES              YES              YES
 ADSIMDETECTOR    R2-10                $(AREA_DETECTOR)/ADSimDetector           ADSimDetector            YES              YES              YES
 ADPILATUS        R2-7                 $(AREA_DETECTOR)/ADPilatus               ADPilatus                YES              YES              YES
 ADMERLIN         master               $(AREA_DETECTOR)/ADMerlin                ADMerlin                 YES              YES              YES
 ADARAVIS         R3-0                 $(AREA_DETECTOR)/aravisGigE              aravisGigE               NO               NO               NO
-ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 ADEiger                  NO               NO               NO
+ADEIGER          R2-6                 $(AREA_DETECTOR)/ADEiger                 ADEiger                  YES              YES              YES
 ADMMPAD          master               $(AREA_DETECTOR)/ADMMPAD                 ADMMPAD                  NO               NO               NO
 ADFASTCCD        R1-0                 $(AREA_DETECTOR)/ADFastCCD               ADFastCCD                NO               NO               NO
 ADPOINTGREY      R2-8                 $(AREA_DETECTOR)/ADPointGrey             ADPointGrey              NO               NO               NO

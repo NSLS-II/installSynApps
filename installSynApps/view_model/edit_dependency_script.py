@@ -131,6 +131,7 @@ class EditDependencyScriptGUI:
                 fp.write(line + '\n')
         fp.close()
         self.reloadPanel()
+        self.root.unsaved_changes = True
         self.root.updateAllRefs(self.install_config)
 
 

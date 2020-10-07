@@ -136,7 +136,7 @@ class AddCustomBuildScriptGUI:
         else:
             script_ending = '.sh'
 
-        if not self.root.install_loaded:
+        if not self.root.configure_path is None:
             self.root.showWarningMessage('Error', 'Currently loaded Install configuration has not been saved. Please save it first to be able to save build scripts.')
             return
         build_script_folder = os.path.join(self.root.configure_path, 'customBuildScripts')
@@ -156,6 +156,7 @@ class AddCustomBuildScriptGUI:
         self.reloadPanel(ifsame=True)
         self.root.updateAllRefs(self.install_config)
         self.root.updateConfigPanel()
+        self.root.unsaved_changes = True
 
 
     def exit(self):
