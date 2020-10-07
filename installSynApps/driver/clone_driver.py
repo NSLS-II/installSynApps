@@ -7,10 +7,18 @@ to the local machine.
 import os
 from subprocess import Popen, PIPE
 import shutil
+
+try:
+    import requests
+    USE_WGET=False
+except ImportError:
+    USE_WGET=True
+
 from sys import platform
 import installSynApps.data_model.install_config as IC
 import installSynApps.data_model.install_module as IM
 import installSynApps.io.logger as LOG
+import installSynApps
 
 class CloneDriver:
     """Class responsible for cloning and checking out all of the modules described in a given InstallConfiguration
@@ -52,9 +60,11 @@ class CloneDriver:
             Flag that decides if git clone should be done recursively
         """
 
+        global USE_URLLIB
         LOG.debug('Cloning module {}'.format(module.name))
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
+                command = None
                 ret = -1
                 if os.path.exists(module.abs_path):
                     shutil.rmtree(module.abs_path)
@@ -63,15 +73,29 @@ class CloneDriver:
                 elif recursive and module.url_type == "GIT_URL":
                     command = "git clone --recursive {} {}".format(module.url + module.repository, module.abs_path)
                 elif module.url_type == "WGET_URL":
-                    if platform == "win32":
-                        command = "wget --no-check-certificate -P {} {}".format(module.abs_path, module.url + module.repository)
-                    else:
-                        command = 'wget -P {} {}'.format(module.abs_path, module.url + module.repository)
+                    try:
+                        archive_path = installSynApps.join_path(os.path.dirname(module.abs_path), module.repository)
+                        if not USE_WGET:
+                            r = requests.get(module.url + module.repository)
+                            with open(archive_path, 'wb') as fp:
+                                fp.write(r.content)
+                            os.mkdir(module.abs_path)
+                            ret = 0
+                        else:
+                            if platform == "win32":
+                                command = "wget --no-check-certificate -P {} {}".format(os.path.dirname(module.abs_path), module.url + module.repository)
+                            else:
+                                command = 'wget -P {} {}'.format(os.path.dirname(module.abs_path), module.url + module.repository)
 
-                LOG.print_command(command)
-                proc = Popen(command.split(' '))
-                proc.wait()
-                ret = proc.returncode
+                    except Exception as e:
+                        LOG.write(str(e))
+                        ret = -1
+
+                if command is not None:
+                    LOG.print_command(command)
+                    proc = Popen(command.split(' '))
+                    proc.wait()
+                    ret = proc.returncode
                 if ret == 0:
                     LOG.write('Cloned module {} successfully.'.format(module.name))
                 else:
@@ -79,20 +103,28 @@ class CloneDriver:
                     return -1
 
                 if module.url_type == "WGET_URL":
-                    
+                    archive_path = installSynApps.join_path(os.path.dirname(module.abs_path), module.repository)
+                    if not os.path.exists(module.abs_path):
+                        os.mkdir(module.abs_path)
+                    command = None
                     if (module.repository.endswith(".tar.gz") or module.repository.endswith(".tgz")) and ret == 0:
-                        command = "tar -xzf {} -C {} --strip-components=1".format(os.path.join(module.abs_path, module.repository), module.abs_path)
+                        command = "tar -xzf {} -C {} --strip-components=1".format(archive_path, module.abs_path)
                     elif module.repository.endswith(".zip") and ret == 0:
-                        command = "unzip {} -C {}".format(os.path.join(module.abs_path, module.repository), module.abs_path)
-                    
-                    LOG.print_command(command)
-                    proc = Popen(command.split(' '))
-                    proc.wait()
-                    ret = proc.returncode
-                    if ret == 0:
-                        LOG.write('Unpacked module {} successfully.'.format(module.name))
+                        command = "tar -xf {} -C {} --strip-components=1".format(archive_path, module.abs_path)
                     else:
-                        LOG.write('Failed to unpack module {}.'.format(module.name))
+                        LOG.write('Unsupported archive format detected!')
+                        ret = -1
+                    
+                    if command is not None:
+                        LOG.print_command(command)
+                        proc = Popen(command.split(' '))
+                        proc.wait()
+                        ret = proc.returncode
+                        if ret == 0:
+                            LOG.write('Unpacked module {} successfully.'.format(module.name))
+                            os.remove(installSynApps.join_path(os.path.dirname(module.abs_path), module.repository))
+                        else:
+                            LOG.write('Failed to unpack module {}.'.format(module.name))
 
                 if ret == 0:
                     return ret

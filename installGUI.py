@@ -7,13 +7,17 @@ to clone, update, and build the EPICS and synApps software stack.
 """
 
 # Tkinter imports
-import tkinter as tk
-from tkinter import Label, Button, INSERT, END, W, SUNKEN, Frame, Menu, Tk
-from tkinter import messagebox
-from tkinter import filedialog
-from tkinter import simpledialog
-from tkinter import font as tkFont
-import tkinter.scrolledtext as ScrolledText
+try:
+    import tkinter as tk
+    from tkinter import Label, Button, INSERT, END, W, SUNKEN, Frame, Menu, Tk
+    from tkinter import messagebox
+    from tkinter import filedialog
+    from tkinter import simpledialog
+    from tkinter import font as tkFont
+    import tkinter.scrolledtext as ScrolledText
+except ImportError:
+    print('ERROR - TKinter is not installed. Please install tkinter and rerun the application.\n')
+    exit()
 
 # Some python utility libs
 import os
@@ -169,7 +173,7 @@ class InstallSynAppsGUI:
         self.master.config(menu=menubar)
 
         # Welcome message
-        self.msg = "installSynApps GUI - {}".format(installSynApps.__version__)
+        self.msg = "epics-install GUI - {}".format(installSynApps.__version__)
 
         # title label
         self.topLabel       = Label(frame, text = self.msg, width = '40', height = '1', relief = SUNKEN, borderwidth = 1, bg = 'blue', fg = 'white', font = self.largeFont)
@@ -210,28 +214,33 @@ class InstallSynAppsGUI:
         self.log.grid(row = 1, column = 2, padx = 15, pady = 15, columnspan = 6, rowspan = 6)
         self.writeToLog(self.initLogText())
 
-        # default configure path
-        self.configure_path = os.path.join(os.path.dirname(os.path.dirname(installSynApps.__file__)), 'configure')
-        self.configure_path = os.path.abspath(self.configure_path)
+        # No loaded configure path by default
+        self.configure_path = None
         self.valid_install = False
         self.deps_found = True
-        self.install_loaded = False
 
-        # Configure metadata, read from existing saved metadata
+        self.unsaved_changes = False
+
+
+        message = None
+        # Configure metadata, read from existing saved metadata, and load configuration
         self.metacontroller = VIEW_MODEL.meta_pref_control.MetaDataController()
         if 'configure_path' in self.metacontroller.metadata.keys():
             self.configure_path = self.metacontroller.metadata['configure_path']
-            if self.configure_path != 'configure':
-                self.install_loaded = True
             self.writeToLog('Loading configure directory saved in location {}\n'.format(self.configure_path))
+            # installSynApps options, initialzie + read default configure files
+            self.parser = IO.config_parser.ConfigParser(self.configure_path)
+            self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
+        else:
+            self.parser = IO.config_parser.ConfigParser(None)
+            self.writeToLog('Loading default install configuration...\n')
+            self.install_config = installSynApps.data_model.install_config.generate_default_install_config()
+
 
         self.metacontroller.metadata['isa_version'] = installSynApps.__version__
         self.metacontroller.metadata['platform']    = platform
         self.metacontroller.metadata['last_used']   = '{}'.format(datetime.datetime.now())
 
-        # installSynApps options, initialzie + read default configure files
-        self.parser = IO.config_parser.ConfigParser(self.configure_path)
-        self.install_config, message = self.parser.parse_install_config(allow_illegal=True)
 
         if message is not None:
             self.valid_install = False
@@ -376,13 +385,18 @@ class InstallSynAppsGUI:
     def close_cleanup(self):
         """Function that asks user if he/she wants to close, and cleans up threads, logger, and saves metadata
         """
-
+        
+        quit_now = True
         if self.thread.is_alive():
-            self.showWarningMessage('Warning', 'Qutting while process is running may result in invalid installation!', force_popup=True)
-        if messagebox.askokcancel('Quit', 'Do you want to quit?'):
+            quit_now = messagebox.askokcancel('Quit?', 'Qutting while process is running may result in invalid installation!')
+        
+        if self.unsaved_changes and quit_now:
+            quit_now = messagebox.askokcancel('Quit?', 'All unsaved Changes will be lost.')
+        
+        if quit_now:
             self.master.destroy()
-        IO.logger.close_logger()
-        self.metacontroller.save_metadata()
+            IO.logger.close_logger()
+            self.metacontroller.save_metadata()
 
 
 # -------------------------- Functions for writing/displaying information ----------------------------------
@@ -496,7 +510,7 @@ class InstallSynAppsGUI:
 
 # ----------------------- Loading/saving Functions -----------------------------
 
-    def newConfig(self, template_type, install_location, update_tags=True):
+    def newConfig(self, install_location, update_tags=True):
         """Will load a new blank config and allow user to edit/save it
 
         Parameters
@@ -505,9 +519,13 @@ class InstallSynAppsGUI:
             The template type to create the configuration with
         """
 
+        if self.unsaved_changes:
+            if not messagebox.askokcancel('New Config?', 'All unsaved changes to current configuration will be lost.'):
+                return
+
         self.writeToLog("Trying to load new default config with install location {}...\n".format(install_location))
         if not self.thread.is_alive():
-            self.thread = threading.Thread(target=lambda : self.newConfigProcess(install_location, template_type, update_tags))
+            self.thread = threading.Thread(target=lambda : self.newConfigProcess(install_location, update_tags))
             self.loadingIconThread = threading.Thread(target=self.loadingLoop)
             self.thread.start()
             self.loadingIconThread.start()
@@ -515,39 +533,30 @@ class InstallSynAppsGUI:
             self.showErrorMessage('Error', 'ERROR - Process thread already running', force_popup=True)
 
 
-    def newConfigProcess(self, install_loc, template_type, update_tags):
+    def newConfigProcess(self, install_loc, update_tags):
         """Async creation of new install configuration. Must be done async since syncing tags may be long
 
         Parameters
         ----------
         install_loc : str
             Path to install location
-        template_type : str
-            The template name
         update_tags : bool
             The update tags flag
         """
 
-        old_config = self.configure_path
-        loaded_install_config, message = installSynApps.create_new_install_config(install_loc, template_type, update_versions=update_tags)
+        config = installSynApps.data_model.install_config.generate_default_install_config(target_install_loc=install_loc, update_versions=update_tags)
+        
+        valid, err = config.is_install_valid()
 
-        if message is not None:
-            self.valid_install = False
-        else:
-            self.valid_install = True
-
-        if loaded_install_config is None:
-            self.showErrorMessage('Error', 'ERROR - {}.'.format(message), force_popup=True)
-            self.parser.configure_path = old_config
-            self.configure_path = old_config
-        elif not self.valid_install:
-            self.showWarningMessage('Warning', 'WARNING - {}.'.format(message), force_popup=True)
-            self.updateAllRefs(loaded_install_config)
+        if not valid:
+            self.showWarningMessage('Warning', 'WARNING - {}'.format(err), force_popup=True)
+            self.updateAllRefs(config)
             self.updateConfigPanel()
         else:
-            self.updateAllRefs(loaded_install_config)
+            self.updateAllRefs(config)
             self.updateConfigPanel()
-        self.install_loaded = False
+
+        self.configure_path = None
 
 
     def loadConfig(self):
@@ -557,6 +566,10 @@ class InstallSynAppsGUI:
         then if it is valid, loads it into an InstallConfiguration object,
         and updates the config panel.
         """
+
+        if self.unsaved_changes:
+            if not messagebox.askokcancel('Load Config?', 'All unsaved changes to current configuration will be lost.'):
+                return
 
         self.writeToLog("Opening load install config file dialog...\n")
         temp = self.configure_path
@@ -588,9 +601,6 @@ class InstallSynAppsGUI:
         else:
             self.showErrorMessage('Load error', 'Error loading install config... {}'.format(message), force_popup=True)
         self.updateAllRefs(self.install_config)
-        self.install_loaded = True
-        if self.configure_path == 'configure':
-            self.install_loaded = False
 
 
     def saveConfig(self):
@@ -598,10 +608,10 @@ class InstallSynAppsGUI:
         """
 
         self.writeToLog("Saving...\n")
-        if not self.install_loaded:
+        if self.configure_path is None:
             self.saveConfigAs()
         else:
-            self.saveConfigAs(force_loc = self.configure_path)
+            self.saveConfigAs(force_loc=self.configure_path)
 
 
     def saveConfigAs(self, force_loc=None):
@@ -638,13 +648,13 @@ class InstallSynAppsGUI:
         if not wrote:
             self.showErrorMessage('Write Error', 'Error saving install config: {}'.format(message), force_popup=True)
         else:
-            if self.install_loaded:
+            if self.configure_path is not None:
                 try:
                     shutil.copytree(self.configure_path + '/customBuildScripts', dirpath + '/customBuildScripts')
                 except:
                     pass
             self.configure_path = dirpath
-            self.install_loaded = True
+            self.unsaved_changes = False
             self.updateAllRefs(self.install_config)
             self.metacontroller.metadata['configure_path'] = self.configure_path
             self.writeToLog('Saved currently loaded install configuration to {}.\n'.format(dirpath))
@@ -668,7 +678,7 @@ class InstallSynAppsGUI:
             self.showErrorMessage('Save Error', 'ERROR - Save directory does not exist')
             return
         time = datetime.datetime.now()
-        log_file = open(location + "/installSynApps_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
+        log_file = open(location + "/epics_install_log_" + time.strftime("%Y_%m_%d_%H_%M_%S"), "w")
         log_file.write(self.log.get('1.0', END))
         log_file.close()
 
@@ -1122,7 +1132,7 @@ class InstallSynAppsGUI:
 
 def main():
     root = Tk()
-    root.title("installSynApps - {}".format(installSynApps.__version__))
+    root.title("epics-install - {}".format(installSynApps.__version__))
     try:
         root.iconbitmap('docs/assets/isaIcon.ico')
     except:
@@ -1133,4 +1143,8 @@ def main():
     root.mainloop()
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Exiting...\n')
+        exit()

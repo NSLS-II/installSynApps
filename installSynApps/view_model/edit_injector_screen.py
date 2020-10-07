@@ -139,6 +139,7 @@ class EditInjectorGUI:
             if file.name == target:
                 file.contents = new_contents
         self.root.writeToLog('Applied updated injector file contents.\n')
+        self.root.unsaved_changes = True
         self.root.updateAllRefs(self.install_config)
 
 

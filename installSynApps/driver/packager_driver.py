@@ -221,15 +221,15 @@ class Packager:
         """
         
         LOG.debug('Generating README file with module version and append instructions...')
-        shutil.copy(os.path.join(self.output_location, 'README_{}.txt'.format(filename)), os.path.join('__temp__', 'README_{}.txt'.format(filename)))
+        shutil.copy(installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename)), installSynApps.join_path('__temp__', 'README_{}.txt'.format(filename)))
 
         LOG.write('Tarring...')
         out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', '__temp__', '.'])
         if out < 0:
             return out
-        os.rename(filename + '.tgz', os.path.join(self.output_location, filename + '.tgz'))
+        os.rename(filename + '.tgz', installSynApps.join_path(self.output_location, filename + '.tgz'))
         LOG.write('Done. Wrote tarball to {}.'.format(self.output_location))
-        LOG.write('Name of tarball: {}'.format(os.path.join(self.output_location, filename + '.tgz')))
+        LOG.write('Name of tarball: {}'.format(installSynApps.join_path(self.output_location, filename + '.tgz')))
         shutil.rmtree('__temp__')
         return out
 
@@ -247,7 +247,7 @@ class Packager:
             The module to add to the package
         """
 
-        readme_path = os.path.join(self.output_location, 'README_{}.txt'.format(filename))
+        readme_path = installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename))
         self.setup_tar_staging()
         self.grab_module('__temp__', module, include_src=with_sources)
         self.file_generator.generate_readme(filename, installation_type='addon', readme_path=readme_path, module=module)
@@ -266,8 +266,8 @@ class Packager:
             0 if suceeded, nonzero otherwise
         """
 
-        opi_base_dir = os.path.join(self.output_location, '__opis_temp__')
-        opi_dir = os.path.join(opi_base_dir, 'opis')
+        opi_base_dir = installSynApps.join_path(self.output_location, '__opis_temp__')
+        opi_dir = installSynApps.join_path(opi_base_dir, 'opis')
         try:
             os.mkdir(opi_base_dir)
             os.mkdir(opi_dir)
@@ -277,7 +277,7 @@ class Packager:
         for (root, _, files) in os.walk(self.install_config.install_location, topdown=True):
             for name in files:
                 if '.opi' in name and 'autoconvert' in root:
-                    file_name = os.path.join(root, name)
+                    file_name = installSynApps.join_path(root, name)
                     try:
                         shutil.copy(file_name, opi_dir)
                     except OSError:
@@ -286,13 +286,13 @@ class Packager:
         opi_tarball_basename = 'opis_{}'.format(self.install_config.get_core_version())
         opi_tarball = opi_tarball_basename
         counter = 1
-        while os.path.exists(os.path.join(self.output_location, opi_tarball + '.tgz')):
+        while os.path.exists(installSynApps.join_path(self.output_location, opi_tarball + '.tgz')):
             opi_tarball = opi_tarball_basename + '_({})'.format(counter)
             counter = counter + 1
 
         out = subprocess.call(['tar', 'czf', opi_tarball + '.tgz', '-C', opi_base_dir, '.'])
         shutil.rmtree(opi_base_dir)
-        os.rename(opi_tarball + '.tgz', os.path.join(self.output_location, opi_tarball + '.tgz'))
+        os.rename(opi_tarball + '.tgz', installSynApps.join_path(self.output_location, opi_tarball + '.tgz'))
         return out
         
 
@@ -314,7 +314,7 @@ class Packager:
             0 if success <0 if failure
         """
 
-        readme_path = os.path.join(self.output_location, 'README_{}.txt'.format(filename))
+        readme_path = installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename))
         self.setup_tar_staging()
 
         self.grab_base('__temp__', include_src=with_sources)
@@ -322,10 +322,10 @@ class Packager:
         support_top = '__temp__'
         if not flat_format:
             LOG.write('Non-flat output binary structure selected.')
-            support_top = os.path.join('__temp__', 'support')
+            support_top = installSynApps.join_path('__temp__', 'support')
             os.mkdir(support_top)
 
-        ad_top = os.path.join(support_top, 'areaDetector')
+        ad_top = installSynApps.join_path(support_top, 'areaDetector')
         os.mkdir(ad_top)
 
         for module in self.install_config.get_module_list():
@@ -383,12 +383,12 @@ class Packager:
 
         if os.path.exists(self.output_location):
             if platform == 'win32':
-                cleanup_tool_path = os.path.join(self.output_location, 'cleanup.bat')
+                cleanup_tool_path = installSynApps.join_path(self.output_location, 'cleanup.bat')
                 cleanup_tool = open(cleanup_tool_path, 'w')
                 cleanup_tool.write('@echo OFF\n\ndel *.tgz\ndel *.txt\n\n')
                 cleanup_tool.close()
             else:
-                cleanup_tool_path = os.path.join(self.output_location, 'cleanup.sh')
+                cleanup_tool_path = installSynApps.join_path(self.output_location, 'cleanup.sh')
                 cleanup_tool = open(cleanup_tool_path, 'w')
                 cleanup_tool.write('#!/bin/bash\n\nrm *.tgz\nrm *.txt\n\n')
                 os.chmod(cleanup_tool_path, 0o755)

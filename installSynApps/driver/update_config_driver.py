@@ -7,6 +7,7 @@ to run an installSynApps client with debug message printing enabled.
 import os
 import re
 import shutil
+import installSynApps
 import installSynApps.data_model.install_config as IC
 import installSynApps.io.config_injector as CI
 import installSynApps.io.logger as LOG
@@ -39,9 +40,10 @@ class UpdateConfigDriver:
         self.install_config = install_config
         self.path_to_configure = path_to_configure
         self.config_injector = CI.ConfigInjector(self.install_config)
-        self.fix_release_list = ["DEVIOCSTATS"]
         self.add_to_release_blacklist = ["CONFIGURE", "DOCUMENTATION", "UTILS"]
-        self.dependency_ignore_list = ["TEMPLATE_TOP", "PCRE", "SUPPORT", "INSTALL_LOCATION_APP", "CAPFAST_TEMPLATES"]
+        self.dependency_ignore_list = [ "TEMPLATE_TOP", "PCRE", 
+                                        "SUPPORT", "INSTALL_LOCATION_APP", 
+                                        "CAPFAST_TEMPLATES", "MAKE_TEST_IOC_APP"]
 
 
     def perform_injection_updates(self):
@@ -51,8 +53,8 @@ class UpdateConfigDriver:
         injector_files = self.install_config.injector_files
         for injector in injector_files:
             self.config_injector.inject_to_file(injector)
-        
-    
+
+
     def get_macros_from_install_config(self):
         """Retrieves a list of name-path pairs from install config modules.
 
@@ -82,14 +84,23 @@ class UpdateConfigDriver:
         """
 
         if self.install_config.ad_path is not None:
-            self.update_macros(os.path.join(self.install_config.ad_path, "configure"), True, False)
+            self.update_macros(installSynApps.join_path(self.install_config.ad_path, "configure"), True, False)
 
 
     def update_support_macros(self):
         """Updates the macros in the support configuration files.
         """
 
-        self.update_macros(os.path.join(self.install_config.support_path, "configure/RELEASE"), False, False, single_file=True)
+        support_config = installSynApps.join_path(self.install_config.support_path, "configure")
+        self.update_macros(support_config, False, False)
+
+        # Some modules don't correctly have their RELEASE files updated by make release. Fix that here
+        for module in self.install_config.get_module_list():
+            if module.clone == 'YES' and module.build == 'YES':
+                rel = installSynApps.join_path(module.abs_path, 'configure', 'RELEASE')
+                if os.path.exists(rel):
+                    LOG.write('Updating RELEASE file for {}...'.format(module.name))
+                    self.update_macros(rel, True, True, single_file=True)
 
 
     def update_support_build_macros(self):
@@ -97,7 +108,7 @@ class UpdateConfigDriver:
         """
 
         for module in self.install_config.get_module_list():
-            self.update_macros(os.path.join(module.abs_path, 'configure'), False, True, build_flags_only=True)
+            self.update_macros(installSynApps.join_path(module.abs_path, 'configure'), False, True, build_flags_only=True)
 
 
     def update_macros(self, target_path, include_ad, force_uncomment, single_file=False, build_flags_only=False):
@@ -129,28 +140,12 @@ class UpdateConfigDriver:
         if not single_file:
             self.config_injector.update_macros_dir(install_macro_list, target_path, force_override_comments=force_uncomment)
         else:
-            self.config_injector.update_macros_file(install_macro_list, os.path.dirname(target_path), os.path.basename(target_path), comment_unsupported=True, with_ad=include_ad, force=force_uncomment)
-
-
-    def fix_target_release(self, target_module_name):
-        """Used to replace a target module's release file.
-        
-        Parameters
-        ----------
-        target_module_name : str
-            Name matching module.name field of target module
-        """
-
-        for module in self.install_config.get_module_list():
-            if module.name == target_module_name:
-                replace_release_path = os.path.join("resources/fixedRELEASEFiles/", module.name + "_RELEASE")
-                if os.path.exists(replace_release_path) and os.path.isfile(replace_release_path):
-                    release_path = os.path.join(module.abs_path, "configure/RELEASE")
-                    if not os.path.exists(release_path):
-                        return
-                    release_path_old = release_path + "_OLD"
-                    os.rename(release_path, release_path_old)
-                    shutil.copyfile(replace_release_path, release_path)
+            self.config_injector.update_macros_file(install_macro_list, 
+                                                    os.path.dirname(target_path), 
+                                                    os.path.basename(target_path), 
+                                                    comment_unsupported=True, 
+                                                    with_ad=include_ad, 
+                                                    force=force_uncomment)
 
 
     def add_missing_support_macros(self):
@@ -162,7 +157,7 @@ class UpdateConfigDriver:
         for module in self.install_config.get_module_list():
             if module.clone == "YES":
                 was_found = False
-                rel_file = open(os.path.join(self.install_config.support_path, "configure/RELEASE"), "r")
+                rel_file = open(installSynApps.join_path(self.install_config.support_path, "configure/RELEASE"), "r")
                 line = rel_file.readline()
                 while line:
                     if line.startswith(module.name + "="):
@@ -188,35 +183,32 @@ class UpdateConfigDriver:
         """Function that comments out any paths in the support/configure/RELEASE that are clone only and not build.
         """
 
-        rel_file_path = os.path.join(self.install_config.support_path, "configure/RELEASE")
-        rel_file_path_temp = os.path.join(self.install_config.support_path, "configure/RELEASE_TEMP")
+        rel_file_path = installSynApps.join_path(self.install_config.support_path, "configure", "RELEASE")
+        rel_file_path_temp = installSynApps.join_path(self.install_config.support_path, "configure", "RELEASE_TEMP")
         os.rename(rel_file_path, rel_file_path_temp)
         rel_file_old = open(rel_file_path_temp, "r")
         rel_file_new = open(rel_file_path, "w")
 
-        line = rel_file_old.readline()
-        while line:
-            if line.startswith('#'):
+        for line in rel_file_old.readlines():
+            if line.startswith('#') or line.startswith('-'):
                 rel_file_new.write(line)
-            else:
-                for module in self.install_config.get_module_list():
-                    if line.startswith(module.name + "=") and module.build == "NO":
-                        rel_file_new.write('#')
-                        LOG.debug('Commenting out non-build module {} in support/configure/RELEASE'.format(module.name))
+            elif '=' in line: 
+                name = line.split('=')[0]
+                if name in self.install_config.module_map.keys() and self.install_config.get_module_by_name(name).build == 'YES':
+                    pass
+                else:
+                    rel_file_new.write('#')
+                    LOG.debug('Commenting out non-build module {} in support/configure/RELEASE'.format(name))
                 rel_file_new.write(line)
-            line = rel_file_old.readline()
         rel_file_new.close()
         rel_file_old.close()
         os.remove(rel_file_path_temp)
-            
 
 
     def run_update_config(self, with_injection=True):
         """Top level driver function that updates all config files as necessary
         """
 
-        for target in self.fix_release_list:
-            self.fix_target_release(target)
         self.update_ad_macros()
         self.update_support_macros()
         self.update_support_build_macros()
@@ -238,7 +230,7 @@ class UpdateConfigDriver:
             install module for which to check dependencies
         """
 
-        release_path = os.path.join(module.abs_path, os.path.join('configure', 'RELEASE'))
+        release_path = installSynApps.join_path(module.abs_path, installSynApps.join_path('configure', 'RELEASE'))
         if os.path.exists(release_path):
             release_file = open(release_path, 'r')
             lines = release_file.readlines()
