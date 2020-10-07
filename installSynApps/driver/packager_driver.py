@@ -83,7 +83,7 @@ class Packager:
             self.arch = 'windows-x64-static'
             self.OS = self.arch
         self.start_time = 0
-        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
+        self.required_in_package = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
         self.ioc_gen = IOC_GENERATOR.DummyIOCGenerator(self.install_config)
 
 
@@ -329,7 +329,7 @@ class Packager:
         os.mkdir(ad_top)
 
         for module in self.install_config.get_module_list():
-            if (module.name in self.required_in_pacakge or module.package == "YES") and not module.name == "EPICS_BASE":
+            if (module.name in self.required_in_package or module.package == "YES") and not module.name == "EPICS_BASE":
                 if module.rel_path.startswith('$(AREA_DETECTOR)'):
                     self.grab_module(ad_top, module, include_src=with_sources)
                 else:
