@@ -125,7 +125,7 @@ def parse_user_input():
     """Parses user's command line flags
     """
 
-    path_to_configure = os.path.join(os.path.dirname(os.path.dirname(installSynApps.__file__)), 'configure')
+    path_to_configure = os.path.join(os.getcwd(), 'build-config')
 
     parser = argparse.ArgumentParser(description="Utility for CLI EPICS and synApps auto-compilation")
 
@@ -211,7 +211,7 @@ def parse_configuration(path_to_configure, yes, force_install_path):
         allow_illegal=True, force_location=force_install_path)
     
     if install_config is None:
-        print('Error parsing Install Config... {}'.format(message))
+        print('Error parsing Install Config...\n{}'.format(message))
         exit()
     elif message is not None:
         loc_ok = False

@@ -127,7 +127,10 @@ class Packager:
         """
 
         if os.path.exists(src) and not os.path.exists(dest) and os.path.isdir(src):
-            shutil.copytree(src, dest)
+            try:
+                shutil.copytree(src, dest)
+            except shutil.Error:
+                LOG.write('Error when copying {}!\nPossibly softlinks in directory tree.'.format(src))
 
 
     def grab_file(self, src, dest):
