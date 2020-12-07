@@ -1,6 +1,6 @@
 # installSynApps
 
-[![Build Status](https://travis-ci.org/jwlodek/installSynApps.svg?branch=master)](https://travis-ci.org/jwlodek/installSynApps)
+![Build Status](https://github.com/jwlodek/installSynApps/workflows/test-build/badge.svg) ![Unit Tests](https://github.com/jwlodek/installSynApps/workflows/tests/badge.svg)
 
 A python3 module meant for cloning, building, and packaging EPICS, synApps, and areaDetector with one command.
 
