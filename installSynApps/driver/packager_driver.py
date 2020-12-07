@@ -366,7 +366,7 @@ class Packager:
         os.mkdir(ad_top)
 
         for module in self.install_config.get_module_list():
-            if (module.name in self.required_in_package or module.package == "YES") and not module.name == "EPICS_BASE":
+            if (module.name in self.required_in_package or module.package == "YES" or (with_sources and module.build == "YES")) and not module.name == "EPICS_BASE":
                 if module.rel_path.startswith('$(AREA_DETECTOR)'):
                     self.grab_module(ad_top, module, include_src=with_sources)
                 else:
