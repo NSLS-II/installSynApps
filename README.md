@@ -4,9 +4,6 @@
 
 A python3 module meant for cloning, building, and packaging EPICS, synApps, and areaDetector with one command.
 
-Author: Jakub Wlodek  
-Corresponding author: Kazimierz Gofron
-
 This development is based on bash EPICS distribution scripts developed primarly for building on the UNIX/Linux environment, and prior work related to synApps packaging which is utilized by `installSynApps` is currently hosted at https://github.com/EPICS-synApps
 
 ### Installation
