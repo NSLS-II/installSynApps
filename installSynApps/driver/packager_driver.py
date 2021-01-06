@@ -403,10 +403,16 @@ class Packager:
             bundle_type = 'Debug'
 
         date_str = datetime.date.today()
-        if module_name is None:
-            output_filename = '{}_AD_{}_{}_{}_{}'.format(self.institution, self.install_config.get_core_version(), bundle_type, self.OS, date_str)
-        else:
-            output_filename = '{}_AD_{}_{}_{}_{}_addon'.format(self.institution, self.install_config.get_core_version(), bundle_type, self.OS, module.name)
+        try:
+            core_version = self.install_config.get_core_version()
+            if module_name is None:
+                output_filename = '{}_AD_{}_{}_{}_{}'.format(self.institution, core_version, bundle_type, self.OS, date_str)
+            else:
+                output_filename = '{}_AD_{}_{}_{}_{}_addon'.format(self.institution, core_version, bundle_type, self.OS, module.name)
+        except:
+            LOG.debug('Error generating custom tarball name.')
+            output_filename = 'EPICS_Binary_Bundle_{}'.format(self.OS)
+
         temp = output_filename
         counter = 1
         while os.path.exists(self.output_location + '/' + temp + '.tgz'):
@@ -414,6 +420,7 @@ class Packager:
             temp = temp + '_({})'.format(counter)
             counter = counter + 1
         output_filename = temp
+
         LOG.debug('Generated potential output tarball name as: {}'.format(output_filename))
         return output_filename
 
