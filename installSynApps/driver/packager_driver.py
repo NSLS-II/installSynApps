@@ -166,6 +166,8 @@ class Packager:
             self.grab_folder(base_path + '/configure',          top + '/base/configure')
             self.grab_folder(base_path + '/include',            top + '/base/include')
             self.grab_folder(base_path + '/startup',            top + '/base/startup')
+            self.grab_folder(base_path + '/db',                 top + '/base/db')
+            self.grab_folder(base_path + '/dbd',                top + '/base/dbd')
         else:
             LOG.debug('Grabbing full epics base files')
             self.grab_folder(base_path,                         top + '/base')
