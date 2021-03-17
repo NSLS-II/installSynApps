@@ -41,8 +41,6 @@ class CloneDriver:
         """
 
         self.recursive_modules = ["EPICS_BASE"]
-        self.submodule_list = []
-        self.submodule_names = {}
         self.install_config = install_config
 
 
@@ -96,6 +94,7 @@ class CloneDriver:
                     proc = Popen(command.split(' '))
                     proc.wait()
                     ret = proc.returncode
+
                 if ret == 0:
                     LOG.write('Cloned module {} successfully.'.format(module.name))
                 else:
@@ -134,13 +133,15 @@ class CloneDriver:
         return -3
 
 
-    def checkout_module(self, module):
+    def checkout_module(self, module, recursive = False):
         """Function responsible for checking out selected tagged versions of modules.
 
         Parameters
         ----------
         module : InstallModule
             Module that is being checked out
+        recursive : bool
+            Specifies whether there are git submodules that need to be initialized
         
         Returns
         -------
@@ -161,46 +162,20 @@ class CloneDriver:
                     proc = Popen(command.split(' '))
                     proc.wait()
                     ret = proc.returncode
+
+                    if recursive and ret == 0:
+                        command = 'git submodule update'
+                        LOG.print_command(command)
+                        proc = Popen(command.split(' '))
+                        proc.wait()
+                        ret = proc.returncode
+
                     os.chdir(current_loc)
                     if ret == 0:
                         LOG.write('Checked out version {}'.format(module.version))
                     else:
                         LOG.write('Checkout of version {} failed for module {}.'.format(module.version, module.name))
         return ret
-
-
-    def update_submodule(self, module, submodule_name):
-        """Function that updates submodules given that the input module is in the self.submodule_list array
-
-        Parameters
-        ----------
-        module : InstallModule
-            module for which we must update submodules
-        submodule_name : str
-            name of submodule to update
-        """
-
-        LOG.debug('Updating git submodules for {}'.format(module.name))
-        if isinstance(module, IM.InstallModule):
-            if module.abs_path != None:
-                submodule_path = module.abs_path + "/" + submodule_name
-                if os.path.exists(submodule_path):
-                    LOG.print_command('git -C {} submodule init'.format(submodule_path))
-                    p1 = Popen(["git", "-C", submodule_path, "submodule", "init"])
-                    p1.wait()
-                    ret1 = p1.returncode
-                    if ret1 == 0:
-                        LOG.debug('Submodules initialized for module {}.'.format(module.name))
-                    else:
-                        LOG.debug('Failed to initialize submodules for module {}.'.format(module.name))
-                    LOG.print_command('git -C {} submodule update'.format(submodule_path))
-                    p2 = Popen(["git", "-C", submodule_path, "submodule", "update"])
-                    p2.wait()
-                    ret2 = p2.returncode
-                    if ret2 == 0:
-                        LOG.debug('Submodules updated for module {}.'.format(module.name))
-                    else:
-                        LOG.debug('Failed to update submodules for module {}.'.format(module.name))
 
 
     def cleanup_modules(self):
@@ -236,13 +211,13 @@ class CloneDriver:
                     if ret < 0:
                         failed_modules.append(module.name)
                     else:
-                        ret = self.checkout_module(module)
+                        if module.name in self.recursive_modules:
+                            ret = self.checkout_module(module, recursive=True)
+                        else:
+                            ret = self.checkout_module(module)
                         if ret < 0:
                             failed_modules.append(module.name)
-                        else:
-                            if module.name in self.submodule_list:
-                                self.update_submodule(module, self.submodule_names[module.name])
-            self.cleanup_modules()
+                    self.cleanup_modules()
 
             return failed_modules
 

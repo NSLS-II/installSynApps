@@ -66,7 +66,7 @@ def find_isa_version():
     except PermissionError:
         LOG.debug('Could not find git information for installSynApps versions, defaulting to internal version.')
     except subprocess.CalledProcessError:
-        LOG.debug('Running from non-git version of installSynApps, default to iunternal version.')
+        LOG.debug('Running from non-git version of installSynApps, default to internal version number.')
 
     return isa_version, commit_hash
 

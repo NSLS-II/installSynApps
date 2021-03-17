@@ -1,17 +1,14 @@
 # installSynApps
 
-[![Build Status](https://travis-ci.org/jwlodek/installSynApps.svg?branch=master)](https://travis-ci.org/jwlodek/installSynApps)
+![Build Status](https://github.com/jwlodek/installSynApps/workflows/test-build/badge.svg) ![Unit Tests](https://github.com/jwlodek/installSynApps/workflows/tests/badge.svg)
 
 A python3 module meant for cloning, building, and packaging EPICS, synApps, and areaDetector with one command.
-
-Author: Jakub Wlodek  
-Corresponding author: Kazimierz Gofron
 
 This development is based on bash EPICS distribution scripts developed primarly for building on the UNIX/Linux environment, and prior work related to synApps packaging which is utilized by `installSynApps` is currently hosted at https://github.com/EPICS-synApps
 
 ### Installation
 
-installSynApps depends `python3`, and is tested with python 3.4+. To install `python3` on linux run:
+installSynApps depends `python3`, and several helper libraries. It is tested with python 3.4+. To install `python3` on linux run:
 ```
 sudo apt install python3
 ```
@@ -31,7 +28,6 @@ git clone https://github.com/epicsNSLS2-deploy/installSynApps
 cd installSynApps
 python3 -m pip install -r requirements.txt
 ```
-You may need to run the `pip` install command as sudo depending on your python installation.  
 In addition, several external tools are used by installSynApps that must also be installed and in the system path. This can be done with:
 ```
 sudo apt install gcc g++ make git wget tar perl
@@ -44,14 +40,17 @@ or something similar for each of the above dependencies and see if it displays v
 
 If running on windows, make sure to run `installSynApps` from the Visual Studio developer command prompt, not from `cmd` or `powershell`.
 
-Install EPICS dependencies {Below dependencies are typically installed if automatic mode is used}
+Next, you may wish to install packages required by EPICS and areaDetector:
 ```
 sudo apt install re2c libusb-1.0-0-dev
-```
-Install areaDetector dependencies
-```
 sudo apt install libx11-dev libxext-dev libzmq3-dev
 ```
+
+Finally, if you wish, you may install the utility using `pip`, with:
+```
+pip3 install --upgrade .
+```
+This will allow you to run the CLI or GUI commands using `epics-install`, or `epics-install-gui` respectively.
 
 ### Usage
 

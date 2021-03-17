@@ -27,6 +27,7 @@ import installSynApps.io.logger as LOG
 import installSynApps.io.file_generator as FILE_GENERATOR
 import installSynApps.io.ioc_generator as IOC_GENERATOR
 
+
 class Packager:
     """Class responsible for packaging compiled binaries based on install config
 
@@ -82,8 +83,15 @@ class Packager:
             self.found_distro = True
             self.arch = 'windows-x64-static'
             self.OS = self.arch
+        
+        # Timer
         self.start_time = 0
-        self.required_in_pacakge = ['EPICS_BASE', 'ASYN', 'BUSY', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
+
+        # Modules that will be packaged if available regardless of configuration
+        self.required_in_package = ['EPICS_BASE', 'ASYN', 'BUSY', 'AREA_DETECTOR', 
+                                    'SUPPORT', 'ADCORE', 'ADSUPPORT', 'CALC', 'SNCSEQ', 
+                                    'SSCAN', 'DEVIOCSTATS', 'AUTOSAVE']
+        
         self.ioc_gen = IOC_GENERATOR.DummyIOCGenerator(self.install_config)
 
 
@@ -118,8 +126,26 @@ class Packager:
             result location
         """
 
-        if os.path.exists(src) and not os.path.exists(dest):
-            shutil.copytree(src, dest)
+        if os.path.exists(src) and not os.path.exists(dest) and os.path.isdir(src):
+            try:
+                shutil.copytree(src, dest)
+            except shutil.Error:
+                LOG.write('Error when copying {}!\nPossibly softlinks in directory tree.'.format(src))
+
+
+    def grab_file(self, src, dest):
+        """Helper function that copies file if it exists
+
+        Parameters
+        ----------
+        src : str
+            folder to copy
+        dest : str
+            result location
+        """
+
+        if os.path.exists(src) and not os.path.exists(dest) and os.path.isfile(src):
+            shutil.copyfile(src, dest)
 
 
     def grab_base(self, top, include_src=False):
@@ -140,6 +166,8 @@ class Packager:
             self.grab_folder(base_path + '/configure',          top + '/base/configure')
             self.grab_folder(base_path + '/include',            top + '/base/include')
             self.grab_folder(base_path + '/startup',            top + '/base/startup')
+            self.grab_folder(base_path + '/db',                 top + '/base/db')
+            self.grab_folder(base_path + '/dbd',                top + '/base/dbd')
         else:
             LOG.debug('Grabbing full epics base files')
             self.grab_folder(base_path,                         top + '/base')
@@ -165,7 +193,8 @@ class Packager:
             LOG.debug('Module {} not found, skipping...'.format(module.name))
             return
 
-        if not include_src:
+        # In a release version we don't need any support helper utilities, so skip it.
+        if not include_src and not module.name == 'SUPPORT':
             LOG.debug('Grabbing lean files for module {}.'.format(module.name))
             self.grab_folder(target_folder + '/opi',                top + '/' + module_name + '/opi')
             self.grab_folder(target_folder + '/db',                 top + '/' + module_name + '/db')
@@ -192,7 +221,17 @@ class Packager:
                         self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
         else:
             LOG.debug('Grabbing full files for module {}.'.format(module.name))
-            self.grab_folder(target_folder, top + '/' + module_name)
+
+            # Grab some necessary non-module folders and files
+            if module.name == 'AREA_DETECTOR':
+                self.grab_folder(target_folder + '/configure', top + '/' + module_name + '/configure')
+            elif module.name == 'SUPPORT':
+                self.grab_folder(target_folder + '/configure', top + '/' + '/configure')
+                self.grab_folder(target_folder + '/utils', top + '/' + '/utils')
+                self.grab_file(target_folder + '/Makefile', top + '/' + '/Makefile')
+            else:
+                # Otherwise grab the entire module
+                self.grab_folder(target_folder, top + '/' + module_name)
 
 
     def setup_tar_staging(self):
@@ -329,7 +368,7 @@ class Packager:
         os.mkdir(ad_top)
 
         for module in self.install_config.get_module_list():
-            if (module.name in self.required_in_pacakge or module.package == "YES") and not module.name == "EPICS_BASE":
+            if (module.name in self.required_in_package or module.package == "YES" or (with_sources and module.build == "YES")) and not module.name == "EPICS_BASE":
                 if module.rel_path.startswith('$(AREA_DETECTOR)'):
                     self.grab_module(ad_top, module, include_src=with_sources)
                 else:
@@ -339,6 +378,10 @@ class Packager:
         self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
         self.ioc_gen.init_template_dir()
         self.ioc_gen.generate_dummy_iocs()
+        
+        if with_sources:
+            self.create_repoint_bundle_script()
+        
         result = self.cleanup_tar_staging(filename)
         return result
 
@@ -362,10 +405,16 @@ class Packager:
             bundle_type = 'Debug'
 
         date_str = datetime.date.today()
-        if module_name is None:
-            output_filename = '{}_AD_{}_{}_{}_{}'.format(self.institution, self.install_config.get_core_version(), bundle_type, self.OS, date_str)
-        else:
-            output_filename = '{}_AD_{}_{}_{}_{}_addon'.format(self.institution, self.install_config.get_core_version(), bundle_type, self.OS, module.name)
+        try:
+            core_version = self.install_config.get_core_version()
+            if module_name is None:
+                output_filename = '{}_AD_{}_{}_{}_{}'.format(self.institution, core_version, bundle_type, self.OS, date_str)
+            else:
+                output_filename = '{}_AD_{}_{}_{}_{}_addon'.format(self.institution, core_version, bundle_type, self.OS, module.name)
+        except:
+            LOG.debug('Error generating custom tarball name.')
+            output_filename = 'EPICS_Binary_Bundle_{}'.format(self.OS)
+
         temp = output_filename
         counter = 1
         while os.path.exists(self.output_location + '/' + temp + '.tgz'):
@@ -373,6 +422,7 @@ class Packager:
             temp = temp + '_({})'.format(counter)
             counter = counter + 1
         output_filename = temp
+
         LOG.debug('Generated potential output tarball name as: {}'.format(output_filename))
         return output_filename
 
@@ -393,6 +443,25 @@ class Packager:
                 cleanup_tool.write('#!/bin/bash\n\nrm *.tgz\nrm *.txt\n\n')
                 os.chmod(cleanup_tool_path, 0o755)
                 cleanup_tool.close()
+
+
+    def create_repoint_bundle_script(self):
+        """Function that generates script for repointing the RELEASE files in the bundle to their current location
+        """
+
+        if platform != 'win32':
+            rs_fp = open(installSynApps.join_path('__temp__', 'repoint_bundle.sh'), 'w')
+            rs_fp.write('#!/bin/bash\n\n')
+            rs_fp.write('#\n# Script auto-generated by installSynApps on {}\n#\n\n'.format(datetime.datetime.now()))
+            rs_fp.write('BUNDLE_LOC=$(pwd)\nEPICS_BASE=$BUNDLE_LOC/base\nSUPPORT=$BUNDLE_LOC/support\n\n')
+            rs_fp.write('sed -i "s|^EPICS_BASE=.*|EPICS_BASE=$EPICS_BASE|g" "$SUPPORT/configure/RELEASE"\n')
+            rs_fp.write('sed -i "s|^SUPPORT=.*|SUPPORT=$SUPPORT|g" "$SUPPORT/configure/RELEASE"\n\n')
+            rs_fp.write('cd $SUPPORT\n')
+            rs_fp.write('make release\n\n')
+            rs_fp.write('sed -i "s|^EPICS_BASE=.*|EPICS_BASE=$EPICS_BASE|g" "$SUPPORT/areaDetector/configure/RELEASE_PRODS.local"\n')
+            rs_fp.write('sed -i "s|^SUPPORT=.*|SUPPORT=$SUPPORT|g" "$SUPPORT/areaDetector/configure/RELEASE_SUPPORT.local"\n')
+            os.chmod(installSynApps.join_path('__temp__', 'repoint_bundle.sh'), 0o755)
+            rs_fp.close()
 
 
     def create_package(self, filename, flat_format=True, with_sources=False):

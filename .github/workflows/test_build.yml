@@ -1,0 +1,23 @@
+name: test-build
+
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Grab Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install Dependencies
+      run: |
+        pip3 install -r requirements.txt
+        sudo apt-get -y update
+        sudo apt-get -y upgrade
+        sudo apt-get -y install libxml2-dev libusb-dev libpcre3-dev re2c libx11-dev libxext-dev libreadline-dev
+    - name: Run Build
+      run: |
+        python3 -u installCLI.py -c addtlConfDirs/configureCI -i $(pwd)/epics -p -t2 -m -y
+

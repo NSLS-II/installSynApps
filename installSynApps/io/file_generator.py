@@ -309,6 +309,8 @@ class FileGenerator:
         isa_version, _ = installSynApps.find_isa_version()
         readme_fp.write('Package generated using installSynApps version: {}\n'.format(isa_version))
         readme_fp.write('See below for build tool version information.\n')
+        if installation_type == 'source':
+            readme_fp.write('NOTE: To perform development using this bundle, run the repoint_bundle.sh script to edit RELEASE file locations.\n')
         readme_fp.write('\nModule versions used in this deployment:\n')
         if module is not None:
             readme_fp.write('\nAdd-On should be located here: {}.\n\n'.format(module.rel_path))

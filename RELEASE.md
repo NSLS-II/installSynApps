@@ -2,6 +2,27 @@
 
 <!--RELEASE START-->
 
+## R2-7 (7-December-2020)
+
+* Features Added
+    * Migrate CI to github actions
+    * Buildable with pip, creates utility `epics-install`
+    * Default config creation overhaul
+    * Remove dependency on make release
+    * Use requests module if possible
+
+* Bug Fixes/Improvements
+    * Resolve bug with recursive cloning of EPICS base
+    * Resolve bugs with building on windows
+    * Resolve bug with bundle generation with softlinks
+    * Resolve minor unit test issues
+    * Resolve issue with module ordering
+    * Fix some minor module names
+    * Fixes for minor GUI based issues
+    * Remove some redundant folders
+    * Fix issues with building Xspress3 from APS
+    * Improved logging
+
 ## R2-6 (22-May-2020)
 
 * Features Added
