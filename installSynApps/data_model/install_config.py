@@ -416,7 +416,7 @@ def generate_default_install_config(target_install_loc='/epics', update_versions
     config.add_module(IM("ADGENICAM",       "master",   "$(AREA_DETECTOR)/ADGenICam",       gu, ad_org, "ADGenICam",    n, n, n))
     config.add_module(IM("ADANDOR3",        "master",   "$(AREA_DETECTOR)/ADAndor3",        gu, ad_org, "ADAndor3",     n, n, n))
     config.add_module(IM("ADPROSILICA",     "R2-5",     "$(AREA_DETECTOR)/ADProsilica",     gu, ad_org, "ADProsilica",  n, n, n))
-    config.add_module(IM("ADSIMDETECTOR",   "R2-10",    "$(AREA_DETECTOR)/ADSimDetector",   gu, ad_org, "ADSimDetector", n, n, n))
+    config.add_module(IM("ADSIMDETECTOR",   "master",   "$(AREA_DETECTOR)/ADSimDetector",   gu, ad_org, "ADSimDetector", n, n, n))
     config.add_module(IM("ADPILATUS",       "R2-8",     "$(AREA_DETECTOR)/ADPilatus",       gu, ad_org, "ADPilatus",    n, n, n))
     config.add_module(IM("ADMERLIN",        "master",   "$(AREA_DETECTOR)/ADMerlin",        gu, ad_org, "ADMerlin",     n, n, n))
     config.add_module(IM("ADARAVIS",        "master",   "$(AREA_DETECTOR)/ADAravis",        gu, ad_org, "ADAravis",     n, n, n))

@@ -4,7 +4,6 @@
 # std lib imports
 import os
 import shutil
-import sys
 from sys import platform
 import datetime
 import time
@@ -148,7 +147,56 @@ class Packager:
             shutil.copyfile(src, dest)
 
 
-    def grab_base(self, top, include_src=False):
+    def grab_all_files_in_dir(self, src, dest):
+        if os.path.exists(src) and os.path.isdir(src):
+            for elem in os.listdir(src):
+                #LOG.debug('Grabbing elem :{}'.format(elem))
+                self.grab_file(src + '/' + elem, dest + '/' + elem)
+
+
+    def grab_base_lean(self, top):
+
+        base_path = self.install_config.base_path
+        LOG.debug('Grabbing lean epics base files')
+        self.grab_folder(base_path + '/bin/' + self.arch,   top + '/bin/' + self.arch)
+        self.grab_folder(base_path + '/lib/' + self.arch,   top + '/lib/' + self.arch)
+        self.grab_folder(base_path + '/lib/perl',           top + '/lib/perl')
+        self.grab_folder(base_path + '/configure',          top + '/configure')
+        self.grab_folder(base_path + '/include',            top + '/include')
+        self.grab_folder(base_path + '/startup',            top + '/startup')
+        self.grab_folder(base_path + '/db',                 top + '/db')
+        self.grab_folder(base_path + '/dbd',                top + '/dbd')
+        self.grab_folder(base_path + '/templates',          top + '/templates')
+
+
+    def grab_module_lean(self, top, module):
+
+        target_folder = module.abs_path
+        if not os.path.exists(target_folder):
+            LOG.debug('Module {} not found, skipping...'.format(module.name))
+            return
+
+        # In a release version we don't need any support helper utilities, so skip it.
+        if not module.name == 'SUPPORT':
+            LOG.debug('Grabbing lean files for module {}.'.format(module.name))
+            self.grab_all_files_in_dir(target_folder + '/db', top + '/db')
+            self.grab_all_files_in_dir(target_folder + '/dbd', top + '/dbd')
+            self.grab_all_files_in_dir(target_folder + '/bin/' + self.arch, top + '/bin/' + self.arch)
+            self.grab_all_files_in_dir(target_folder + '/lib/' + self.arch, top + '/lib/' + self.arch)
+            self.grab_all_files_in_dir(target_folder + '/protocol', top + '/protocol')
+
+            if os.path.exists(target_folder + '/iocs'):
+                for dir in os.listdir(target_folder + '/iocs'):
+                    ioc_folder = '/iocs/' + dir
+                    if 'IOC' in dir:
+                        LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module.name, dir))
+                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/bin/' + self.arch,  top + '/bin/' + self.arch)
+                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/lib/' + self.arch,  top + '/lib/' + self.arch)
+                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/dbd',               top + '/dbd')
+                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/protocol',          top +  '/protocol')
+
+
+    def grab_base(self, top, include_src=False, lean_grab=False):
         """Function that copies all of the required folders from EPICS_BASE
 
         Parameters
@@ -156,6 +204,10 @@ class Packager:
         top : str
             resulting location - __temp__
         """
+
+        if lean_grab:
+            self.grab_base_lean(top)
+            return
 
         base_path = self.install_config.base_path
         if not include_src:
@@ -173,7 +225,7 @@ class Packager:
             self.grab_folder(base_path,                         top + '/base')
 
 
-    def grab_module(self, top, module, include_src=False):
+    def grab_module(self, top, module, include_src=False, lean_grab=False):
         """Function that grabs all of the required folders from each individual module.
 
         Parameters
@@ -185,6 +237,10 @@ class Packager:
         module_location : str
             path to dir of location of module
         """
+
+        if lean_grab:
+            self.grab_module_lean(top, module)
+            return
 
         module_name = os.path.basename(module.abs_path)
 
@@ -335,7 +391,7 @@ class Packager:
         return out
         
 
-    def create_tarball(self, filename, flat_format, with_sources):
+    def create_tarball(self, filename, flat_format, with_sources, lean):
         """Function responsible for creating the tarball given a filename.
 
         Parameters
@@ -356,23 +412,25 @@ class Packager:
         readme_path = installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename))
         self.setup_tar_staging()
 
-        self.grab_base('__temp__', include_src=with_sources)
+        self.grab_base('__temp__', include_src=with_sources, lean_grab=lean)
 
         support_top = '__temp__'
-        if not flat_format:
+        if not flat_format and not lean:
             LOG.write('Non-flat output binary structure selected.')
             support_top = installSynApps.join_path('__temp__', 'support')
             os.mkdir(support_top)
 
-        ad_top = installSynApps.join_path(support_top, 'areaDetector')
-        os.mkdir(ad_top)
+        ad_top = '__temp__'
+        if not lean:
+            ad_top = installSynApps.join_path(support_top, 'areaDetector')
+            os.mkdir(ad_top)
 
         for module in self.install_config.get_module_list():
             if (module.name in self.required_in_package or module.package == "YES" or (with_sources and module.build == "YES")) and not module.name == "EPICS_BASE":
                 if module.rel_path.startswith('$(AREA_DETECTOR)'):
-                    self.grab_module(ad_top, module, include_src=with_sources)
+                    self.grab_module(ad_top, module, include_src=with_sources, lean_grab=lean)
                 else:
-                    self.grab_module(support_top, module, include_src=with_sources)
+                    self.grab_module(support_top, module, include_src=with_sources, lean_grab=lean)
 
 
         self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
@@ -386,7 +444,7 @@ class Packager:
         return result
 
 
-    def create_bundle_name(self, module_name=None, source_bundle=False):
+    def create_bundle_name(self, module_name=None, source_bundle=False, lean_bundle=False):
         """Helper function for creating output filename
 
         Returns
@@ -403,6 +461,8 @@ class Packager:
         bundle_type = 'Prod'
         if source_bundle:
             bundle_type = 'Debug'
+        elif lean_bundle:
+            bundle_type= 'Lean'
 
         date_str = datetime.date.today()
         try:
@@ -413,7 +473,7 @@ class Packager:
                 output_filename = '{}_AD_{}_{}_{}_{}_addon'.format(self.institution, core_version, bundle_type, self.OS, module.name)
         except:
             LOG.debug('Error generating custom tarball name.')
-            output_filename = 'EPICS_Binary_Bundle_{}'.format(self.OS)
+            output_filename = 'EPICS_{}_Binary_Bundle_{}'.format(bundle_type, self.OS)
 
         temp = output_filename
         counter = 1
@@ -464,7 +524,7 @@ class Packager:
             rs_fp.close()
 
 
-    def create_package(self, filename, flat_format=True, with_sources=False):
+    def create_package(self, filename, flat_format=True, with_sources=False, lean_grab=False):
         """Top level packager driver function.
 
         Creates output directory, generates filename, creates the tarball, and measures time.
@@ -495,7 +555,7 @@ class Packager:
         LOG.write('Beginning bundling process...')
 
         # Generate the bundle
-        status = self.create_tarball(filename, flat_format, with_sources)
+        status = self.create_tarball(filename, flat_format, with_sources, lean_grab)
 
         # Stop the timer
         elapsed = self.stop_timer()

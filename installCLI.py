@@ -139,13 +139,14 @@ def parse_user_input():
     config_group.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
 
     build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
-    build_group.add_argument('-d', '--dependency',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
+    build_group.add_argument('-r', '--requirements',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
     build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
+    build_group.add_argument('-m', '--minimal',         action='store_true', help='Add this flag to create a minimal bundle structure, with only bin/lib/db/dbd directories.')
     build_group.add_argument('-s', '--includesources',   action='store_true', help='Add this flag for output bundles to include the full source tree.')
     build_group.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.', type=int)
     
     debug_group.add_argument('-l', '--savelog',          action='store_true', help='Add this flag to save the build log to a file in the logs/ directory.')
-    debug_group.add_argument('-m', '--debugmessages',    action='store_true', help='Add this flag to enable printing verbose debug messages.')
+    debug_group.add_argument('-d', '--debugmessages',    action='store_true', help='Add this flag to enable printing verbose debug messages.')
     debug_group.add_argument('-p', '--printcommands',    action='store_true', help='Add this flag to print bash/batch commands run by installSynApps.')
 
     arguments = vars(parser.parse_args())
@@ -409,7 +410,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
 #                                                                       #
 #########################################################################
 
-def generate_bundles(yes, install_config, packager, flat_output, include_src):
+def generate_bundles(yes, install_config, packager, flat_output, minimal_output, include_src):
 
     print()
     if not yes:
@@ -423,8 +424,8 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
             output_filename_src = packager.create_bundle_name(source_bundle=include_src)
             ret_src = packager.create_package(output_filename_src, flat_format=flat_output, with_sources=include_src)
         # Always generate a production bundle.
-        output_filename = packager.create_bundle_name(source_bundle=False)
-        ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=False)
+        output_filename = packager.create_bundle_name(source_bundle=False, lean_bundle=minimal_output)
+        ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=False, lean_grab=minimal_output)
         if ret_src != 0 or ret != 0:
             print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
             err_exit(6)
@@ -469,7 +470,7 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
             print('OPI screen tarball generated.')
 
 
-def execute(yes, grab_deps, flat_output, include_src, path_to_configure, force_install_path, threads, single_thread):
+def execute(yes, grab_deps, flat_output, minimal_output, include_src, path_to_configure, force_install_path, threads, single_thread):
 
     try:
         install_config = parse_configuration(path_to_configure, yes, force_install_path)
@@ -496,7 +497,7 @@ def execute(yes, grab_deps, flat_output, include_src, path_to_configure, force_i
         execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
 
         # Generate output bundles
-        generate_bundles(yes, install_config, packager, flat_output, include_src)
+        generate_bundles(yes, install_config, packager, flat_output, minimal_output, include_src)
 
         # Finished
         print('Done.')
@@ -515,8 +516,9 @@ def main():
         force_install_path  = os.path.abspath(force_install_path)
     path_to_configure   = os.path.abspath(path_to_configure)
     yes                 = args['forceyes']
-    dep                 = args['dependency']
+    dep                 = args['requirements']
     flat_output         = args['flatbinaries']
+    minimal_output      = args['minimal']
     include_src         = args['includesources']
     # Inclusion of sources only supported in non-flat output mode
     if include_src:
@@ -532,7 +534,7 @@ def main():
 
     print('Reading install configuration directory located at: {}...'.format(path_to_configure))
     print()
-    execute(yes, dep, flat_output, include_src, path_to_configure, force_install_path, threads, single_thread)
+    execute(yes, dep, flat_output, minimal_output, include_src, path_to_configure, force_install_path, threads, single_thread)
     script_end_time = time.time()
     print('Finished in {} seconds...'.format(script_end_time - script_start_time))
     print('Done.\n')
