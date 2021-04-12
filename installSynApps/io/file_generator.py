@@ -194,10 +194,9 @@ class FileGenerator:
         info : str
             String with module name and version information on single line
         """
-        
+        current_loc = os.getcwd()
         try:
             if module.url_type == 'GIT_URL':
-                current_loc = os.getcwd()
                 LOG.debug('cd {}'.format(module.abs_path))
                 os.chdir(module.abs_path)
                 LOG.debug('git describe --tags')
@@ -211,6 +210,7 @@ class FileGenerator:
                 LOG.debug('Detected version {} for module {}'.format(module.version, module.name))
                 return '{:<16}- {}\n'.format(module.name, module.version)
         except subprocess.CalledProcessError:
+            os.chdir(current_loc)
             return ''
 
 

@@ -144,7 +144,7 @@ class Packager:
         """
 
         if os.path.exists(src) and not os.path.exists(dest) and os.path.isfile(src):
-            shutil.copyfile(src, dest)
+            shutil.copy2(src, dest)
 
 
     def grab_all_files_in_dir(self, src, dest):
@@ -213,14 +213,35 @@ class Packager:
             self.grab_all_files_in_dir(target_folder + '/protocol', top + '/protocol')
 
             if os.path.exists(target_folder + '/iocs'):
-                for dir in os.listdir(target_folder + '/iocs'):
-                    ioc_folder = '/iocs/' + dir
-                    if 'IOC' in dir:
-                        LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module.name, dir))
-                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/bin/' + self.arch,  top + '/bin/' + self.arch)
-                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/lib/' + self.arch,  top + '/lib/' + self.arch)
-                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/dbd',               top + '/dbd')
-                        self.grab_all_files_in_dir(target_folder + ioc_folder + '/protocol',          top +  '/protocol')
+                self.grab_ioc_files(top, target_folder, module.name, True)
+
+            motor_modules_dir = installSynApps.join_path(target_folder, 'modules')
+            if module.name == 'MOTOR' and os.path.exists(motor_modules_dir):
+                for dir in os.listdir(motor_modules_dir):
+                    motor_module_dir = installSynApps.join_path(motor_modules_dir, dir)
+                    motor_module_ioc_dir = installSynApps.join_path(motor_module_dir, 'iocs')
+                    if os.path.isdir(motor_module_dir) and os.path.exists(motor_module_ioc_dir):
+                        self.grab_ioc_files(top, motor_module_dir, dir.upper(), True)
+
+
+
+    def grab_ioc_files(self, top, target_loc, module_name, lean):
+        for dir in os.listdir(target_loc + '/iocs'):
+            ioc_folder = '/iocs/' + dir
+            if 'IOC' in dir:
+                if not lean:
+                    LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module_name, dir))
+                    self.grab_folder(target_loc + ioc_folder + '/bin/' + self.arch,  top + '/' + module_name + ioc_folder + '/bin/' + self.arch)
+                    self.grab_folder(target_loc + ioc_folder + '/lib/' + self.arch,  top + '/' + module_name + ioc_folder + '/lib/' + self.arch)
+                    self.grab_folder(target_loc + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
+                    self.grab_folder(target_loc + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
+                else:
+                    LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module_name, dir))
+                    self.grab_all_files_in_dir(target_loc + ioc_folder + '/bin/' + self.arch,  top + '/bin/' + self.arch)
+                    self.grab_all_files_in_dir(target_loc + ioc_folder + '/lib/' + self.arch,  top + '/lib/' + self.arch)
+                    self.grab_all_files_in_dir(target_loc + ioc_folder + '/dbd',               top + '/dbd')
+                    self.grab_all_files_in_dir(target_loc + ioc_folder + '/protocol',          top +  '/protocol')
+
 
 
     def grab_base(self, top, include_src=False, lean_grab=False):
@@ -287,6 +308,7 @@ class Packager:
             self.grab_folder(target_folder + '/bin/' + self.arch,   top + '/' + module_name + '/bin/' + self.arch)
             self.grab_folder(target_folder + '/lib/' + self.arch,   top + '/' + module_name + '/lib/' + self.arch)
             self.grab_folder(target_folder + '/configure',          top + '/' + module_name + '/configure')
+            self.grab_folder(target_folder + '/modules',            top + '/' + module_name + '/modules')
             self.grab_folder(target_folder + '/iocBoot',            top + '/' + module_name + '/iocBoot')
             self.grab_folder(target_folder + '/modules',            top + '/' + module_name + '/modules')
             self.grab_folder(target_folder + '/ADViewers/ImageJ',   top + '/' + module_name + '/ADViewers/ImageJ')
@@ -295,14 +317,8 @@ class Packager:
                     self.grab_folder(target_folder + '/' + dir + '/Db', top + '/' + module_name +'/' + dir + '/Db')
                     self.grab_folder(target_folder + '/' + dir + '/op', top + '/' + module_name +'/' + dir + '/op')
             if os.path.exists(target_folder + '/iocs'):
-                for dir in os.listdir(target_folder + '/iocs'):
-                    ioc_folder = '/iocs/' + dir
-                    if 'IOC' in dir:
-                        LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module.name, dir))
-                        self.grab_folder(target_folder + ioc_folder + '/bin/' + self.arch,  top + '/' + module_name + ioc_folder + '/bin/' + self.arch)
-                        self.grab_folder(target_folder + ioc_folder + '/lib/' + self.arch,  top + '/' + module_name + ioc_folder + '/lib/' + self.arch)
-                        self.grab_folder(target_folder + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
-                        self.grab_folder(target_folder + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
+                self.grab_ioc_files(top, target_folder, module.name, False)
+
         else:
             LOG.debug('Grabbing full files for module {}.'.format(module.name))
 
@@ -344,6 +360,7 @@ class Packager:
         """
         
         LOG.debug('Generating README file with module version and append instructions...')
+        LOG.debug(os.getcwd())
         shutil.copy(installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename)), installSynApps.join_path('__temp__', 'README_{}.txt'.format(filename)))
 
         LOG.write('Tarring...')
