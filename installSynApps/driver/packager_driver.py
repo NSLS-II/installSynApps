@@ -148,13 +148,30 @@ class Packager:
 
 
     def grab_all_files_in_dir(self, src, dest):
-        if os.path.exists(src) and os.path.isdir(src):
+        """Helper method that collects all the files in one directory and moves them to another one.
+
+        Parameters
+        ----------
+        src : os.PathLike
+            Target source directory to pull from
+        dest : os.PathLike
+            Target destination directory to copy to
+        """
+
+        if os.path.exists(src) and os.path.isdir(src) and os.path.exists(dest) and os.path.isdir(dest):
             for elem in os.listdir(src):
                 #LOG.debug('Grabbing elem :{}'.format(elem))
                 self.grab_file(src + '/' + elem, dest + '/' + elem)
 
 
     def grab_base_lean(self, top):
+        """Method that collects all the files from EPICS base into a debian package like format
+
+        Parameters
+        ----------
+        top : str
+            Path to the staging area for the tarring process, usually __temp__
+        """
 
         base_path = self.install_config.base_path
         LOG.debug('Grabbing lean epics base files')
@@ -171,6 +188,15 @@ class Packager:
 
 
     def grab_module_lean(self, top, module):
+        """Helper method that grabs module files in a debian-packaging like format
+
+        Parameters
+        ----------
+        top : str
+            Path to the temporary staging location prior to tarrting, generally __temp__
+        module : data_model.install_module.InstallModule
+            Representation of install module to be included in the bundle
+        """
 
         target_folder = module.abs_path
         if not os.path.exists(target_folder):
@@ -435,9 +461,15 @@ class Packager:
                     self.grab_module(support_top, module, include_src=with_sources, lean_grab=lean)
 
 
-        self.file_generator.generate_readme(filename, installation_type='bundle', readme_path=readme_path)
-        self.ioc_gen.init_template_dir()
-        self.ioc_gen.generate_dummy_iocs()
+        # We always create a README file to know which modules were included
+        package_type = 'bundle'
+        if with_sources:
+            package_type = 'source'
+        self.file_generator.generate_readme(filename, installation_type=package_type, readme_path=readme_path, lean_grab=lean)
+        
+        if not lean or with_sources:
+            self.ioc_gen.init_template_dir()
+            self.ioc_gen.generate_dummy_iocs()
         
         if with_sources:
             self.create_repoint_bundle_script()
