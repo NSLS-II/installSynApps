@@ -158,6 +158,13 @@ class Packager:
             Target destination directory to copy to
         """
 
+        if not os.path.exists(dest):
+            try:
+                os.mkdir(dest)
+            except:
+                LOG.write('Failed to grab files from dir {}'.format(src))
+                return
+
         if os.path.exists(src) and os.path.isdir(src) and os.path.exists(dest) and os.path.isdir(dest):
             for elem in os.listdir(src):
                 #LOG.debug('Grabbing elem :{}'.format(elem))
@@ -180,6 +187,10 @@ class Packager:
         self.grab_folder(base_path + '/cfg',                top + '/cfg')
         self.grab_folder(base_path + '/lib/perl',           top + '/lib/perl')
         self.grab_folder(base_path + '/configure',          top + '/configure')
+        
+        LOG.debug('Creating rules.d directory to allow for additional rule sets')
+        os.mkdir(top + '/configure/rules.d')
+
         self.grab_folder(base_path + '/include',            top + '/include')
         self.grab_folder(base_path + '/startup',            top + '/startup')
         self.grab_folder(base_path + '/db',                 top + '/db')
@@ -211,6 +222,7 @@ class Packager:
             self.grab_all_files_in_dir(target_folder + '/bin/' + self.arch, top + '/bin/' + self.arch)
             self.grab_all_files_in_dir(target_folder + '/lib/' + self.arch, top + '/lib/' + self.arch)
             self.grab_all_files_in_dir(target_folder + '/protocol', top + '/protocol')
+            self.grab_all_files_in_dir(target_folder + '/pmc', top + '/pmc')
 
             if os.path.exists(target_folder + '/iocs'):
                 self.grab_ioc_files(top, target_folder, module.name, True)
@@ -223,6 +235,7 @@ class Packager:
                     if os.path.isdir(motor_module_dir) and os.path.exists(motor_module_ioc_dir):
                         self.grab_ioc_files(top, motor_module_dir, dir.upper(), True)
 
+            self.grab_file(module.abs_path + '/configure/RULES_BUILD', top + '/configure/rules.d/{}.make'.format(module.name))
 
 
     def grab_ioc_files(self, top, target_loc, module_name, lean):
