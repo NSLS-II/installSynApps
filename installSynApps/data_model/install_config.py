@@ -68,6 +68,7 @@ class InstallConfiguration:
         self.support_path   = None
         self.ad_path        = None
         self.motor_path     = None
+        self.extensions_path = None
 
     
     def is_install_valid(self):
@@ -130,6 +131,8 @@ class InstallConfiguration:
                 self.ad_path = module.abs_path
             elif module.name == "MOTOR":
                 self.motor_path = module.abs_path
+            elif module.name == "EXTENSIONS":
+                self.extensions_path = module.abs_path
             
             self.module_map[module.name] = len(self.modules)
             self.modules.append(module)
@@ -278,6 +281,8 @@ class InstallConfiguration:
             return installSynApps.join_path(self.ad_path, temp)
         elif "$(MOTOR)" in rel_path and self.motor_path != None:
             return installSynApps.join_path(self.motor_path, temp)
+        elif "$(EXTENSIONS)" in rel_path and self.extensions_path != None:
+            return installSynApps.join_path(self.extensions_path, temp)
         elif "$(" in rel_path:
             macro_part = rel_path.split(')')[0]
             rel_to = macro_part.split('(')[1]
