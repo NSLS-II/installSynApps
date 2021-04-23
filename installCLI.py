@@ -297,6 +297,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
 
     if response == "n":
         print("Skipping clone + build...")
+        return 0
     else:
         print()
 
@@ -318,7 +319,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
                     print("Module {} was either unsuccessfully cloned or checked out.".format(module))
                     if module in builder.critical_modules:
                         print("Critical clone error... abort.")
-                        err_exit(3)
+                        return 3
                 print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
 
         # Update our CONFIG and RELEASE files
@@ -382,7 +383,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
                         print("**ERROR - Build failed - {} is a critical module**".format(failed))
                         print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
                         print('**Critical build error - abort...**')
-                        err_exit(4)
+                        return 4
                     else:
                         install_config.get_module_by_name(failed).package = "NO"
 
@@ -397,10 +398,12 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
                 print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
             else:
                 print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
+            
+            return ret
 
         else:
             print("Build aborted... Exiting.")
-            err_exit(5)
+            return 5
 
 
 #########################################################################
@@ -427,7 +430,7 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
         ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=False)
         if ret_src != 0 or ret != 0:
             print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
-            err_exit(6)
+            return 6
         else:
             print('Bundle generated at: {}'.format(output_filename))
 
@@ -443,11 +446,11 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
             module_name = input('Please enter name of the module you want packaged (All capitals - Ex. ADPROSILICA) > ')
             if install_config.get_module_by_name(module_name) is None or install_config.get_module_by_name(module_name).build == 'NO':
                 print('ERROR - Selected module not built, cannot create add on tarball!')
-                err_exit(7)
+                return 7
             output_filename = packager.create_bundle_name(module_name=module_name, source_bundle=include_src)
             if output_filename is None:
                 print('ERROR - No module named {} could be found in current configuration, abort.'.format(module_name))
-                err_exit(7)
+                return 7
             ret = packager.create_add_on_package(output_filename, module_name, with_sources=include_src)
             make_another_tarball = input('Would you like to create another add on tarball? (y/n) > ')
             if make_another_tarball != 'y':
@@ -464,10 +467,11 @@ def generate_bundles(yes, install_config, packager, flat_output, include_src):
         ret = packager.create_opi_package()
         if ret != 0:
             print('ERROR - Failed to create opi bundle.')
-            err_exit(8)
+            return 8
         else:
             print('OPI screen tarball generated.')
 
+    return 0
 
 def execute(yes, grab_deps, flat_output, include_src, path_to_configure, force_install_path, threads, single_thread):
 
@@ -493,18 +497,18 @@ def execute(yes, grab_deps, flat_output, include_src, path_to_configure, force_i
         autogenerator = IO.file_generator.FileGenerator(install_config)
 
         # Run the build
-        execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
+        build_ret = execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
 
         # Generate output bundles
-        generate_bundles(yes, install_config, packager, flat_output, include_src)
+        if build_ret == 0 or build_ret == 1:
+            bundle_ret = generate_bundles(yes, install_config, packager, flat_output, include_src)
 
         # Finished
-        print('Done.')
-        clean_exit()
+        return build_ret + bundle_ret
 
     except KeyboardInterrupt:
         print('\n\nAborting installSynApps execution...\nGoodbye.')
-        clean_exit()
+        return 1
 
 
 def main():
@@ -532,10 +536,13 @@ def main():
 
     print('Reading install configuration directory located at: {}...'.format(path_to_configure))
     print()
-    execute(yes, dep, flat_output, include_src, path_to_configure, force_install_path, threads, single_thread)
+    ret = execute(yes, dep, flat_output, include_src, path_to_configure, force_install_path, threads, single_thread)
     script_end_time = time.time()
     print('Finished in {} seconds...'.format(script_end_time - script_start_time))
     print('Done.\n')
+    
+    # Return non-zero code if any of the modules failed to build
+    return ret
 
 
 if __name__ == '__main__':
