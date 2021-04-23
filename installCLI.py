@@ -398,6 +398,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
                 print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
             else:
                 print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
+                return 1
             
             return ret
 
@@ -499,6 +500,7 @@ def execute(yes, grab_deps, flat_output, include_src, path_to_configure, force_i
         # Run the build
         build_ret = execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
 
+        bundle_ret = 0
         # Generate output bundles
         if build_ret == 0 or build_ret == 1:
             bundle_ret = generate_bundles(yes, install_config, packager, flat_output, include_src)
