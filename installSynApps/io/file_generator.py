@@ -305,7 +305,7 @@ https://github.com/epicsNSLS2-deploy/installSynApps\n\n".format(datetime.datetim
                 readme_fp.write('    git checkout -q {}\n\n'.format(isa_version))
 
             if config_hash is not None:
-                readme_fp.write('    cd ..\n    git clone {}\n    cd {}    git checkout {}\n\n'.format(config_remote, config_remote.split('/')[-1], config_hash)
+                readme_fp.write('    cd ..\n    git clone {}\n    cd {}    git checkout {}\n\n'.format(config_remote, config_remote.split('/')[-1], config_hash))
 
             readme_fp.write('To regenerate sources for this bundle, grab installSynApps, and run:\n\n')
             readme_fp.write('    ./installCLI.py -c $BUILD_CONFIG -i $INSTALL_LOCATION -p\n\n')
