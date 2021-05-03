@@ -40,7 +40,7 @@ class CloneDriver:
         """Constructor for the CloneDriver class
         """
 
-        self.recursive_modules = ["EPICS_BASE"]
+        self.recursive_modules = ["EPICS_BASE", "MOTOR"]
         self.install_config = install_config
 
 

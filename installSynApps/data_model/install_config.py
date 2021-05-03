@@ -68,6 +68,7 @@ class InstallConfiguration:
         self.support_path   = None
         self.ad_path        = None
         self.motor_path     = None
+        self.extensions_path = None
 
     
     def is_install_valid(self):
@@ -130,6 +131,8 @@ class InstallConfiguration:
                 self.ad_path = module.abs_path
             elif module.name == "MOTOR":
                 self.motor_path = module.abs_path
+            elif module.name == "EXTENSIONS":
+                self.extensions_path = module.abs_path
             
             self.module_map[module.name] = len(self.modules)
             self.modules.append(module)
@@ -278,6 +281,8 @@ class InstallConfiguration:
             return installSynApps.join_path(self.ad_path, temp)
         elif "$(MOTOR)" in rel_path and self.motor_path != None:
             return installSynApps.join_path(self.motor_path, temp)
+        elif "$(EXTENSIONS)" in rel_path and self.extensions_path != None:
+            return installSynApps.join_path(self.extensions_path, temp)
         elif "$(" in rel_path:
             macro_part = rel_path.split(')')[0]
             rel_to = macro_part.split('(')[1]
@@ -416,7 +421,7 @@ def generate_default_install_config(target_install_loc='/epics', update_versions
     config.add_module(IM("ADGENICAM",       "master",   "$(AREA_DETECTOR)/ADGenICam",       gu, ad_org, "ADGenICam",    n, n, n))
     config.add_module(IM("ADANDOR3",        "master",   "$(AREA_DETECTOR)/ADAndor3",        gu, ad_org, "ADAndor3",     n, n, n))
     config.add_module(IM("ADPROSILICA",     "R2-5",     "$(AREA_DETECTOR)/ADProsilica",     gu, ad_org, "ADProsilica",  n, n, n))
-    config.add_module(IM("ADSIMDETECTOR",   "R2-10",    "$(AREA_DETECTOR)/ADSimDetector",   gu, ad_org, "ADSimDetector", n, n, n))
+    config.add_module(IM("ADSIMDETECTOR",   "master",   "$(AREA_DETECTOR)/ADSimDetector",   gu, ad_org, "ADSimDetector", n, n, n))
     config.add_module(IM("ADPILATUS",       "R2-8",     "$(AREA_DETECTOR)/ADPilatus",       gu, ad_org, "ADPilatus",    n, n, n))
     config.add_module(IM("ADMERLIN",        "master",   "$(AREA_DETECTOR)/ADMerlin",        gu, ad_org, "ADMerlin",     n, n, n))
     config.add_module(IM("ADARAVIS",        "master",   "$(AREA_DETECTOR)/ADAravis",        gu, ad_org, "ADAravis",     n, n, n))

@@ -194,10 +194,9 @@ class FileGenerator:
         info : str
             String with module name and version information on single line
         """
-        
+        current_loc = os.getcwd()
         try:
             if module.url_type == 'GIT_URL':
-                current_loc = os.getcwd()
                 LOG.debug('cd {}'.format(module.abs_path))
                 os.chdir(module.abs_path)
                 LOG.debug('git describe --tags')
@@ -211,6 +210,7 @@ class FileGenerator:
                 LOG.debug('Detected version {} for module {}'.format(module.version, module.name))
                 return '{:<16}- {}\n'.format(module.name, module.version)
         except subprocess.CalledProcessError:
+            os.chdir(current_loc)
             return ''
 
 
@@ -242,7 +242,7 @@ class FileGenerator:
                 readme_fp.write(self.generate_module_version_info(module))
 
 
-    def grab_configuration_used(self, top_location, module, readme_fp):
+    def grab_configuration_used(self, top_location, module, readme_fp, lean_grab):
         """Function that includes the install configuration into the bundle for reuse.
         
         Parameters
@@ -253,7 +253,8 @@ class FileGenerator:
 
         try:
             isa_version, isa_commit_hash = installSynApps.find_isa_version()
-            self.generate_build_config(top_location, module, readme_fp)
+            if not lean_grab:
+                self.generate_build_config(top_location, module, readme_fp)
             readme_fp.write('Build configuration:\n\n')
             readme_fp.write('installSynApps Version: {}\n\n'.format(isa_version))
             readme_fp.write('To grab this version:\n\n    git clone https://github.com/epicsNSLS2-deploy/installSynApps\n')
@@ -272,7 +273,7 @@ class FileGenerator:
             LOG.debug('Failed to copy install configuration into bundle.')
 
 
-    def generate_readme(self, installation_name, installation_type='source', readme_path=None, module=None):
+    def generate_readme(self, installation_name, installation_type='source', readme_path=None, module=None, lean_grab=False):
         """Function used to generate a README file that includes version/build information
 
         Parameters
@@ -327,7 +328,7 @@ class FileGenerator:
         readme_fp.write('\n\n')
 
         # Grab some final build configuration information, and close the file.
-        self.grab_configuration_used(top_location, module, readme_fp)
+        self.grab_configuration_used(top_location, module, readme_fp, lean_grab)
         readme_fp.close()
 
 
