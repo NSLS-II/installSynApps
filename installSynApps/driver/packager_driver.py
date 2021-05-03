@@ -361,7 +361,7 @@ class Packager:
 
         os.mkdir('__temp__')
         # Make our bundle top directory
-        os.mkdir(installSynApps.join_path('__temp__', 'epics-bundle'))
+        os.mkdir(installSynApps.join_path('__temp__', 'epicsbundle-1'))
 
 
     def cleanup_tar_staging(self, filename, module=None):
@@ -382,7 +382,7 @@ class Packager:
         
         LOG.debug('Generating README file with module version and append instructions...')
         LOG.debug(os.getcwd())
-        shutil.copy(installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename)), installSynApps.join_path('__temp__', 'epics-bundle', 'README'))
+        shutil.copy(installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename)), installSynApps.join_path('__temp__', 'epicsbundle-1', 'README'))
 
         LOG.write('Tarring...')
         out = subprocess.call(['tar', 'czf', filename + '.tar.gz', '-C', '__temp__', '.'])
@@ -411,7 +411,7 @@ class Packager:
         readme_path = installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename))
         
         self.setup_tar_staging()
-        os.rename(installSynApps.join_path('__temp__', 'epics-bundle'),'__temp__/{}'.format(module.name))
+        os.rename(installSynApps.join_path('__temp__', 'epicsbundle-1'),'__temp__/{}'.format(module.name))
 
         self.grab_module('__temp__/{}'.format(module.name), module, include_src=with_sources)
         self.file_generator.generate_readme(filename, installation_type='addon', readme_path=readme_path, module=module)
@@ -479,7 +479,7 @@ class Packager:
             0 if success <0 if failure
         """
 
-        top = installSynApps.join_path('__temp__', 'epics-bundle')
+        top = installSynApps.join_path('__temp__', 'epicsbundle-1')
 
         readme_path = installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename))
         self.setup_tar_staging()
