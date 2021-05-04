@@ -222,6 +222,7 @@ class Packager:
             for arch in self.arch_list:
                 self.grab_all_files_in_dir(target_folder + '/bin/' + arch, top + '/bin/' + arch)
                 self.grab_all_files_in_dir(target_folder + '/lib/' + arch, top + '/lib/' + arch)
+            self.grab_all_files_in_dir(target_folder + '/include', top + '/include')
             self.grab_all_files_in_dir(target_folder + '/protocol', top + '/protocol')
             self.grab_all_files_in_dir(target_folder + '/pmc', top + '/pmc')
 
