@@ -133,15 +133,16 @@ def parse_user_input():
     build_group     = parser.add_argument_group('build options')
     debug_group     = parser.add_argument_group('logging options')
 
-    config_group.add_argument('-i', '--installpath',      help='Define an override install location to use instead of the one read from INSTALL_CONFIG.')
+    config_group.add_argument('-b', '--buildpath',            help='Define a build location that will override the one found in the INSTALL_CONFIG file.')
+    config_group.add_argument('-i', '--installpath',      help='Define an install location for where to output bundle tarball or folder structure. Defaults to DEPLOYMENTS')
     config_group.add_argument('-c', '--customconfigure',  help='Use an external configuration directory. Note that it must have the same structure as the default one.')
     config_group.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use epics-install to create a new install configuration.')
     config_group.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
 
     build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
-    build_group.add_argument('-r', '--requirements',       action='store_true', help='Add this flag to install dependencies via a dependency script.')
-    build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat format.')
-    build_group.add_argument('-m', '--minimal',         action='store_true', help='Add this flag to create a minimal bundle structure, with only bin/lib/db/dbd directories.')
+    build_group.add_argument('-r', '--requirements',     action='store_true', help='Add this flag to install dependencies via a dependency script.')
+    build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat (debian-packaging-like) format.')
+    build_group.add_argument('-a', '--archive',          action='store_true', help='Add this flag to output the bundle as a tarball instead of as a folder structure in the target location')
     build_group.add_argument('-s', '--includesources',   action='store_true', help='Add this flag for output bundles to include the full source tree.')
     build_group.add_argument('-t', '--threads',          help='Define a limit on the number of threads that make is allowed to use.', type=int)
     
@@ -192,7 +193,7 @@ def parse_user_input():
         print('Aborting...')
         err_exit(1)
 
-    return path_to_configure, arguments['installpath'], arguments
+    return path_to_configure, arguments['buildpath'], arguments
 
 
 # ----------------- Run the script ------------------------
@@ -414,22 +415,31 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
 #                                                                       #
 #########################################################################
 
-def generate_bundles(yes, install_config, packager, flat_output, minimal_output, include_src):
+def generate_bundles(yes, install_config, packager, flat_output, archive, include_src):
 
     print()
     if not yes:
         create_tarball = input('Would you like to create a tarball binary bundle now? (y/n) > ')
     else:
         create_tarball = 'y'
+
     if create_tarball == 'y':
         ret_src = 0
+        
         # If we want to, include debug bundles
         if include_src:
             output_filename_src = packager.create_bundle_name(source_bundle=include_src)
             ret_src = packager.create_package(output_filename_src, flat_format=flat_output, with_sources=include_src)
+        
         # Always generate a production bundle.
-        output_filename = packager.create_bundle_name(source_bundle=False, lean_bundle=minimal_output)
-        ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=False, lean_grab=minimal_output)
+        output_filename = packager.create_bundle_name(source_bundle=False, flat_bundle=flat_output)
+        if archive:
+            # If we selected the archive option, we will output a tarball with the bundle inside 
+            ret = packager.create_package(output_filename, flat_format=flat_output, with_sources=False)
+        else:
+            # Otherwise, install the bundle to the specified output location
+            ret = packager.install_bundle(output_filename, flat_output)
+
         if ret_src != 0 or ret != 0:
             print('ERROR - Failed to create binary bundle. Check install location to make sure it is valid')
             return 6
@@ -461,34 +471,31 @@ def generate_bundles(yes, install_config, packager, flat_output, minimal_output,
             ask_create_add_on_tarball = False
 
     print()
-    if not yes:
-        create_opi_dir = input('Would you like to create opi_dir now? (y/n) > ')
-    else:
-        create_opi_dir = 'n'
-    if create_opi_dir == 'y':
-        ret = packager.create_opi_package()
-        if ret != 0:
-            print('ERROR - Failed to create opi bundle.')
-            return 8
-        else:
-            print('OPI screen tarball generated.')
 
     return 0
 
-def execute(yes, grab_deps, flat_output, minimal_output, include_src, path_to_configure, force_install_path, threads, single_thread):
+def execute(yes, grab_deps, flat_output, archive, include_src, configure_path, build_path, install_path, threads, single_thread):
 
     try:
-        install_config = parse_configuration(path_to_configure, yes, force_install_path)
+        # Read specified install configuration
+        print('Reading configuration directory located at: {}...\n'.format(configure_path))
+        install_config = parse_configuration(configure_path, yes, build_path)
 
         # Driver Objects for running through build process
         cloner      = DRIVER.clone_driver.CloneDriver(install_config)
-        updater     = DRIVER.update_config_driver.UpdateConfigDriver(path_to_configure, install_config)
+        updater     = DRIVER.update_config_driver.UpdateConfigDriver(configure_path, install_config)
         builder     = DRIVER.build_driver.BuildDriver(install_config, threads, one_thread=single_thread)
-        packager    = DRIVER.packager_driver.Packager(install_config)
+
+        install_loc = 'DEPLOYMENTS'
+        if install_path is not None and os.path.exists(install_path) and os.path.isdir(install_path):
+            install_loc = install_path
+
+        packager    = DRIVER.packager_driver.Packager(install_config, output_location=install_loc)
         
         if not packager.found_distro and platform != 'win32':
             print("WARNING - couldn't import distro pip package. This package is used for better identifying your linux distribution.")
-            print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
+            if archive:
+                print("Note that the output tarball will use the generic 'linux-x86_64' name if packaging on linux.")
             
             if not yes:
                 custom_output = input('Would you like to manually input a name to replace the generic one? (y/n) > ')
@@ -499,12 +506,12 @@ def execute(yes, grab_deps, flat_output, minimal_output, include_src, path_to_co
         autogenerator = IO.file_generator.FileGenerator(install_config)
 
         # Run the build
-        build_ret = execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
+        build_ret = execute_build(configure_path, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
 
         bundle_ret = 0
         # Generate output bundles
         if build_ret == 0 or build_ret == 1:
-            bundle_ret = generate_bundles(yes, install_config, packager, flat_output, minimal_output, include_src)
+            bundle_ret = generate_bundles(yes, install_config, packager, flat_output, archive, include_src)
 
         # Finished
         return build_ret + bundle_ret
@@ -517,19 +524,24 @@ def execute(yes, grab_deps, flat_output, minimal_output, include_src, path_to_co
 def main():
     script_start_time = time.time()
 
-    path_to_configure, force_install_path, args = parse_user_input()
-    if force_install_path is not None:
-        force_install_path  = os.path.abspath(force_install_path)
-    path_to_configure   = os.path.abspath(path_to_configure)
+    configure_path, build_path, args = parse_user_input()
+    if build_path is not None:
+        build_path  = os.path.abspath(build_path)
+
+    configure_path      = os.path.abspath(configure_path)
+    install_path        = args['installpath']
     yes                 = args['forceyes']
     dep                 = args['requirements']
     flat_output         = args['flatbinaries']
-    minimal_output      = args['minimal']
     include_src         = args['includesources']
+    archive             = args['archive']
+    
     # Inclusion of sources only supported in non-flat output mode
-    if include_src:
-        flat_output = False
+    if include_src and (flat_output or not archive):
+         print('Generating source bundles is only supported for non-flat bundles and when outputting archives.\n')
+         err_exit(1)
 
+    # Determine how many threads to use for building
     single_thread = False
     threads = args['threads']
     if threads is None:
@@ -537,11 +549,11 @@ def main():
     elif threads == 1:
         single_thread = True
 
+    # Execute the clone, build, package/install steps
+    ret = execute(yes, dep, flat_output, archive, include_src, configure_path, build_path, install_path, threads, single_thread)
 
-    print('Reading install configuration directory located at: {}...'.format(path_to_configure))
-    print()
-    ret = execute(yes, dep, flat_output, minimal_output, include_src, path_to_configure, force_install_path, threads, single_thread)
     script_end_time = time.time()
+    
     print('Finished in {} seconds...'.format(script_end_time - script_start_time))
     print('Done.\n')
     
