@@ -2,22 +2,26 @@
 
 """Python script for running the installSynApps module through the CLI
 
-usage: installCLI.py [-h] [-i INSTALLPATH] [-c CUSTOMCONFIGURE] [-n] [-v] [-y]
-                     [-d] [-f] [-t THREADS] [-l] [-m] [-p]
+usage: installCLI.py [-h] [-b BUILDPATH] [-i INSTALLPATH] [-c CUSTOMCONFIGURE]
+                     [-n] [-v] [-y] [-r] [-f] [-a] [-s] [-t THREADS] [-l] [-d]
+                     [-p]
 
-installSynApps for CLI EPICS and synApps auto-compilation
+Utility for CLI EPICS and synApps auto-compilation
 
 optional arguments:
   -h, --help            show this help message and exit
 
 configuration options:
+  -b BUILDPATH, --buildpath BUILDPATH
+                        Define a build location that will override the one
+                        found in the INSTALL_CONFIG file.
   -i INSTALLPATH, --installpath INSTALLPATH
-                        Define an override install location to use instead of
-                        the one read from INSTALL_CONFIG.
+                        Define an install location for where to output bundle
+                        tarball or folder structure. Defaults to DEPLOYMENTS
   -c CUSTOMCONFIGURE, --customconfigure CUSTOMCONFIGURE
                         Use an external configuration directory. Note that it
                         must have the same structure as the default one.
-  -n, --newconfig       Add this flag to use installCLI to create a new
+  -n, --newconfig       Add this flag to use epics-install to create a new
                         install configuration.
   -v, --updateversions  Add this flag to update module versions based on
                         github tags. Must be used with -c flag.
@@ -25,10 +29,15 @@ configuration options:
 build options:
   -y, --forceyes        Add this flag to automatically go through all of the
                         installation steps without prompts.
-  -d, --dependency      Add this flag to install dependencies via a dependency
+  -r, --requirements    Add this flag to install dependencies via a dependency
                         script.
   -f, --flatbinaries    Add this flag if you wish for output binary bundles to
-                        have a flat format.
+                        have a flat (debian-packaging-like) format.
+  -a, --archive         Add this flag to output the bundle as a tarball
+                        instead of as a folder structure in the target
+                        location
+  -s, --includesources  Add this flag for output bundles to include the full
+                        source tree.
   -t THREADS, --threads THREADS
                         Define a limit on the number of threads that make is
                         allowed to use.
@@ -36,7 +45,7 @@ build options:
 logging options:
   -l, --savelog         Add this flag to save the build log to a file in the
                         logs/ directory.
-  -m, --debugmessages   Add this flag to enable printing verbose debug
+  -d, --debugmessages   Add this flag to enable printing verbose debug
                         messages.
   -p, --printcommands   Add this flag to print bash/batch commands run by
                         installSynApps.
