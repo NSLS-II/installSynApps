@@ -36,8 +36,6 @@ class Packager:
         The currently loaded install configuration
     output_location : str
         The target output location of the bundle
-    institution : str
-        The name of the institution associated with the bundle (ie. NSLS2)
     found_distro : bool 
         A flag that tells the packager if the distro module is available
     arch : str
@@ -60,11 +58,9 @@ class Packager:
 
         self.file_generator     = FILE_GENERATOR.FileGenerator(install_config)
 
-        self.institution = "NSLS2"
-
         if force_arch is not None:
-            self.arch = force_arch
-            self.OS = force_arch
+            self.arch_list = force_arch
+            self.OS = force_arch[0]
         elif platform.startswith('linux'):
             if WITH_DISTRO:
                 self.found_distro = True
@@ -76,12 +72,15 @@ class Packager:
             else:
                 self.found_distro = False
                 self.OS = 'linux-x86_64'
-            self.arch = 'linux-x86_64'
+            
+            # We want to support cross compiling debug versions if desired
+            self.arch_list = ['linux-x86_64', 'linux-x86_64-debug']
+
         elif platform == 'win32':
             # when we are using windows, we don't care if distro is installed, so just assume it is true
             self.found_distro = True
-            self.arch = 'windows-x64-static'
-            self.OS = self.arch
+            self.arch_list = ['windows-x64-static']
+            self.OS = self.arch_list[0]
         
         # Timer
         self.start_time = 0
@@ -171,7 +170,7 @@ class Packager:
                 self.grab_file(src + '/' + elem, dest + '/' + elem)
 
 
-    def grab_base_lean(self, top):
+    def grab_base_flat(self, top):
         """Method that collects all the files from EPICS base into a debian package like format
 
         Parameters
@@ -181,9 +180,10 @@ class Packager:
         """
 
         base_path = self.install_config.base_path
-        LOG.debug('Grabbing lean epics base files')
-        self.grab_folder(base_path + '/bin/' + self.arch,   top + '/bin/' + self.arch)
-        self.grab_folder(base_path + '/lib/' + self.arch,   top + '/lib/' + self.arch)
+        LOG.debug('Grabbing flat epics base files')
+        for arch in self.arch_list:
+            self.grab_folder(base_path + '/bin/' + arch,   top + '/bin/' + arch)
+            self.grab_folder(base_path + '/lib/' + arch,   top + '/lib/' + arch)
         self.grab_folder(base_path + '/cfg',                top + '/cfg')
         self.grab_folder(base_path + '/lib/perl',           top + '/lib/perl')
         self.grab_folder(base_path + '/configure',          top + '/configure')
@@ -198,7 +198,7 @@ class Packager:
         self.grab_folder(base_path + '/templates',          top + '/templates')
 
 
-    def grab_module_lean(self, top, module):
+    def grab_module_flat(self, top, module):
         """Helper method that grabs module files in a debian-packaging like format
 
         Parameters
@@ -216,11 +216,13 @@ class Packager:
 
         # In a release version we don't need any support helper utilities, so skip it.
         if not module.name == 'SUPPORT':
-            LOG.debug('Grabbing lean files for module {}.'.format(module.name))
+            LOG.debug('Grabbing flat files for module {}.'.format(module.name))
             self.grab_all_files_in_dir(target_folder + '/db', top + '/db')
             self.grab_all_files_in_dir(target_folder + '/dbd', top + '/dbd')
-            self.grab_all_files_in_dir(target_folder + '/bin/' + self.arch, top + '/bin/' + self.arch)
-            self.grab_all_files_in_dir(target_folder + '/lib/' + self.arch, top + '/lib/' + self.arch)
+            for arch in self.arch_list:
+                self.grab_all_files_in_dir(target_folder + '/bin/' + arch, top + '/bin/' + arch)
+                self.grab_all_files_in_dir(target_folder + '/lib/' + arch, top + '/lib/' + arch)
+            self.grab_all_files_in_dir(target_folder + '/include', top + '/include')
             self.grab_all_files_in_dir(target_folder + '/protocol', top + '/protocol')
             self.grab_all_files_in_dir(target_folder + '/pmc', top + '/pmc')
 
@@ -238,26 +240,28 @@ class Packager:
             self.grab_file(module.abs_path + '/configure/RULES_BUILD', top + '/configure/rules.d/{}.make'.format(module.name))
 
 
-    def grab_ioc_files(self, top, target_loc, module_name, lean):
+    def grab_ioc_files(self, top, target_loc, module_name, flat_grab):
         for dir in os.listdir(target_loc + '/iocs'):
             ioc_folder = '/iocs/' + dir
             if 'IOC' in dir:
-                if not lean:
+                if not flat_grab:
                     LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module_name, dir))
-                    self.grab_folder(target_loc + ioc_folder + '/bin/' + self.arch,  top + '/' + module_name + ioc_folder + '/bin/' + self.arch)
-                    self.grab_folder(target_loc + ioc_folder + '/lib/' + self.arch,  top + '/' + module_name + ioc_folder + '/lib/' + self.arch)
+                    for arch in self.arch_list:
+                        self.grab_folder(target_loc + ioc_folder + '/bin/' + arch,  top + '/' + module_name + ioc_folder + '/bin/' + arch)
+                        self.grab_folder(target_loc + ioc_folder + '/lib/' + arch,  top + '/' + module_name + ioc_folder + '/lib/' + arch)
                     self.grab_folder(target_loc + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
                     self.grab_folder(target_loc + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
                 else:
                     LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module_name, dir))
-                    self.grab_all_files_in_dir(target_loc + ioc_folder + '/bin/' + self.arch,  top + '/bin/' + self.arch)
-                    self.grab_all_files_in_dir(target_loc + ioc_folder + '/lib/' + self.arch,  top + '/lib/' + self.arch)
+                    for arch in self.arch_list:
+                        self.grab_all_files_in_dir(target_loc + ioc_folder + '/bin/' + arch,  top + '/bin/' + arch)
+                        self.grab_all_files_in_dir(target_loc + ioc_folder + '/lib/' + arch,  top + '/lib/' + arch)
                     self.grab_all_files_in_dir(target_loc + ioc_folder + '/dbd',               top + '/dbd')
                     self.grab_all_files_in_dir(target_loc + ioc_folder + '/protocol',          top +  '/protocol')
 
 
 
-    def grab_base(self, top, include_src=False, lean_grab=False):
+    def grab_base(self, top, include_src=False, flat_grab=False):
         """Function that copies all of the required folders from EPICS_BASE
 
         Parameters
@@ -266,15 +270,16 @@ class Packager:
             resulting location - __temp__
         """
 
-        if lean_grab:
-            self.grab_base_lean(top)
+        if flat_grab:
+            self.grab_base_flat(top)
             return
 
         base_path = self.install_config.base_path
         if not include_src:
             LOG.debug('Grabbing lean epics base files')
-            self.grab_folder(base_path + '/bin/' + self.arch,   top + '/base/bin/' + self.arch)
-            self.grab_folder(base_path + '/lib/' + self.arch,   top + '/base/lib/' + self.arch)
+            for arch in self.arch_list:
+                self.grab_folder(base_path + '/bin/' + arch,   top + '/base/bin/' + arch)
+                self.grab_folder(base_path + '/lib/' + arch,   top + '/base/lib/' + arch)
             self.grab_folder(base_path + '/lib/perl',           top + '/base/lib/perl')
             self.grab_folder(base_path + '/cfg',                top + '/base/cfg')
             self.grab_folder(base_path + '/configure',          top + '/base/configure')
@@ -287,7 +292,7 @@ class Packager:
             self.grab_folder(base_path,                         top + '/base')
 
 
-    def grab_module(self, top, module, include_src=False, lean_grab=False):
+    def grab_module(self, top, module, include_src=False, flat_grab=False):
         """Function that grabs all of the required folders from each individual module.
 
         Parameters
@@ -300,8 +305,8 @@ class Packager:
             path to dir of location of module
         """
 
-        if lean_grab:
-            self.grab_module_lean(top, module)
+        if flat_grab:
+            self.grab_module_flat(top, module)
             return
 
         module_name = os.path.basename(module.abs_path)
@@ -318,8 +323,9 @@ class Packager:
             self.grab_folder(target_folder + '/db',                 top + '/' + module_name + '/db')
             self.grab_folder(target_folder + '/dbd',                top + '/' + module_name + '/dbd')
             self.grab_folder(target_folder + '/include',            top + '/' + module_name + '/include')
-            self.grab_folder(target_folder + '/bin/' + self.arch,   top + '/' + module_name + '/bin/' + self.arch)
-            self.grab_folder(target_folder + '/lib/' + self.arch,   top + '/' + module_name + '/lib/' + self.arch)
+            for arch in self.arch_list:
+                self.grab_folder(target_folder + '/bin/' + arch,   top + '/' + module_name + '/bin/' + arch)
+                self.grab_folder(target_folder + '/lib/' + arch,   top + '/' + module_name + '/lib/' + arch)
             self.grab_folder(target_folder + '/configure',          top + '/' + module_name + '/configure')
             self.grab_folder(target_folder + '/modules',            top + '/' + module_name + '/modules')
             self.grab_folder(target_folder + '/iocBoot',            top + '/' + module_name + '/iocBoot')
@@ -352,8 +358,11 @@ class Packager:
         """
 
         if os.path.exists('__temp__'):
-            shutil.rmtree('__temp__')
+            shutil.rmtree('__temp__')\
+
         os.mkdir('__temp__')
+        # Make our bundle top directory
+        os.mkdir(installSynApps.join_path('__temp__', 'epicsbundle-1'))
 
 
     def cleanup_tar_staging(self, filename, module=None):
@@ -374,15 +383,15 @@ class Packager:
         
         LOG.debug('Generating README file with module version and append instructions...')
         LOG.debug(os.getcwd())
-        shutil.copy(installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename)), installSynApps.join_path('__temp__', 'README_{}.txt'.format(filename)))
+        shutil.copy(installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename)), installSynApps.join_path('__temp__', filename, 'README'))
 
         LOG.write('Tarring...')
-        out = subprocess.call(['tar', 'czf', filename + '.tgz', '-C', '__temp__', '.'])
+        out = subprocess.call(['tar', 'czf', filename + '.tar.gz', '-C', '__temp__', '.'])
         if out < 0:
             return out
-        os.rename(filename + '.tgz', installSynApps.join_path(self.output_location, filename + '.tgz'))
+        os.rename(filename + '.tar.gz', installSynApps.join_path(self.output_location, filename + '.tar.gz'))
         LOG.write('Done. Wrote tarball to {}.'.format(self.output_location))
-        LOG.write('Name of tarball: {}'.format(installSynApps.join_path(self.output_location, filename + '.tgz')))
+        LOG.write('Name of tarball: {}'.format(installSynApps.join_path(self.output_location, filename + '.tar.gz')))
         shutil.rmtree('__temp__')
         return out
 
@@ -401,55 +410,18 @@ class Packager:
         """
 
         readme_path = installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename))
+        
         self.setup_tar_staging()
-        self.grab_module('__temp__', module, include_src=with_sources)
+        os.rename(installSynApps.join_path('__temp__', 'epicsbundle-1'),'__temp__/{}'.format(module.name))
+
+        self.grab_module('__temp__/{}'.format(module.name), module, include_src=with_sources)
         self.file_generator.generate_readme(filename, installation_type='addon', readme_path=readme_path, module=module)
+        
         result = self.cleanup_tar_staging(filename, module=module)
         return result
 
 
-    def create_opi_tarball(self):
-        """Function that collects autoconverted .opi files from epics_dir.
-
-        OPI screens are saved  in output_location/ad_opis and creats a tarball.
-
-        Returns
-        -------
-        int
-            0 if suceeded, nonzero otherwise
-        """
-
-        opi_base_dir = installSynApps.join_path(self.output_location, '__opis_temp__')
-        opi_dir = installSynApps.join_path(opi_base_dir, 'opis')
-        try:
-            os.mkdir(opi_base_dir)
-            os.mkdir(opi_dir)
-        except OSError:
-            LOG.write('Error creating ' + opi_dir + ' directory', )
-
-        for (root, _, files) in os.walk(self.install_config.install_location, topdown=True):
-            for name in files:
-                if '.opi' in name and 'autoconvert' in root:
-                    file_name = installSynApps.join_path(root, name)
-                    try:
-                        shutil.copy(file_name, opi_dir)
-                    except OSError:
-                        LOG.debug("Can't copy {} to {}".format(file_name, opi_dir))
-
-        opi_tarball_basename = 'opis_{}'.format(self.install_config.get_core_version())
-        opi_tarball = opi_tarball_basename
-        counter = 1
-        while os.path.exists(installSynApps.join_path(self.output_location, opi_tarball + '.tgz')):
-            opi_tarball = opi_tarball_basename + '_({})'.format(counter)
-            counter = counter + 1
-
-        out = subprocess.call(['tar', 'czf', opi_tarball + '.tgz', '-C', opi_base_dir, '.'])
-        shutil.rmtree(opi_base_dir)
-        os.rename(opi_tarball + '.tgz', installSynApps.join_path(self.output_location, opi_tarball + '.tgz'))
-        return out
-        
-
-    def create_tarball(self, filename, flat_format, with_sources, lean):
+    def create_tarball(self, filename, install_path, flat_format, with_sources):
         """Function responsible for creating the tarball given a filename.
 
         Parameters
@@ -467,54 +439,23 @@ class Packager:
             0 if success <0 if failure
         """
 
-        readme_path = installSynApps.join_path(self.output_location, 'README_{}.txt'.format(filename))
+        # Initializes temp directory, and installs bundle to said directory
         self.setup_tar_staging()
 
-        self.grab_base('__temp__', include_src=with_sources, lean_grab=lean)
-
-        support_top = '__temp__'
-        if not flat_format and not lean:
-            LOG.write('Non-flat output binary structure selected.')
-            support_top = installSynApps.join_path('__temp__', 'support')
-            os.mkdir(support_top)
-
-        ad_top = '__temp__'
-        if not lean:
-            ad_top = installSynApps.join_path(support_top, 'areaDetector')
-            os.mkdir(ad_top)
-
-        for module in self.install_config.get_module_list():
-            if (module.name in self.required_in_package or module.package == "YES" or (with_sources and module.build == "YES")) and not module.name == "EPICS_BASE":
-                if module.rel_path.startswith('$(AREA_DETECTOR)'):
-                    self.grab_module(ad_top, module, include_src=with_sources, lean_grab=lean)
-                else:
-                    self.grab_module(support_top, module, include_src=with_sources, lean_grab=lean)
-
-
-        # We always create a README file to know which modules were included
-        package_type = 'bundle'
-        if with_sources:
-            package_type = 'source'
-        self.file_generator.generate_readme(filename, installation_type=package_type, readme_path=readme_path, lean_grab=lean)
-        
-        if not lean or with_sources:
-            self.ioc_gen.init_template_dir()
-            self.ioc_gen.generate_dummy_iocs()
-        
-        if with_sources:
-            self.create_repoint_bundle_script()
+        self.install_bundle(filename, flat_format, with_sources=with_sources, force_install_loc='__temp__')
         
         result = self.cleanup_tar_staging(filename)
+
         return result
 
 
-    def create_bundle_name(self, module_name=None, source_bundle=False, lean_bundle=False):
+    def create_bundle_name(self, module_name=None, source_bundle=False, flat_bundle=False):
         """Helper function for creating output filename
 
         Returns
         -------
         str
-            An output filename describing architecture and ADCore version
+            An output filename describing OS, and the date
         """
 
         if module_name is not None:
@@ -525,29 +466,21 @@ class Packager:
         bundle_type = 'Prod'
         if source_bundle:
             bundle_type = 'Debug'
-        elif lean_bundle:
+        elif flat_bundle:
             bundle_type= 'Lean'
 
         date_str = datetime.date.today()
-        try:
-            core_version = self.install_config.get_core_version()
-            if module_name is None:
-                output_filename = '{}_AD_{}_{}_{}_{}'.format(self.institution, core_version, bundle_type, self.OS, date_str)
-            else:
-                output_filename = '{}_AD_{}_{}_{}_{}_addon'.format(self.institution, core_version, bundle_type, self.OS, module.name)
-        except:
-            LOG.debug('Error generating custom tarball name.')
-            output_filename = 'EPICS_{}_Binary_Bundle_{}'.format(bundle_type, self.OS)
+        output_filename = 'EPICS_{}_Bundle_{}_{}'.format(bundle_type, self.OS, date_str)
 
         temp = output_filename
         counter = 1
-        while os.path.exists(self.output_location + '/' + temp + '.tgz'):
+        while os.path.exists(self.output_location + '/' + temp + '.tar.gz'):
             temp = output_filename
             temp = temp + '_({})'.format(counter)
             counter = counter + 1
         output_filename = temp
 
-        LOG.debug('Generated potential output tarball name as: {}'.format(output_filename))
+        LOG.debug('Generated output tarball name as: {}'.format(output_filename))
         return output_filename
 
 
@@ -559,12 +492,12 @@ class Packager:
             if platform == 'win32':
                 cleanup_tool_path = installSynApps.join_path(self.output_location, 'cleanup.bat')
                 cleanup_tool = open(cleanup_tool_path, 'w')
-                cleanup_tool.write('@echo OFF\n\ndel *.tgz\ndel *.txt\n\n')
+                cleanup_tool.write('@echo OFF\n\ndel *.tar.gz\ndel *.txt\n\n')
                 cleanup_tool.close()
             else:
                 cleanup_tool_path = installSynApps.join_path(self.output_location, 'cleanup.sh')
                 cleanup_tool = open(cleanup_tool_path, 'w')
-                cleanup_tool.write('#!/bin/bash\n\nrm *.tgz\nrm *.txt\n\n')
+                cleanup_tool.write('#!/bin/bash\n\nrm *.tar.gz\nrm *.txt\n\n')
                 os.chmod(cleanup_tool_path, 0o755)
                 cleanup_tool.close()
 
@@ -588,7 +521,67 @@ class Packager:
             rs_fp.close()
 
 
-    def create_package(self, filename, flat_format=True, with_sources=False, lean_grab=False):
+    def install_bundle(self, output_filename, flat_output, with_sources=False, force_install_loc=None, external_readme=True):
+
+        install_loc = self.output_location
+        readme_name = 'README'
+        if force_install_loc is not None:
+            LOG.write('Copying build artifacts to temp directory...')
+            install_loc = force_install_loc
+            readme_loc = self.output_location
+            readme_name = 'README_{}.txt'.format(output_filename)
+        else:
+            LOG.write('Installing bundle to {}...'.format(self.output_location))
+            readme_loc = installSynApps.join_path(install_loc, output_filename)
+
+        bundle_top = installSynApps.join_path(install_loc, output_filename)
+        if os.path.exists(bundle_top):
+            shutil.rmtree(bundle_top)    
+        os.mkdir(bundle_top)
+
+        readme_path = installSynApps.join_path(readme_loc, readme_name)
+        self.grab_base(bundle_top, include_src=with_sources, flat_grab=flat_output)
+
+        support_top = bundle_top
+        if not flat_output:
+            LOG.write('Non-flat output binary structure selected.')
+            support_top = installSynApps.join_path(bundle_top, 'support')
+            os.mkdir(support_top)
+
+        ad_top = bundle_top
+        if not flat_output:
+            ad_top = installSynApps.join_path(support_top, 'areaDetector')
+            os.mkdir(ad_top)
+
+        for module in self.install_config.get_module_list():
+            if (module.name in self.required_in_package or module.package == "YES" or (with_sources and module.build == "YES")) and not module.name == "EPICS_BASE":
+                if module.rel_path.startswith('$(AREA_DETECTOR)'):
+                    self.grab_module(ad_top, module, include_src=with_sources, flat_grab=flat_output)
+                else:
+                    self.grab_module(support_top, module, include_src=with_sources, flat_grab=flat_output)
+
+
+        # We always create a README file to know which modules were included
+        package_type = 'bundle'
+        if with_sources:
+            package_type = 'source'
+
+        self.file_generator.generate_readme(output_filename, installation_type=package_type, readme_path=readme_path, flat_grab=flat_output)
+        self.file_generator.generate_license(bundle_top)
+        
+        if not flat_output or with_sources:
+            self.ioc_gen.init_template_dir()
+            self.ioc_gen.generate_dummy_iocs()
+        
+        if with_sources:
+            self.create_repoint_bundle_script()
+
+        LOG.write('Done.')
+
+        return 0
+
+
+    def create_package(self, filename, install_path='DEPLOYMENTS', flat_format=True, with_sources=False):
         """Top level packager driver function.
 
         Creates output directory, generates filename, creates the tarball, and measures time.
@@ -619,7 +612,7 @@ class Packager:
         LOG.write('Beginning bundling process...')
 
         # Generate the bundle
-        status = self.create_tarball(filename, flat_format, with_sources, lean_grab)
+        status = self.create_tarball(filename, install_path, flat_format, with_sources)
 
         # Stop the timer
         elapsed = self.stop_timer()
@@ -676,36 +669,4 @@ class Packager:
 
         return status
 
-
-    def create_opi_package(self):
-        """Function that creates bundle of all opi files.
-
-        Returns
-        -------
-        int
-            status of tar creation command
-        """
-
-        # Make sure output path exists
-        if not os.path.exists(self.output_location):
-            try:
-                os.mkdir(self.output_location)
-            except OSError:
-                return -1
-
-        # Start the timer
-        self.start_timer()
-
-        LOG.write('Beginning construction of opi tarball...')
-
-        # Generate the bundle
-        status = self.create_opi_tarball()
-
-        # Stop the timer
-        elapsed = self.stop_timer()
-        LOG.write('Tarring took {} seconds'.format(elapsed))
-
-        self.create_bundle_cleanup_tool()
-
-        return status
 

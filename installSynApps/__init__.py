@@ -68,6 +68,7 @@ def find_isa_version():
     except subprocess.CalledProcessError:
         LOG.debug('Running from non-git version of installSynApps, default to internal version number.')
 
+    LOG.debug('Found installSynApps version: {}'.format(isa_version))
     return isa_version, commit_hash
 
 
