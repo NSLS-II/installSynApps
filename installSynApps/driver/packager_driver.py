@@ -246,11 +246,12 @@ class Packager:
             if 'IOC' in dir:
                 if not flat_grab:
                     LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module_name, dir))
+                    module_base_folder = os.path.basename(target_loc)
                     for arch in self.arch_list:
-                        self.grab_folder(target_loc + ioc_folder + '/bin/' + arch,  top + '/' + module_name + ioc_folder + '/bin/' + arch)
-                        self.grab_folder(target_loc + ioc_folder + '/lib/' + arch,  top + '/' + module_name + ioc_folder + '/lib/' + arch)
-                    self.grab_folder(target_loc + ioc_folder + '/dbd',               top + '/' + module_name + ioc_folder + '/dbd')
-                    self.grab_folder(target_loc + ioc_folder + '/iocBoot',           top + '/' + module_name + ioc_folder + '/iocBoot')
+                        self.grab_folder(target_loc + ioc_folder + '/bin/' + arch,  top + '/' + module_base_folder + ioc_folder + '/bin/' + arch)
+                        self.grab_folder(target_loc + ioc_folder + '/lib/' + arch,  top + '/' + module_base_folder + ioc_folder + '/lib/' + arch)
+                    self.grab_folder(target_loc + ioc_folder + '/dbd',               top + '/' + module_base_folder + ioc_folder + '/dbd')
+                    self.grab_folder(target_loc + ioc_folder + '/iocBoot',           top + '/' + module_base_folder + ioc_folder + '/iocBoot')
                 else:
                     LOG.debug('Grabbing IOC files for module {} ioc: {}'.format(module_name, dir))
                     for arch in self.arch_list:
@@ -362,7 +363,6 @@ class Packager:
 
         os.mkdir('__temp__')
         # Make our bundle top directory
-        os.mkdir(installSynApps.join_path('__temp__', 'epicsbundle-1'))
 
 
     def cleanup_tar_staging(self, filename, module=None):
@@ -570,9 +570,9 @@ class Packager:
         self.file_generator.generate_license(bundle_top)
         
         if not flat_output or with_sources:
-            self.ioc_gen.init_template_dir()
+            self.ioc_gen.init_template_dir(output_filename)
             self.ioc_gen.generate_dummy_iocs()
-        
+
         if with_sources:
             self.create_repoint_bundle_script()
 

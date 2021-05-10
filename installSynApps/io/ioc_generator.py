@@ -18,7 +18,7 @@ class DummyIOCGenerator:
 
     def __init__(self, install_config):
         self.install_config         = install_config
-        self.ioc_template_dir       = installSynApps.join_path('__temp__', 'ioc-templates')
+        self.ioc_template_dir       = None
 
 
     def get_env_paths_name(self, module):
@@ -363,7 +363,8 @@ class DummyIOCGenerator:
         LOG.debug('Done.')
 
 
-    def init_template_dir(self):
+    def init_template_dir(self, bundle_dir):
+        self.ioc_template_dir = installSynApps.join_path('__temp__', bundle_dir, 'iocs-templates')
         if not os.path.exists(self.ioc_template_dir):
             os.mkdir(self.ioc_template_dir)
 
