@@ -364,7 +364,7 @@ class DummyIOCGenerator:
 
 
     def init_template_dir(self, bundle_dir):
-        self.ioc_template_dir = installSynApps.join_path('__temp__', bundle_dir, 'iocs-templates')
+        self.ioc_template_dir = installSynApps.join_path('__temp__', bundle_dir, 'ioc-templates')
         if not os.path.exists(self.ioc_template_dir):
             os.mkdir(self.ioc_template_dir)
 

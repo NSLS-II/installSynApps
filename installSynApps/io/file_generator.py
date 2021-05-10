@@ -354,7 +354,7 @@ https://github.com/NSLS-II/installSynApps\n\n".format(datetime.datetime.now())
             top_location = self.install_config.install_location
         else:
             readme_fp = open(readme_path, 'w')
-            top_location = '__temp__'
+            top_location = installSynApps.join_path('__temp__', installation_name)
 
         # Write heading based on type of installation
         if installation_type == 'source':
