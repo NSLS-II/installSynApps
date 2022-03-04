@@ -190,6 +190,7 @@ class Packager:
         
         LOG.debug('Creating rules.d directory to allow for additional rule sets')
         os.mkdir(top + '/configure/rules.d')
+        os.mkdir(top + '/req')
 
         self.grab_folder(base_path + '/include',            top + '/include')
         self.grab_folder(base_path + '/startup',            top + '/startup')
@@ -218,6 +219,26 @@ class Packager:
         if not module.name == 'SUPPORT':
             LOG.debug('Grabbing flat files for module {}.'.format(module.name))
             self.grab_all_files_in_dir(target_folder + '/db', top + '/db')
+
+            # Collect our autosave folders Autosave files can be in *App/Db or *App/src.
+            # They should be installed to db/, but this seems to not be 100% reliable
+            for dir in os.listdir(target_folder):
+                if dir.endswith('App'):
+                    if os.path.exists(target_folder + f'/{dir}/Db'):
+                        for file in os.listdir(target_folder + f'/{dir}/Db'):
+                            if file.endswith('.req'):
+                                self.grab_file(os.path.join(target_folder, dir, 'Db', file), top + '/req/' + file)
+
+                    if os.path.exists(os.path.join(target_folder, f'/{dir}/src')):
+                        for file in os.listdir(target_folder + f'/{dir}/src'):
+                            if file.endswith('.req'):
+                                self.grab_file(os.path.join(target_folder, dir, 'src', file), top + '/req')
+                if dir == 'iocBoot':
+                    for file in os.listdir(os.path.join(target_folder, dir)):
+                        if file.endswith('.req'):
+                            self.grab_file(os.path.join(target_folder, dir, file), top + '/req')
+
+
             self.grab_all_files_in_dir(target_folder + '/dbd', top + '/dbd')
             for arch in self.arch_list:
                 self.grab_all_files_in_dir(target_folder + '/bin/' + arch, top + '/bin/' + arch)
@@ -225,6 +246,10 @@ class Packager:
             self.grab_all_files_in_dir(target_folder + '/include', top + '/include')
             self.grab_all_files_in_dir(target_folder + '/protocol', top + '/protocol')
             self.grab_all_files_in_dir(target_folder + '/pmc', top + '/pmc')
+    
+            #Include ADCore iocBoot files for commonPlugins/commonpluginsettings
+            if module.name == 'ADCORE':
+                self.grab_folder(target_folder + '/iocBoot', top + '/iocBoot')
 
             if os.path.exists(target_folder + '/iocs'):
                 self.grab_ioc_files(top, target_folder, module.name, True)
