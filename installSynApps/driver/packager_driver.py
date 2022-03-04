@@ -233,6 +233,11 @@ class Packager:
                         for file in os.listdir(target_folder + f'/{dir}/src'):
                             if file.endswith('.req'):
                                 self.grab_file(os.path.join(target_folder, dir, 'src', file), top + '/req')
+                if dir == 'iocBoot':
+                    for file in os.listdir(os.path.join(target_folder, dir)):
+                        if file.endswith('.req'):
+                            self.grab_file(os.path.join(target_folder, dir, file), top + '/req')
+
 
             self.grab_all_files_in_dir(target_folder + '/dbd', top + '/dbd')
             for arch in self.arch_list:
@@ -241,6 +246,10 @@ class Packager:
             self.grab_all_files_in_dir(target_folder + '/include', top + '/include')
             self.grab_all_files_in_dir(target_folder + '/protocol', top + '/protocol')
             self.grab_all_files_in_dir(target_folder + '/pmc', top + '/pmc')
+    
+            #Include ADCore iocBoot files for commonPlugins/commonpluginsettings
+            if module.name == 'ADCORE':
+                self.grab_folder(target_folder + '/iocBoot', top + '/iocBoot')
 
             if os.path.exists(target_folder + '/iocs'):
                 self.grab_ioc_files(top, target_folder, module.name, True)
