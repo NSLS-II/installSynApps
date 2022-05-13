@@ -49,7 +49,7 @@ class ConfigInjector:
             return
         target_path = self.install_config.convert_path_abs(target_path)
         target_file = os.path.basename(target_path)
-        if (not os.path.exists(target_path)):
+        if (not os.path.exists(os.path.dirname(target_path))):
             return
         if target_file.startswith("EXAMPLE_"):
             target_path_no_example = installSynApps.join_path(os.path.dirname(target_path), target_file[8:])
