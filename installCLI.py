@@ -69,6 +69,8 @@ import installSynApps.io.logger as LOG
 
 # -------------- Some helper functions ------------------
 
+VALID_OPERATIONS = ['clone', 'configure', 'build', 'package']
+
 
 def print_welcome_message():
     """Returns welcome message
@@ -142,12 +144,13 @@ def parse_user_input():
     build_group     = parser.add_argument_group('build options')
     debug_group     = parser.add_argument_group('logging options')
 
-    config_group.add_argument('-b', '--buildpath',            help='Define a build location that will override the one found in the INSTALL_CONFIG file.')
+    config_group.add_argument('-b', '--buildpath',        help='Define a build location that will override the one found in the INSTALL_CONFIG file.')
     config_group.add_argument('-i', '--installpath',      help='Define an install location for where to output bundle tarball or folder structure. Defaults to DEPLOYMENTS')
     config_group.add_argument('-c', '--customconfigure',  help='Use an external configuration directory. Note that it must have the same structure as the default one.')
     config_group.add_argument('-n', '--newconfig',        action='store_true', help='Add this flag to use epics-install to create a new install configuration.')
     config_group.add_argument('-v', '--updateversions',   action='store_true', help='Add this flag to update module versions based on github tags. Must be used with -c flag.')
 
+    build_group.add_argument('-o', '--operations',       nargs='+', help='Use this flag to specify the operations to perform [clone, configure, build, package].')
     build_group.add_argument('-y', '--forceyes',         action='store_true', help='Add this flag to automatically go through all of the installation steps without prompts.')
     build_group.add_argument('-r', '--requirements',     action='store_true', help='Add this flag to install dependencies via a dependency script.')
     build_group.add_argument('-f', '--flatbinaries',     action='store_true', help='Add this flag if you wish for output binary bundles to have a flat (debian-packaging-like) format.')
@@ -296,7 +299,7 @@ def check_deps(builder):
 #                                                                       #
 #########################################################################
 
-def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator):
+def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, updater, builder, autogenerator, operations):
 
     # Ask useer to proceed
     print("Ready to start build process with location: {}...".format(install_config.install_location))
@@ -318,7 +321,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
             clone = "y"
 
         # Run the clone process
-        if clone == "y":
+        if clone == "y" and (operations is None or 'clone' in operations):
             
             print("Cloning EPICS and synApps into {}...".format(install_config.install_location))
             print("-" * 45)
@@ -333,39 +336,40 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
                         return 3
                 print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
 
-        # Update our CONFIG and RELEASE files
-        print("-" * 45)
-        print("Updating all RELEASE and configuration files...")
-        updater.run_update_config()
+        if operations is None or 'configure' in operations:
+            # Update our CONFIG and RELEASE files
+            print("-" * 45)
+            print("Updating all RELEASE and configuration files...")
+            updater.run_update_config()
 
-        # Check to make sure we have our dependencies selected
-        dep_errors = updater.perform_dependency_valid_check()
-        for dep_error in dep_errors:
-            print(dep_error)
+            # Check to make sure we have our dependencies selected
+            dep_errors = updater.perform_dependency_valid_check()
+            for dep_error in dep_errors:
+                print(dep_error)
 
-        # Here the update driver will reorder build to make sure all modules are being built after their dependencies.
-        print('Reordering module build order to account for intra-module dependencies...')
-        updater.perform_fix_out_of_order_dependencies()
+            # Here the update driver will reorder build to make sure all modules are being built after their dependencies.
+            print('Reordering module build order to account for intra-module dependencies...')
+            updater.perform_fix_out_of_order_dependencies()
 
-        print("-" * 45)
-        print("Ready to build EPICS base, support and areaDetector...")
+            print("-" * 45)
+            print("Ready to build EPICS base, support and areaDetector...")
 
-        install_deps = 'n'
-        if not grab_deps and not yes:
-            install_deps = input('Would you like to run dependency script to grab dependency packages? (y/n) > ')
+            install_deps = 'n'
+            if not grab_deps and not yes:
+                install_deps = input('Would you like to run dependency script to grab dependency packages? (y/n) > ')
         
-        # Run external dependency install script.
-        if install_deps == 'y' or (grab_deps):
-            print('Attempting to grab external dependencies...')
-            if platform == 'win32':
-                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
-            else:
-                dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
-            
-            if not os.path.exists(dep_script_path):
-                print('Could not find script at {}, skipping...'.format(dep_script_path))
-            else:
-                builder.acquire_dependecies(dep_script_path)
+            # Run external dependency install script.
+            if install_deps == 'y' or (grab_deps):
+                print('Attempting to grab external dependencies...')
+                if platform == 'win32':
+                    dep_script_path = os.path.join(path_to_configure, "dependencyInstall.bat")
+                else:
+                    dep_script_path = os.path.join(path_to_configure, "dependencyInstall.sh")
+
+                if not os.path.exists(dep_script_path):
+                    print('Could not find script at {}, skipping...'.format(dep_script_path))
+                else:
+                    builder.acquire_dependecies(dep_script_path)
 
         if not yes:
             # Inform user of number of CPU cores to use and prompt to build
@@ -382,7 +386,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
         else:
             build = "y"
 
-        if build == "y":
+        if build == "y" and (operations is None or 'build' in operations):
             print("Starting build...")
             # Build all
             ret, failed_list = builder.build_all()
@@ -424,7 +428,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
 #                                                                       #
 #########################################################################
 
-def generate_bundles(yes, install_config, packager, flat_output, archive, include_src):
+def generate_bundles(yes, install_config, packager, flat_output, archive, include_src, operations):
 
     print()
     if not yes:
@@ -432,7 +436,7 @@ def generate_bundles(yes, install_config, packager, flat_output, archive, includ
     else:
         create_tarball = 'y'
 
-    if create_tarball == 'y':
+    if create_tarball == 'y' and (operations is None or 'package' in operations):
         ret_src = 0
         
         # If we want to, include debug bundles
@@ -483,7 +487,7 @@ def generate_bundles(yes, install_config, packager, flat_output, archive, includ
 
     return 0
 
-def execute(yes, grab_deps, flat_output, archive, include_src, configure_path, build_path, install_path, threads, single_thread):
+def execute(yes, grab_deps, flat_output, archive, include_src, configure_path, build_path, install_path, threads, single_thread, operations):
 
     try:
         # Read specified install configuration
@@ -514,13 +518,16 @@ def execute(yes, grab_deps, flat_output, archive, include_src, configure_path, b
 
         autogenerator = IO.file_generator.FileGenerator(install_config)
 
+        if yes and operations is not None:
+            print(f'Executing operations {str(operations)} automatically...')
+
         # Run the build
-        build_ret = execute_build(configure_path, yes, grab_deps, install_config, cloner, updater, builder, autogenerator)
+        build_ret = execute_build(configure_path, yes, grab_deps, install_config, cloner, updater, builder, autogenerator, operations)
 
         bundle_ret = 0
         # Generate output bundles
         if build_ret == 0 or build_ret == 1:
-            bundle_ret = generate_bundles(yes, install_config, packager, flat_output, archive, include_src)
+            bundle_ret = generate_bundles(yes, install_config, packager, flat_output, archive, include_src, operations)
 
         # Finished
         return build_ret + bundle_ret
@@ -544,11 +551,18 @@ def main():
     flat_output         = args['flatbinaries']
     include_src         = args['includesources']
     archive             = args['archive']
-    
+    operations          = args['operations']
+
     # Inclusion of sources only supported in non-flat output mode
     if include_src and (flat_output or not archive):
          print('Generating source bundles is only supported for non-flat bundles and when outputting archives.\n')
          err_exit(1)
+
+    if operations is not None:
+        for op in operations:
+            if op not in VALID_OPERATIONS:
+                print(f'{op} is not avalid operation! Valid Operations: {str(VALID_OPERATIONS)}')
+                err_exit(1)
 
     # Determine how many threads to use for building
     single_thread = False
@@ -559,7 +573,7 @@ def main():
         single_thread = True
 
     # Execute the clone, build, package/install steps
-    ret = execute(yes, dep, flat_output, archive, include_src, configure_path, build_path, install_path, threads, single_thread)
+    ret = execute(yes, dep, flat_output, archive, include_src, configure_path, build_path, install_path, threads, single_thread, operations)
 
     script_end_time = time.time()
     
