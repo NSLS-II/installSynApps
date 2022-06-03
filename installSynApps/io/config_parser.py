@@ -120,9 +120,12 @@ class ConfigParser:
         """
 
         # Check if exists
-        if os.path.exists(self.configure_path + "/" + config_filename):
-            # open the configure file
-            install_file = open(self.configure_path + "/" + config_filename, "r")
+        if not os.path.exists(installSynApps.join_path(self.configure_path, config_filename)):
+
+            return None, 'Configure Path not found'
+        
+        # open the configure file
+        with open(installSynApps.join_path(self.configure_path, config_filename), "r") as install_file:
 
             # variables
             if install_file == None:
@@ -133,8 +136,7 @@ class ConfigParser:
             install_loc = ""
             message = None
 
-            line = install_file.readline()
-            while line:
+            for line in install_file.readlines():
                 line = line.strip()
                 if not line.startswith('#') and len(line) > 1:
                     # Check for install location
@@ -169,19 +171,17 @@ class ConfigParser:
                         install_module = self.parse_line_to_module(line, current_url, current_url_type)
                         if install_module is not None and install_config is not None:
                             install_config.add_module(install_module)
-                line = install_file.readline()
             
-            install_file.close()
             # Read injectors and build flags
             if install_config is None:
                 return None, 'Could not find INSTALL defined in given path'
+            
             self.read_injector_files(install_config)
             self.read_build_flags(install_config)
             self.parse_custom_build_scripts(install_config)
+            
             return install_config , message
-        else:
-            # Configure file not found
-            return None, 'Configure Path not found'
+
 
 
     def generate_default_injector_files(self, install_config):
@@ -216,8 +216,8 @@ class ConfigParser:
             self.generate_default_injector_files(install_config)
             return
         num_found = 0
-        for file in os.listdir(self.configure_path + '/injectionFiles'):
-            if os.path.isfile(self.configure_path + '/injectionFiles/' + file):
+        for file in os.listdir(installSynApps.join_path(self.configure_path,'injectionFiles')):
+            if os.path.isfile(installSynApps.join_path(self.configure_path, 'injectionFiles', file)):
                 self.parse_injector_file(file, install_config)
                 num_found = num_found + 1
         if num_found == 0:
@@ -235,22 +235,18 @@ class ConfigParser:
             config to add the file to
         """
 
-        fp = open(self.configure_path + '/injectionFiles/' + injector_file_name, 'r')
-        contents = ''
-        link=''
+        with open(installSynApps.join_path(self.configure_path, 'injectionFiles', injector_file_name), 'r') as fp:
+            contents = ''
+            link=''
 
-        line = fp.readline()
-        while line:
-            if not line.startswith('#') and len(line) > 1:
-                if line.startswith('__TARGET_LOC__='):
-                    line = line.strip()
-                    link = line.split('=')[1]
-                else:
-                    contents = contents + line
+            for line in fp.readlines():
+                if not line.startswith('#') and len(line) > 1:
+                    if line.startswith('__TARGET_LOC__='):
+                        line = line.strip()
+                        link = line.split('=')[1]
+                    else:
+                        contents = contents + line
 
-            line = fp.readline()
-
-        fp.close()
         install_config.add_injector_file(injector_file_name, contents, link)
 
 
