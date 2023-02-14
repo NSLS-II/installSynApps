@@ -156,7 +156,7 @@ class CloneDriver:
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
                 ret = 0
-                if module.version in DEFAULT_BRANCH_NAMES and module.url_type == "GIT_URL":
+                if module.version not in DEFAULT_BRANCH_NAMES and module.url_type == "GIT_URL":
                     current_loc = os.getcwd()
                     os.chdir(module.abs_path)
                     command = "git checkout -q {}".format(module.version)
