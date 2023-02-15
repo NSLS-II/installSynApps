@@ -20,6 +20,8 @@ import installSynApps.data_model.install_module as IM
 import installSynApps.io.logger as LOG
 import installSynApps
 
+DEFAULT_BRANCH_NAMES = ['master', 'main']
+
 class CloneDriver:
     """Class responsible for cloning and checking out all of the modules described in a given InstallConfiguration
 
@@ -154,7 +156,7 @@ class CloneDriver:
         if isinstance(module, IM.InstallModule):
             if module.abs_path != None:
                 ret = 0
-                if module.version != "master" and module.url_type == "GIT_URL":
+                if module.version not in DEFAULT_BRANCH_NAMES and module.url_type == "GIT_URL":
                     current_loc = os.getcwd()
                     os.chdir(module.abs_path)
                     command = "git checkout -q {}".format(module.version)
