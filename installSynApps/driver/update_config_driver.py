@@ -43,7 +43,8 @@ class UpdateConfigDriver:
         self.add_to_release_blacklist = ["CONFIGURE", "DOCUMENTATION", "UTILS"]
         self.dependency_ignore_list = [ "TEMPLATE_TOP", "PCRE", 
                                         "SUPPORT", "INSTALL_LOCATION_APP", 
-                                        "CAPFAST_TEMPLATES", "MAKE_TEST_IOC_APP"]
+                                        "CAPFAST_TEMPLATES", "MAKE_TEST_IOC_APP",
+                                        "BUILD_IOCS"]
 
 
     def perform_injection_updates(self):
