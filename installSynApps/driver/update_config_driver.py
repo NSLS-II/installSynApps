@@ -101,7 +101,7 @@ class UpdateConfigDriver:
                 rel = installSynApps.join_path(module.abs_path, 'configure', 'RELEASE')
                 if os.path.exists(rel):
                     LOG.write('Updating RELEASE file for {}...'.format(module.name))
-                    self.update_macros(rel, True, True, single_file=True)
+                    self.update_macros(rel, True, True, single_file=True, auto_add_deps=True)
 
 
     def update_support_build_macros(self):
@@ -112,7 +112,7 @@ class UpdateConfigDriver:
             self.update_macros(installSynApps.join_path(module.abs_path, 'configure'), False, True, build_flags_only=True)
 
 
-    def update_macros(self, target_path, include_ad, force_uncomment, single_file=False, build_flags_only=False):
+    def update_macros(self, target_path, include_ad, force_uncomment, single_file=False, build_flags_only=False, auto_add_deps=False):
         """Function that calls config injector to update all macros in target directory.
 
         This function is used on 3 occasions. 
@@ -132,6 +132,8 @@ class UpdateConfigDriver:
             Apply update macros to a single file
         build_flags_only=False : bool
             In this case, only update the build flag macros specified in config, not module paths (use make release instead)
+        auto_add_deps=False : bool
+            When set to true, if a macro value is being added with another macro in it, the dependant macro is automatically added
         """
 
         install_macro_list = self.get_macros_from_install_config()
@@ -146,7 +148,8 @@ class UpdateConfigDriver:
                                                     os.path.basename(target_path), 
                                                     comment_unsupported=True, 
                                                     with_ad=include_ad, 
-                                                    force=force_uncomment)
+                                                    force=force_uncomment,
+                                                    auto_add_deps=auto_add_deps)
 
 
     def add_missing_support_macros(self):
