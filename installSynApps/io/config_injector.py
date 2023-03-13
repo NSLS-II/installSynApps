@@ -86,7 +86,7 @@ class ConfigInjector:
                     self.update_macros_file(macro_replace_list, target_dir, file, force = force_override_comments)
 
 
-    def update_macros_file(self, macro_replace_list, target_dir, target_filename, comment_unsupported = False, with_ad = True, force=False):
+    def update_macros_file(self, macro_replace_list, target_dir, target_filename, comment_unsupported = False, with_ad = True, force=False, auto_add_deps=False):
         """Function that updates the macro values in a single configure file
 
         Parameters
@@ -101,6 +101,8 @@ class ConfigInjector:
             if true, will comment out any macros that are in the file that are not in input list. Important for updating RELEASE in support/
         with_ad : bool
             if false, will comment out macros for area detector modules. used for RELEASE in support - AD is built separately
+        auto_add_deps=False : bool
+            When set to true, if a macro value is being added with another macro in it, the dependant macro is automatically added
         """
 
         old_files_dir = os.path.join(target_dir, 'OLD_FILES')
@@ -115,10 +117,20 @@ class ConfigInjector:
             new_fp = open(installSynApps.join_path(target_dir, target_filename[8:]), "w")
         else:
             new_fp = open(installSynApps.join_path(target_dir, target_filename), "w")
+
+        written_macros = []
         line = old_fp.readline()
         while line:
             original = line
             line = line.strip()
+
+            if target_filename == 'RELEASE' and 'areaDetector' not in target_dir and line.startswith('-include') and 'EPICS_BASE' not in written_macros and auto_add_deps:
+                LOG.debug('Detected RELEASE file missing EPICS_BASE...')
+                for m in macro_replace_list:
+                    if m[0] == 'EPICS_BASE':
+                        new_fp.write('EPICS_BASE={}\n\n'.format(m[1]))
+                        written_macros.append(m[0])
+
             if '=' in line:
                 line = line = re.sub(' +', '', line)
                 wrote_line = False
@@ -126,14 +138,32 @@ class ConfigInjector:
                     if line.startswith(macro[0] + "=") and (with_ad or (macro[0] not in self.ad_modules)):
                         if line.split('=', 1)[1] != macro[1]:
                             LOG.debug('Replacing macro {}: original val {}, new val {} in file {}'.format(macro[0], line.split('=', 1)[1], macro[1], target_filename))
+                        if '$(' in macro[1] and auto_add_deps:
+                            in_value_macro = macro[1].split('$(', 1)[1].split(')',1)[0]
+                            if in_value_macro not in written_macros:                            
+                                for m in macro_replace_list:
+                                    if m[0] == in_value_macro:
+                                        LOG.debug('Adding macro {} to satisfy macro used in {}={}'.format(in_value_macro, macro[0], macro[1]))
+                                        new_fp.write("{}={}\n".format(m[0], m[1]))
+                                        written_macros.append(m[0]) 
                         new_fp.write("{}={}\n".format(macro[0], macro[1]))
+                        written_macros.append(macro[0])
                         wrote_line = True
                     elif line.startswith("#" + macro[0] + "=") or line.startswith("#!" + macro[0] + "="):
                         if line.split('=', 1)[1] != macro[1]:
                             LOG.debug('Updating commented macro {}: original val {}, new val {} in file {}'.format(macro[0], line.split('=', 1)[1], macro[1], target_filename))
                         if force:
                             LOG.debug('Uncommenting commented macro {}'.format(macro[0]))
+                            if '$(' in macro[1] and auto_add_deps:
+                                in_value_macro = macro[1].split('$(', 1)[1].split(')',1)[0]
+                                if in_value_macro not in written_macros:                            
+                                    for m in macro_replace_list:
+                                        if m[0] == in_value_macro:
+                                            LOG.debug('Adding macro {} to satisfy macro used in {}={}'.format(in_value_macro, macro[0], macro[1]))
+                                            new_fp.write("{}={}\n".format(m[0], m[1]))
+                                            written_macros.append(m[0])
                             new_fp.write("{}={}\n".format(macro[0], macro[1]))
+                            written_macros.append(macro[0])
                         else:
                             new_fp.write("#{}={}\n".format(macro[0], macro[1]))
                         wrote_line = True
