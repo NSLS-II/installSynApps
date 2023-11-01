@@ -49,7 +49,6 @@ class BuildDriver:
         self.create_make_flags()
         self.built = []
         self.non_build_packages = ["SUPPORT", "CONFIGURE", "UTILS", "DOCUMENTATION", "AREA_DETECTOR"]
-        self.critical_modules = ["EPICS_BASE", "ASYN", "SNCSEQ"]
 
 
     def create_make_flags(self):
@@ -242,8 +241,6 @@ class BuildDriver:
                 out = self.build_module(module.name)
                 if out != 0:
                     failed.append(module.name)
-                    if module.name in self.critical_modules:
-                        break
 
                 # After we build base we should make the support releases consistent
                 #if module.name == 'EPICS_BASE':

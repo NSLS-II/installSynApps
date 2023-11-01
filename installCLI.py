@@ -328,10 +328,9 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
             if len(unsuccessful) > 0:
                 for module in unsuccessful:
                     print("Module {} was either unsuccessfully cloned or checked out.".format(module))
-                    if module in builder.critical_modules:
-                        print("Critical clone error... abort.")
-                        return 3
+                print("Critical clone error... abort.")
                 print("Check INSTALL_CONFIG file to make sure repositories and versions are valid")
+                return 3
 
         # Update our CONFIG and RELEASE files
         print("-" * 45)
@@ -352,7 +351,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
 
         install_deps = 'n'
         if not grab_deps and not yes:
-            install_deps = input('Would you like to run dependency script to grab dependency packages? (y/n) > ')
+            install_deps = input('Would you like to run the dependency script to grab dependency packages? (y/n) > ')
         
         # Run external dependency install script.
         if install_deps == 'y' or (grab_deps):
@@ -390,13 +389,10 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
             if ret != 0:
                 for failed in failed_list:
                     print('Module {} failed to build, will not package'.format(failed))
-                    if failed in builder.critical_modules:
-                        print("**ERROR - Build failed - {} is a critical module**".format(failed))
-                        print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
-                        print('**Critical build error - abort...**')
-                        return 4
-                    else:
-                        install_config.get_module_by_name(failed).package = "NO"
+                print("**ERROR - {} modules failed to build!!!**".format(len(failed)))
+                print("**Check the INSTALL_CONFIG file to make sure settings and paths are valid**")
+                print('**Critical build error - abort...**')
+                return 4
 
 
             print("-" * 45)
@@ -405,11 +401,7 @@ def execute_build(path_to_configure, yes, grab_deps, install_config, cloner, upd
             autogenerator.generate_readme('{}'.format(install_config.install_location))
             print("Done.")
             
-            if ret == 0:
-                print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
-            else:
-                print("Auto-Build of EPICS, synApps, and areaDetector completed with some non-critical errors.")
-                return 1
+            print("Auto-Build of EPICS, synApps, and areaDetector completed successfully.")
             
             return ret
 
