@@ -47,6 +47,7 @@ class InstallModule:
 
         self.name       = name
         self.version    = version
+        self.exact_hash = None
         self.rel_path   = rel_path
         self.abs_path   = None
         self.url_type   = url_type

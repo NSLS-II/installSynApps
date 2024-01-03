@@ -161,7 +161,10 @@ class ConfigWriter:
             if module.url != current_url:
                 new_install_config.write("\n{}={}\n\n".format(module.url_type, module.url))
                 current_url = module.url
-            new_install_config.write("{:<16} {:<20} {:<40} {:<24} {:<16} {:<16} {}\n".format(module.name, module.version, module.rel_path, module.rel_repo, module.clone, module.build, module.package))
+            ver_to_write = module.version
+            if module.exact_hash is not None:
+                ver_to_write = module.exact_hash
+            new_install_config.write("{:<16} {:<20} {:<40} {:<24} {:<16} {:<16} {}\n".format(module.name, ver_to_write, module.rel_path, module.rel_repo, module.clone, module.build, module.package))
 
         new_install_config.close()
         return True, None

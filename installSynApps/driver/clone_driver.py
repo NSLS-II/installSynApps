@@ -172,6 +172,13 @@ class CloneDriver:
                         proc.wait()
                         ret = proc.returncode
 
+                    # Retrieve commit hash of checked out module for exact versioning
+                    command = 'git rev-parse --short HEAD'
+                    LOG.print_command(command)
+                    proc = Popen(command.split(' '), stdout=PIPE)
+                    out = proc.communicate().decode('utf-8')
+                    module.exact_hash = out
+
                     os.chdir(current_loc)
                     if ret == 0:
                         LOG.write('Checked out version {}'.format(module.version))
