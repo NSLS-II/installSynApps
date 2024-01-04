@@ -25,6 +25,7 @@ import installSynApps.data_model.install_config as IC
 import installSynApps.io.logger as LOG
 import installSynApps.io.file_generator as FILE_GENERATOR
 import installSynApps.io.ioc_generator as IOC_GENERATOR
+import installSynApps.io.config_writer as CONFIG_WRITER
 
 
 class Packager:
@@ -563,6 +564,11 @@ class Packager:
         if os.path.exists(bundle_top):
             shutil.rmtree(bundle_top)    
         os.mkdir(bundle_top)
+
+        # Make sure we write the install configuration with the output tarball.
+        build_config_path = installSynApps.join_path(install_loc, 'build-config')
+        config_writer = CONFIG_WRITER.ConfigWriter(self.install_config)
+        config_writer.write_install_config(build_config_path)
 
         readme_path = installSynApps.join_path(readme_loc, readme_name)
         self.grab_base(bundle_top, include_src=with_sources, flat_grab=flat_output)
