@@ -176,7 +176,8 @@ class CloneDriver:
                     command = 'git rev-parse --short HEAD'
                     LOG.print_command(command)
                     proc = Popen(command.split(' '), stdout=PIPE)
-                    out = proc.communicate().decode('utf-8')
+                    out, _ = proc.communicate()
+                    out = out.decode('utf-8')
                     module.exact_hash = out
 
                     os.chdir(current_loc)
